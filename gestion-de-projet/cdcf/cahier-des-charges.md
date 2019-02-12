@@ -9,6 +9,7 @@
 ## Cahier des charges
 
 - Se rapprocher au plus du fonctionnement hardware de la NES
+- Developper quelques mappers (deux ou trois) (mécanisme qui permet de gérer des ROM supplémentaire sur les cartouches)
 - Prise en charge du clavier AZERTY/QWERTY
 - Interface de gestion (choix des ROMs, raccoucis clavier, paramètres graphiques et sonores)
 - Avoir des performances graphiques fluides (NTSC - 60 FPS)
