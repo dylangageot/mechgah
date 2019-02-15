@@ -14,7 +14,31 @@ Ce projet porte sur l'émulation du système de la console de jeux NES. C'est à
 
 ### CPU
 
-Nico. H
+#### Representation de la mémoire
+
+![Representation-memoire](https://people.ece.cornell.edu/land/courses/ece4760/FinalProjects/s2009/bhp7_teg25/bhp7_teg25/index_files/image012.jpg)
+
+#### Fonctionnement du processeur 6502
+
+Le processeur est de type 8 bits. Ses registres de travail sont donc aussi de taille 8 bits. Cela implique que c'est aussi la taille maximale des données manipulable.
+
+Cependant, le Programme Counter (PC) est lui de taille 16 bits. Le domaine d'adressage disponible est ainsi de 64Ko.
+
+Il possède en plus un Multi-Memory Controller (MMC) qui permet d'adresser plus de mémoire. (Voir partie mémoire).
+
+Le processeur possède un jeu d'instruction capable de manipuler les 64 Ko de mémoire et de 6 registres.
+
+**Registres 8 bits** :
+  - **Stack register** : Sauvegarde de donnée lors de l’exécution d'un fonction.
+  - **Processor Status** : Registre de flags
+  - **Accumulator** : Registre de travail principal. Utilisé pour tous les instructions artithmétiques et logiques.
+  - **Registre X** : Utilisé pour les adressages indecés et le contrôle des boucles
+  - **Registre Y** : Comparable au registre X mais posssède moins de fonctionnalités.
+
+  **Registres 16 bits**
+  - Program Counter : Adressage des 64 Ko de mémoire. Il contient l'adresse de la prochaine instruction à éxecuter.
+
+####
 
 ### PPU
 
@@ -26,7 +50,7 @@ Le rendu des images/frames s'exécute à 60 Hz pour une NES NTSC et 50 Hz pour l
 
 #### Pattern Tables
 
-Pour pallier aux contraintes de l'époque, les données décrivant les informations à l'écran sont grossières : on ne stock pas en brut la couleur d'un pixel à une coordonnées précise, à la place, on créer des blocs contenant les informations nécessaires (dessin, couleur) puis on vient les appeler dans une table mémoire pour les afficher à l'écran. Un bloc élémentaire est constitué de **8x8 pixels** et est appelé **un pattern**. Ces patterns permettent de décrire le décor (background) et les personnages/objets à l'écran (sprites).
+Pour pallier aux contraintes de l'époque, les données décrivant les informations à l'écran sont grossières : on ne stock pas en brut la couleur d'un pixel à une coordonnées précise, à la place, on créer des blocs contenant les informations nécessaires (dessin, couleur) puis on vient les appeler dans une table mémoire pour les afficher à l'écran. Un bloc élémentaire est constitué de **8x8 pixels** et est appelé **fun pattern**. Ces patterns permettent de décrire le décor (background) et les personnages/objets à l'écran (sprites).
 
 La table des patterns est contenue dans une ROM (appelé CHR-ROM) sur le circuit imprimé de la cartouche de jeu. Cette ROM est généralement d'une taille de 8kB, permettant de **stocker 512 patterns**. Chaque pattern occupe 16 octets de mémoire, décrivant ainsi les couleurs avec deux bits par pixels, **soit 4 couleurs possibles pour sur un pattern** (voir l'illustration ci-dessous). Nous verrons dans la partie sur les palettes de couleur comment fonctionne le mécanisme de coloriage.
 
