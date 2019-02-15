@@ -2,10 +2,7 @@
 
 ## Presentation du projet
 
-Ce projet porte sur l'émulation du système de la console de jeux NES de la société Nintendo, c'est à dire reproduire son comportement hardware et software de manière logicielle. Nous avons fait le choix de réaliser une émulation précise et qui représente et réagit comme le fonctionnement de la console.
-
-Qu'est-ce que l'émulation ?
-la NES ?
+Ce projet porte sur l'émulation du système de la console de jeux NES. C'est à dire reproduire son comportement hardware et software de manière logicielle. La console de jeux NES est une console de jeux sortie en 1985 et développée par la société japonaise Nintendo.
 
 ## Objectifs
 
@@ -79,9 +76,20 @@ L'OAM peut être intégralement **écris en DMA** depuis le CPU, généralement 
 
 Baptiste
 
-### Mémoire
+### Mapper mémoire
 
-Nico. C
+La NES a besoin de **charger le contenu du jeux** dans la **mémoire de la CPU** (cf paragraphe sur la CPU). De ce fait, elle réserve 32KB pour la mémoire programme, ou PRG-ROM, entre *Ox8000* et *0xFFFF*. De plus, la PPU réserve *8KB* de ROM appelée CHR-ROM, pour stocker des élément graphiques du jeu.
+
+Un cartouche de jeux contenant *16KB* de programme est chargée deux fois : à *0x8000* et à *0xC000*, et une cartouche contenant *32KB* de programme est chargée sur la totalité de la plage réservée. Cette taille suffisait pour les premier jeux, mais très vite les jeux étaient réalisé sur plusieures banques de *32KB*.
+
+La NES utilise donc du hardware intégré à la cartouche et appelé MMC (Memory Management Chip), ou mapper mémoire, afin de savoir quelle partie de la cartouche doit être chargé dans la PRG-ROM. Lorsque le système a besoin d'accéder à des données situées **hors de la banque de donnée actuellement chargée**, le programme demande à la MCC de charger la banque de donnée d'intérêt dans la PRG-ROM, effaçant ainsi les données chargées.
+
+Voici un courte description des MMC basiques :
+- **NROM** (mapper 0) : Le premier mapper, développé par Nintendo. Les banques de données sont fixes et le chargement des données est celui décrit au paragraphe 2. Il n'existe pas de gestion du chargement de donnée dans la ROM de la PPU.
+- **UNROM** (mapper 2): Egalement développé par Nintendo et utilisé pour des jeux comme Mega man ou Castlevania, qui permet de choisir la banque de donnée chargée sur les premiers *16KB* et fixe les *16KB* de fin à la dernière banque de données.
+- **MMC1** (mapper 1) : Mapper très utilisé, notemment pour The Legend of Zelda. Il offre une grande flexibilité sur la PRG-ROM et permet de charger la CHR-ROM.
+
+Il en existe plus d'une centaine.
 
 ## Spécificités de l'émulateur
 
