@@ -102,7 +102,7 @@ Baptiste
 
 ### Mapper mémoire
 
-La NES a besoin de **charger le contenu du jeux** dans la **mémoire de la CPU** (cf paragraphe sur la CPU). De ce fait, elle réserve 32KB pour la mémoire programme, ou PRG-ROM, entre *Ox8000* et *0xFFFF*. De plus, la PPU réserve *8KB* de ROM appelée CHR-ROM, pour stocker des élément graphiques du jeu.
+a NES a besoin de **charger le contenu du jeux** dans la **mémoire de la CPU** (cf paragraphe sur la CPU). De ce fait, elle réserve 32KB pour la mémoire programme, ou PRG-ROM, entre *Ox8000* et *0xFFFF*. De plus, la PPU réserve *8KB* de ROM appelée CHR-ROM, pour stocker des élément graphiques du jeu.
 
 Un cartouche de jeux contenant *16KB* de programme est chargée deux fois : à *0x8000* et à *0xC000*, et une cartouche contenant *32KB* de programme est chargée sur la totalité de la plage réservée. Cette taille suffisait pour les premier jeux, mais très vite les jeux étaient réalisé sur plusieures banques de *32KB*.
 
