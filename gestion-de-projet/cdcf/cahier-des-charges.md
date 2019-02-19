@@ -23,7 +23,7 @@ la NES ?
 
 #### Fonctionnement du processeur 6502
 
-Le processeur est de type 8 bits. Ses registres de travail sont donc aussi de taille 8 bits. Cela implique que c'est aussi la taille maximale des données manipulable.
+Le processeur est de type 8 bits. Ses registres de travail sont donc aussi de taille 8 bits. Cela implique que c'est aussi la taille maximale des données manipulables.
 
 Cependant, le Programme Counter (PC) est lui de taille 16 bits. Le domaine d'adressage disponible est ainsi de 64Ko.
 
@@ -33,15 +33,55 @@ Le processeur possède un jeu d'instruction capable de manipuler les 64 Ko de m�
 
 **Registres 8 bits** :
   - **Stack register** : Sauvegarde de donnée lors de l’exécution d'un fonction.
-  - **Processor Status** : Registre de flags
+
+  - **Processor Status** : Registre de flags, il possède en tout 7 flgas car le bit numéro 5 du registres n'est pas utilisé.  
+      - Bit 0 : Carry out (C)  
+      - Bit 1 : Zéro flag (Z)
+      - Bit 2 : Interrupt Disable Flag (I)
+      - Bit 3 : Decimal mode (D)
+      - Bit 5 : N/A
+      - Bit 6 : Break Command (B)
+      - Bit 7 : Negative Flag (N)
+
+
   - **Accumulator** : Registre de travail principal. Utilisé pour tous les instructions artithmétiques et logiques.
-  - **Registre X** : Utilisé pour les adressages indecés et le contrôle des boucles
+
+  - **Registre X** : Utilisé pour les adressages indexés et le contrôle des boucles.
+
   - **Registre Y** : Comparable au registre X mais posssède moins de fonctionnalités.
 
-  **Registres 16 bits**
+**Registres 16 bits**
   - Program Counter : Adressage des 64 Ko de mémoire. Il contient l'adresse de la prochaine instruction à éxecuter.
 
-####
+#### Les modes d'adressages
+
+Le processeur 6502 possède 12 modes d'adressage utilisés par les instructions.
+
+- Adressage immédiat : #$??
+- Adressage absolu : $????
+- Adressage page zéro : $??
+- Adressage indirect absolu : ($????)
+- Adressage absolu indexé : $????,X
+- Adressage indexé page zéro : $??,X		
+- Adressage indexé indirect	: ($??,X)
+- Adressage indirect indexé : ($??),X
+- Adressage relatif	: $??  ->signé
+- Adressage implié : transparent dans l'instruction
+
+#### Les instructions
+
+Le processeur possède un jeu de 56 mnémoniques (instructions). Certaines peuvent faire l'objet de plusieurs modes d'adressages.
+
+**Exemple de deux instructions**
+
+**ADC** : Flags utilisés : N,Z,C,V
+
+Additionne la valeur contenu dans l'Accumulator avec l'opérande désigné par le mode d'adressage et le bit de retenue. Le résultat est ensuite placé dans l'Accumulator. Il y a aussi une mise à jours des flags. Pour effectuer une addition vierge, il faut mettre à zéro le bit de retenue (C). Cette instruction peut utilisée 8 modes d'adressages différents.
+
+**LDA** - Load Accumulator : Flags Utilisés : N,Z
+
+On passe en paramètre une adresse. L'opérande situé à cette adresse en mémoire centrale est chargée dans l'Accumulator puis la valeur est évaluée puis déterminer les flags N et Z.  
+
 
 ### PPU
 
