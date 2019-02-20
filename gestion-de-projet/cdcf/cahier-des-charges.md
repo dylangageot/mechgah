@@ -142,7 +142,60 @@ L'OAM peut être intégralement **écris en DMA** depuis le CPU, généralement 
 
 ### APU
 
-Baptiste
+### APU
+
+L'APU est l'unité de traitement sonore de la NES. Cette unité est intégrée à la puce 6502 et communique avec la CPU par l'intermédiaire de registres. La CPU va donc écrire les informations que l'APU interprètera et traduira en signal sonore.
+
+Cette unité possède 5 canaux sonores:
+
+| Nom | Type de signal   | Utilisation principale|
+| :-------------: | :-------------: | :--- |
+| Pulse 1  | Carré  | Mélodie 1 |
+| Pulse 2   | Carré  | Mélodie 2  |
+| Triangle   | Triangle  | Basse  |
+| Noise   | Aléatoire  | Percussions et effets divers |
+| DMC   | Samples pré-enregistrés  | Sons pré-enregistrés (bonus, pièces, ...)  |
+
+À chaque canal correspond des registres décrivant les différentes caractéristiques du son à produire. Ces registres occupent les adresses *0x4000* à *0x4017*:
+
+| Registres | Canal     |
+| :------------- | :-------------: |
+| **0x4000 - 0x4003**       | Pulse 1      |
+| **0x4004 - 0x4007**  | Pulse 2  |
+| **0x4008 - 0x400B**   | Triangle  |
+| **0x400C - 0x400F**   | Noise  |
+| **0x4010 - 0x4013**   | DMC  |
+| **0x4015** | Tous  |
+| **0x4017**   | Tous  |
+
+Le registre *0x4015* régit l'activation ou non des différents canaux.
+Le registre *0x4017* régit le mode du séquenceur (mode 4 état ou mode 5 états, il ne sera pas détaillé ici).
+
+Afin d'observer en détail les valeurs dans ces registres, prennons pour exemple, le premier registre utilisé par le canal *Pulse 1* :
+
+| Adresse | Canal     | Description |
+| :------------- | :------------- | :- |
+| *0x4000*       | Pulse 1  | DDLC VVVV |
+
+* **DD** : Duty cycle (rapport cyclique)
+Décrit le rapport cyclique du signal carré. Il peut prendre 4 valeurs :
+  | D  | D  | Rapport Cyclique | Représentation "graphique"
+  | :- | :- | :--------------: | :-----------------------:
+  |  0 |  0 | 12.5 %           |  _ -‑ _ _ _ _ _ _
+  |  0 |  1 | 25 %             |  _ -‑-- _ _ _ _ _
+  |  1 |  0 | 50 %             |  _ -------- _ _ _
+  |  1 |  1 | 25 % inversé     |  -- _ _ ----------
+
+* **L : Length Counter**
+Ce bit régit l'arrêt (1) ou non (0) du "length counter" permettant la gestion automatique de la durée des notes. Lorsque le bit **L** est à l'état 0, le compteur éffectue une fonction de décomptage depuis une valeur stocké dans le registe *0x4003*. Lorsque le compteur atteint 0, la note est stoppée.
+
+* **C : Constant volume**
+Lorsque ce bit est à l'état 1, l'APU utilise la valeur constante *VVVV* comme valeur de volume pour le canal. Sinon, le volume est géré par l'enveloppe de volume (outil permettant d'effectuer des modifications sur le volume que nous ne détaillerons pas ici)
+
+* **VVVV : Volume**
+Valeur utilisée comme valeur de volume constant si le bit **C** est à 1.
+
+[Informations complémentaires sur l'APU](http://wiki.nesdev.com/w/index.php/APU)
 
 ### Mapper mémoire
 
