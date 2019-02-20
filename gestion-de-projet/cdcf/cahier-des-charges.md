@@ -35,7 +35,7 @@ Le processeur possède un jeu d'instruction capable de manipuler les 64 Ko de m�
 **Registres 8 bits** :
   - **Stack register** : Garde l'adresse du haut de la pile, pile permettant de sauvegarder des données lors de l’exécution d'une fonction.
 
-  - **Processor Status** : Registre de flags, il possède en tout 7 flags car le bit numéro 5 du registres n'est pas utilisé.  
+  - **Processor Status** : Registre de flags, il possède en tout 7 flags car le bit numéro 5 du registre n'est pas utilisé.  
       - Bit 0 : Carry out (C)  
       - Bit 1 : Zero flag (Z)
       - Bit 2 : Interrupt Disable Flag (I)
@@ -45,7 +45,7 @@ Le processeur possède un jeu d'instruction capable de manipuler les 64 Ko de m�
       - Bit 7 : Negative Flag (N)
 
 
-  - **Accumulator** : Registre de travail principal. Utilisé pour tous les instructions arithmétiques et logiques.
+  - **Accumulator** : Registre de travail principal. Utilisé pour toutes les instructions arithmétiques et logiques.
 
   - **Registre X** : Utilisé pour les adressages indexés et le contrôle des boucles.
 
@@ -71,17 +71,17 @@ Le processeur 6502 possède 12 modes d'adressage utilisés par les instructions.
 
 #### Les instructions
 
-Le processeur possède un jeu de 56 mnémoniques (instructions). Certaines peuvent faire l'objet de plusieurs modes d'adressages.
+Le processeur possède un jeu de 56 mnémoniques (instructions). Certaines peuvent faire l'objet de plusieurs modes d'adressage.
 
 **Exemple de deux instructions**
 
 **ADC** : Flags utilisés : N,Z,C,V
 
-Additionne la valeur contenu dans l'Accumulator avec l'opérande désigné par le mode d'adressage et le bit de retenue. Le résultat est ensuite placé dans l'Accumulator. Il y a aussi une mise à jours des flags. Pour effectuer une addition vierge, il faut mettre à zéro le bit de retenue (C). Cette instruction peut utilisée 8 modes d'adressages différents.
+Additionne la valeur contenu dans l'Accumulator avec l'opérande désigné par le mode d'adressage et le bit de retenue. Le résultat est ensuite placé dans l'Accumulator. Il y a aussi une mise à jour des flags. Pour effectuer une addition vierge, il faut mettre à zéro le bit de retenue (C). Cette instruction peut utiliser 8 modes d'adressage différents.
 
 **LDA** - Load Accumulator : Flags Utilisés : N,Z
 
-On passe en paramètre une adresse. L'opérande situé à cette adresse en mémoire centrale est chargée dans l'Accumulator puis la valeur est évaluée puis déterminer les flags N et Z.  
+On passe en paramètre une adresse. L'opérande situé à cette adresse en mémoire centrale est chargé dans l'Accumulator puis la valeur est évaluée pour déterminer les flags N et Z.  
 
 
 ### PPU
@@ -90,11 +90,11 @@ La PPU (Picture Processing Unit) a pour fonction de gérer l'affichage. La réso
 
 #### Frame rendering
 
-Le rendu des images/frames s'exécute à 60 Hz pour une NES NTSC et 50 Hz pour la version PAL. La PPU fonctionne avec une fréquence d'horloge 3 fois supérieur à celle de la CPU, ainsi **3 pixels sont rendu à l'écran en un cycle CPU**. On appelle scanline le rendu d'une ligne de pixels, comprenant également les pixels invisibles nécessaire au timing des signaux composites. Ainsi on décompte 262 scanlines, chacune d'entre elle étant composé de 341 pixels. Lorsque la PPU a fini de rendre l'image visible à l'écran, une succession de 20 scanlines prend place, on appelle cet période **vertical blank**. C'est durant cet période que l'on doit écrire dans la mémoire vidéo pour éviter de potentiels artefacts.
+Le rendu des images/frames s'exécute à 60 Hz pour une NES NTSC et 50 Hz pour la version PAL. La PPU fonctionne avec une fréquence d'horloge 3 fois supérieure à celle de la CPU, ainsi **3 pixels sont rendus à l'écran en un cycle CPU**. On appelle scanline le rendu d'une ligne de pixels, comprenant également les pixels invisibles nécessaires au timing des signaux composites. Ainsi on décompte 262 scanlines, chacune d'entre elles étant composée de 341 pixels. Lorsque la PPU a fini de rendre l'image visible à l'écran, une succession de 20 scanlines prend place, on appelle cet période **vertical blank**. C'est durant cet période que l'on doit écrire dans la mémoire vidéo pour éviter de potentiels artefacts.
 
 #### Pattern Tables
 
-Pour pallier aux contraintes de l'époque, les données décrivant les informations à l'écran sont grossières : on ne stock pas en brut la couleur d'un pixel à une coordonnées précise, à la place, on créer des blocs contenant les informations nécessaires (dessin, couleur) puis on vient les appeler dans une table mémoire pour les afficher à l'écran. Un bloc élémentaire est constitué de **8x8 pixels** et est appelé **fun pattern**. Ces patterns permettent de décrire le décor (background) et les personnages/objets à l'écran (sprites).
+Pour pallier aux contraintes de l'époque, les données décrivant les informations à l'écran sont grossières : on ne stocke pas en brut la couleur d'un pixel à des coordonnées précises, à la place, on crée des blocs contenant les informations nécessaires (dessin, couleur) puis on vient les appeler dans une table mémoire pour les afficher à l'écran. Un bloc élémentaire est constitué de **8x8 pixels** et est appelé **fun pattern**. Ces patterns permettent de décrire le décor (background) et les personnages/objets à l'écran (sprites).
 
 La table des patterns est contenue dans une ROM (appelé CHR-ROM) sur le circuit imprimé de la cartouche de jeu. Cette ROM est généralement d'une taille de 8kB, permettant de **stocker 512 patterns**. Chaque pattern occupe 16 octets de mémoire, décrivant ainsi les couleurs avec deux bits par pixels, **soit 4 couleurs possibles pour sur un pattern** (voir l'illustration ci-dessous). Nous verrons dans la partie sur les palettes de couleur comment fonctionne le mécanisme de coloriage.
 
@@ -106,7 +106,7 @@ La figure ci-dessous illustre le contenu de la table des patterns pour le jeu Su
 
 #### Colour Palette
 
-La NES est capable d'afficher **52 couleurs**, cependant, dû aux limitations techniques de l'époque, seulement quelques couleurs pourront être affichés sur une frame. L'objectif de cette limitation est de limité l'espace mémoire qu'occupera les images. Ainsi, la solution fut de créer **des palettes de 4 couleurs** : **4 palettes pour le background et 4 autres pour les sprites**. Les éléments affichés à l'écran feront référence à une des palettes de couleurs (grâce à un index) afin d'être coloriés correctement.
+La NES est capable d'afficher **52 couleurs**, cependant, dû aux limitations techniques de l'époque, seulement quelques couleurs pourront être affichées sur une frame. L'objectif de cette limitation est de limiter l'espace mémoire qu'occuperont les images. Ainsi, la solution fut de créer **des palettes de 4 couleurs** : **4 palettes pour le background et 4 autres pour les sprites**. Les éléments affichés à l'écran feront référence à une des palettes de couleurs (grâce à un index) afin d'être coloriés correctement.
 
 Sur l'illustration qui suit, les quatre palettes du haut correspondent aux palettes pour les sprites. On remarque pour chacun d'eux que la dernière couleur semble être noire, or en réalité il s'agit de **la transparence** : un pixel possédant cet priorité laisse entrevoir le background. Juste en dessous, on retrouve les palettes pour le background.
 
@@ -114,9 +114,9 @@ Sur l'illustration qui suit, les quatre palettes du haut correspondent aux palet
 
 #### Name Tables
 
-Le background est constitué **d'une grille de 32x30 patterns**. En mémoire, on appelle cet grille/tableau une **name table**. On associé à cet espace une **attribute table**, une table permettant de décrire quel palette de couleur utilisé pour chaque pattern. L'espace d'adressage de la PPU permet **l'usage de 4 name tables**, ceci-dit, seulement deux sont physiquement présente sur la NES, les deux autres doivent provenir de la cartouche si nécessaires.
+Le background est constitué **d'une grille de 32x30 patterns**. En mémoire, on appelle cet grille/tableau une **name table**. On associe à cet espace une **attribute table**, une table permettant de décrire quelle palette de couleur utiliser pour chaque pattern. L'espace d'adressage de la PPU permet **l'usage de 4 name tables**, ceci-dit, seulement deux sont physiquement présentes sur la NES, les deux autres doivent provenir de la cartouche si nécessaire.
 
-L'usage de multiple name tables permet d'effectuer du **scrolling**, principe utilisé dans les jeux de plateformes pour se déplacer dans un niveau (comme dans Super Mario Bros par exemple).
+L'usage de multiple name tables permet d'effectuer du **scrolling**, principe utilisé dans les jeux de plateformes pour se déplacer dans un niveau (comme dans Super Mario Bros. par exemple).
 
 ![nametable-scrolling](https://wiki.nesdev.com/w/images/a/ae/SMB1_scrolling_seam.gif)
 
@@ -124,35 +124,86 @@ En fonction de comment le joueur évolue sur la carte (verticalement ou horizont
 
 #### Object Attribute Memory
 
-La NES est capable d'afficher 64 sprites sur une même frame. Cet caractéristique est toutefois contraintes par la limite de **8 sprites par scanlines**. Dans le cas d'un overflow de sprite sur une scanline, un bit est levé dans les registres d'états de la PPU. Les informations sur les sprites affichés à l'écran sont a écrire dans l'Object Attribute Memory (OAM) ou aussi appelé SPR-RAM (sprite RAM). Cet espace mémoire est **remis à zéro à chaque fois qu'une image a été rendu à l'écran**, ainsi, le jeu doit réécrire à chaque rendu pour que les sprites puissent être ré-affiché à l'écran.
+La NES est capable d'afficher 64 sprites sur une même frame. Cet caractéristique est toutefois contraintes par la limite de **8 sprites par scanline**. Dans le cas d'un overflow de sprite sur une scanline, un bit est levé dans les registres d'états de la PPU. Les informations sur les sprites affichés à l'écran sont à écrire dans l'Object Attribute Memory (OAM) ou aussi appelé SPR-RAM (sprite RAM). Cet espace mémoire est **remis à zéro à chaque fois qu'une image a été rendue à l'écran**, ainsi, le jeu doit réécrire à chaque rendu pour que les sprites puissent être ré-affichés à l'écran.
 
 Chaque sprite est représenté par 4 octets dans l'OAM :
 - Position sur l'axe Y (bytes 0)
 - Index du pattern à afficher (bytes 1)
 - Attribut du sprite (bytes 2)
-  - Palette de couleur utilisé
+  - Palette de couleur utilisée
   - Priorité du sprite vis-à-vis du background
-  - Mirroir horizontale
-  - Mirroir verticalement
+  - Mirroir horizontal
+  - Mirroir vertical
 - Position sur l'axe X (bytes 3)
 
 La priorité entre les différents sprites est gérée par l'ordre dans lequel les sprites sont écris dans l'OAM.
 
-L'OAM peut être intégralement **écris en DMA** depuis le CPU, généralement après chaque vertical blank, dans le handler de l'interruption NMI.
+L'OAM peut être intégralement **écrit en DMA** depuis le CPU, généralement après chaque vertical blank, dans le handler de l'interruption NMI.
 
 ### APU
 
-Baptiste
+L'APU est l'unité de traitement sonore de la NES. Cette unité est intégrée à la puce 6502 et communique avec la CPU par l'intermédiaire de registres. La CPU va donc écrire les informations que l'APU interprètera et traduira en signal sonore.
+
+Cette unité possède 5 canaux sonores:
+
+| Nom | Type de signal   | Utilisation principale|
+| :-------------: | :-------------: | :--- |
+| Pulse 1  | Carré  | Mélodie 1 |
+| Pulse 2   | Carré  | Mélodie 2  |
+| Triangle   | Triangle  | Basse  |
+| Noise   | Aléatoire  | Percussions et effets divers |
+| DMC   | Samples pré-enregistrés  | Sons pré-enregistrés (bonus, pièces, ...)  |
+
+À chaque canal correspond des registres décrivant les différentes caractéristiques du son à produire. Ces registres occupent les adresses *0x4000* à *0x4017*:
+
+| Registres | Canal     |
+| :------------- | :-------------: |
+| **0x4000 - 0x4003**       | Pulse 1      |
+| **0x4004 - 0x4007**  | Pulse 2  |
+| **0x4008 - 0x400B**   | Triangle  |
+| **0x400C - 0x400F**   | Noise  |
+| **0x4010 - 0x4013**   | DMC  |
+| **0x4015** | Tous  |
+| **0x4017**   | Tous  |
+
+Le registre *0x4015* régit l'activation ou non des différents canaux.
+Le registre *0x4017* régit le mode du séquenceur (mode 4 état ou mode 5 états, il ne sera pas détaillé ici).
+
+Afin d'observer en détail les valeurs dans ces registres, prennons pour exemple, le premier registre utilisé par le canal *Pulse 1* :
+
+| Adresse | Canal     | Description |
+| :------------- | :------------- | :- |
+| *0x4000*       | Pulse 1  | DDLC VVVV |
+
+* **DD** : Duty cycle (rapport cyclique)
+Décrit le rapport cyclique du signal carré. Il peut prendre 4 valeurs :
+  | D  | D  | Rapport Cyclique | Représentation "graphique"
+  | :- | :- | :--------------: | :-----------------------:
+  |  0 |  0 | 12.5 %           |  _ -‑ _ _ _ _ _ _
+  |  0 |  1 | 25 %             |  _ -‑-- _ _ _ _ _
+  |  1 |  0 | 50 %             |  _ -------- _ _ _
+  |  1 |  1 | 25 % inversé     |  -- _ _ ----------
+
+* **L : Length Counter**
+Ce bit régit l'arrêt (1) ou non (0) du "length counter" permettant la gestion automatique de la durée des notes. Lorsque le bit **L** est à l'état 0, le compteur effectue une fonction de décomptage depuis une valeur stockée dans le registe *0x4003*. Lorsque le compteur atteint 0, la note est stoppée.
+
+* **C : Constant volume**
+Lorsque ce bit est à l'état 1, l'APU utilise la valeur constante *VVVV* comme valeur de volume pour le canal. Sinon, le volume est géré par l'enveloppe de volume (outil permettant d'effectuer des modifications sur le volume que nous ne détaillerons pas ici)
+
+* **VVVV : Volume**
+Valeur utilisée comme valeur de volume constant si le bit **C** est à 1.
+
+Des informations complémentaires sur l'APU sont disponibles [**ici**](http://wiki.nesdev.com/w/index.php/APU).
 
 ### Mapper mémoire
 
-La NES a besoin de **charger le contenu du jeux** dans la **mémoire de la CPU** (cf paragraphe sur la CPU). De ce fait, elle réserve 32KB pour la mémoire programme, ou PRG-ROM, entre *Ox8000* et *0xFFFF*. De plus, la PPU réserve *8KB* de ROM appelée CHR-ROM, pour stocker des élément graphiques du jeu.
+La NES a besoin de **charger le contenu du jeu** dans la **mémoire de la CPU** (cf paragraphe sur la CPU). De ce fait, elle réserve 32KB pour la mémoire programme, ou PRG-ROM, entre *Ox8000* et *0xFFFF*. De plus, la PPU réserve *8KB* de ROM appelée CHR-ROM, pour stocker des éléments graphiques du jeu.
 
-Un cartouche de jeux contenant *16KB* de programme est chargée deux fois : à *0x8000* et à *0xC000*, et une cartouche contenant *32KB* de programme est chargée sur la totalité de la plage réservée. Cette taille suffisait pour les premier jeux, mais très vite les jeux étaient réalisé sur plusieures banques de *32KB*.
+Une cartouche de jeux contenant *16KB* de programme est chargée deux fois : à *0x8000* et à *0xC000*, et une cartouche contenant *32KB* de programme est chargée sur la totalité de la plage réservée. Cette taille suffisait pour les premiers jeux, mais très vite les jeux étaient réalisés sur plusieurs banques de *32KB*.
 
-La NES utilise donc du hardware intégré à la cartouche et appelé MMC (Memory Management Chip), ou mapper mémoire, afin de savoir quelle partie de la cartouche doit être chargé dans la PRG-ROM. Lorsque le système a besoin d'accéder à des données situées **hors de la banque de donnée actuellement chargée**, le programme demande à la MCC de charger la banque de donnée d'intérêt dans la PRG-ROM, effaçant ainsi les données chargées.
+La NES utilise donc du hardware intégré à la cartouche et appelé MMC (Memory Management Chip), ou mapper mémoire, afin de savoir quelle partie de la cartouche doit être chargée dans la PRG-ROM. Lorsque le système a besoin d'accéder à des données situées **hors de la banque de donnée actuellement chargée**, le programme demande à la MCC de charger la banque de donnée d'intérêt dans la PRG-ROM, effaçant ainsi les données chargées.
 
-Voici un courte description des MMC basiques :
+Voici une courte description des MMC basiques :
 - **NROM** (mapper 0) : Le premier mapper, développé par Nintendo. Les banques de données sont fixes et le chargement des données est celui décrit au paragraphe 2. Il n'existe pas de gestion du chargement de donnée dans la ROM de la PPU.
 - **UNROM** (mapper 2): Également développé par Nintendo et utilisé pour des jeux comme Mega man ou Castlevania, qui permet de choisir la banque de donnée chargée sur les premiers *16KB* et fixe les *16KB* de fin à la dernière banque de données.
 - **MMC1** (mapper 1) : Mapper très utilisé, notamment pour The Legend of Zelda. Il offre une grande flexibilité sur la PRG-ROM et permet de charger la CHR-ROM.
@@ -167,20 +218,20 @@ Le format de fichier iNES (extension **.nes**) est très répandue pour le stock
 
 ### Types d'émulation
 
-Il existe différentes méthodes pour émuler un support. Dans le cas de la NES, chaque composant (CPU, PPU, Mapper) fonctionne en parallèle, ce qui implique une quantité importante de données à traiter. La plupart des émulateurs développés au début de l'an 2000 devait faire en sorte d'être optimisé au mieux pour ne pas être limité par le processeur de la machine. Ainsi, l'une des techniques utilisés était la **prédiction**, une méthode permettant de prédire l'usage de tel ou telle composants et ne l’exécuter seulement lorsque c'est nécessaire. Aujourd'hui, nos processeurs n'ont rien à envier à l'ancienne génération, ces problématiques ne sont donc plus de l'ordre du jour et les émulateurs peuvent se permettre d'être **précis (accurate)**. On entend par précis le fait d’exécuter les composants à chaque instant de l'émulation, ce qui rapproche du fonctionnement machine.
+Il existe différentes méthodes pour émuler un support. Dans le cas de la NES, chaque composant (CPU, PPU, Mapper) fonctionne en parallèle, ce qui implique une quantité importante de données à traiter. La plupart des émulateurs développés au début de l'an 2000 devait faire en sorte d'être optimisés au mieux pour ne pas être limités par le processeur de la machine. Ainsi, l'une des techniques utilisées était la **prédiction**, une méthode permettant de prédire l'usage de tels ou tels composants et ne l’exécuter seulement lorsque c'est nécessaire. Aujourd'hui, nos processeurs n'ont rien à envier à l'ancienne génération, ces problématiques ne sont donc plus de l'ordre du jour et les émulateurs peuvent se permettre d'être **précis (accurate)**. On entend par précis le fait d’exécuter les composants à chaque instant de l'émulation, ce qui rapproche du fonctionnement machine.
 
-Dans notre cas, nous avons choisi de concevoir un émulateur précis puisque aujourd'hui la quasi totalité des ordinateurs sont  capables de gérés un tel processus et parce que la prédiction nous aurais demandé un temps de développent bien plus élevé.
+Dans notre cas, nous avons choisi de concevoir un émulateur précis puisqu'aujourd'hui la quasi totalité des ordinateurs sont  capables de gérer un tel processus et parce que la prédiction nous aurais demandé un temps de développent bien plus élevé.
 
 ### Fonctionnalités des émulateurs
 
 Voici une liste non-exhaustive de fonctionnalités que l'on retrouve sur les émulateurs NES :
 
 - **Save** : permet de sauvegarder le contexte d'exécution de la machine pour reprendre la progression de son jeu plus tard
-- **Movie/Tool-assisted speedrun** : permet de sauvegarder une série d'événement pouvant être re-exécuter plus tard
+- **Movie/Tool-assisted speedrun** : permet de sauvegarder une série d'événement pouvant être re-exécutés plus tard
 - **Pause/Resume** : stopper/reprendre l'exécution de son jeu
 - **Speed x** : accélérer l'exécution de son jeu, pouvant être utile pendant des scènes de dialogues
 - **Rescale** : agrandir l'affichage pour avoir un meilleur confort visuel
-- **Configuration des touches claviers** : choisir ses touches claviers à associé aux contrôles de la NES
+- **Configuration des touches claviers** : choisir ses touches claviers à associer aux contrôles de la NES
 
 ## Versions
 
@@ -198,7 +249,7 @@ interface de gestion
 ### V3
 
 - Se rapprocher au plus du fonctionnement hardware de la NES
-- Developper quelques mappers (deux ou trois) (mécanisme qui permet de gérer des ROM supplémentaire sur les cartouches)
+- Developper quelques mappers (deux ou trois) (mécanisme qui permet de gérer des ROM supplémentaires sur les cartouches)
 - Avoir des performances graphiques fluides (NTSC - 60 FPS)
 - Prise en charge du clavier AZERTY/QWERTY
 - Interface de gestion (choix des ROMs, raccoucis clavier, paramètres graphiques et sonores)
