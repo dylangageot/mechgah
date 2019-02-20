@@ -2,10 +2,7 @@
 
 ## Presentation du projet
 
-Ce projet porte sur l'émulation du système de la console de jeux NES de la société Nintendo, c'est à dire reproduire son comportement hardware et software de manière logicielle. Nous avons fait le choix de réaliser une émulation précise et qui représente et réagit comme le fonctionnement de la console.
-
-Qu'est-ce que l'émulation ?
-la NES ?
+Ce projet porte sur l'émulation du système de la console de jeux NES. C'est à dire reproduire son comportement hardware et software de manière logicielle. La console de jeux NES est une console de jeux sortie en 1985 et développée par la société japonaise Nintendo.
 
 ## Objectifs
 
@@ -21,7 +18,71 @@ Nous avons choisi développer notre émulateur à travers un Makefile, de tel ma
 
 ### CPU
 
-Nico. H
+#### Representation de la mémoire
+
+![Representation-memoire](https://people.ece.cornell.edu/land/courses/ece4760/FinalProjects/s2009/bhp7_teg25/bhp7_teg25/index_files/image012.jpg)
+
+#### Fonctionnement du processeur 6502
+
+Le processeur est de type 8 bits. Ses registres de travail sont donc aussi de taille 8 bits. Cela implique que c'est aussi la taille maximale des données manipulables.
+
+Cependant, le Programme Counter (PC) est lui de taille 16 bits. Le domaine d'adressage disponible est ainsi de 64Ko.
+
+Il possède en plus un Multi-Memory Controller (MMC) qui permet d'adresser plus de mémoire. (Voir partie mémoire).
+
+Le processeur possède un jeu d'instruction capable de manipuler les 64 Ko de mémoire et de 6 registres.
+
+**Registres 8 bits** :
+  - **Stack register** : Sauvegarde de donnée lors de l’exécution d'un fonction.
+
+  - **Processor Status** : Registre de flags, il possède en tout 7 flgas car le bit numéro 5 du registres n'est pas utilisé.  
+      - Bit 0 : Carry out (C)  
+      - Bit 1 : Zéro flag (Z)
+      - Bit 2 : Interrupt Disable Flag (I)
+      - Bit 3 : Decimal mode (D)
+      - Bit 5 : N/A
+      - Bit 6 : Break Command (B)
+      - Bit 7 : Negative Flag (N)
+
+
+  - **Accumulator** : Registre de travail principal. Utilisé pour tous les instructions artithmétiques et logiques.
+
+  - **Registre X** : Utilisé pour les adressages indexés et le contrôle des boucles.
+
+  - **Registre Y** : Comparable au registre X mais posssède moins de fonctionnalités.
+
+**Registres 16 bits**
+  - Program Counter : Adressage des 64 Ko de mémoire. Il contient l'adresse de la prochaine instruction à éxecuter.
+
+#### Les modes d'adressages
+
+Le processeur 6502 possède 12 modes d'adressage utilisés par les instructions.
+
+- Adressage immédiat : #$??
+- Adressage absolu : $????
+- Adressage page zéro : $??
+- Adressage indirect absolu : ($????)
+- Adressage absolu indexé : $????,X
+- Adressage indexé page zéro : $??,X		
+- Adressage indexé indirect	: ($??,X)
+- Adressage indirect indexé : ($??),X
+- Adressage relatif	: $??  ->signé
+- Adressage implié : transparent dans l'instruction
+
+#### Les instructions
+
+Le processeur possède un jeu de 56 mnémoniques (instructions). Certaines peuvent faire l'objet de plusieurs modes d'adressages.
+
+**Exemple de deux instructions**
+
+**ADC** : Flags utilisés : N,Z,C,V
+
+Additionne la valeur contenu dans l'Accumulator avec l'opérande désigné par le mode d'adressage et le bit de retenue. Le résultat est ensuite placé dans l'Accumulator. Il y a aussi une mise à jours des flags. Pour effectuer une addition vierge, il faut mettre à zéro le bit de retenue (C). Cette instruction peut utilisée 8 modes d'adressages différents.
+
+**LDA** - Load Accumulator : Flags Utilisés : N,Z
+
+On passe en paramètre une adresse. L'opérande situé à cette adresse en mémoire centrale est chargée dans l'Accumulator puis la valeur est évaluée puis déterminer les flags N et Z.  
+
 
 ### PPU
 
@@ -33,7 +94,7 @@ Le rendu des images/frames s'exécute à 60 Hz pour une NES NTSC et 50 Hz pour l
 
 #### Pattern Tables
 
-Pour pallier aux contraintes de l'époque, les données décrivant les informations à l'écran sont grossières : on ne stock pas en brut la couleur d'un pixel à une coordonnées précise, à la place, on créer des blocs contenant les informations nécessaires (dessin, couleur) puis on vient les appeler dans une table mémoire pour les afficher à l'écran. Un bloc élémentaire est constitué de **8x8 pixels** et est appelé **un pattern**. Ces patterns permettent de décrire le décor (background) et les personnages/objets à l'écran (sprites).
+Pour pallier aux contraintes de l'époque, les données décrivant les informations à l'écran sont grossières : on ne stock pas en brut la couleur d'un pixel à une coordonnées précise, à la place, on créer des blocs contenant les informations nécessaires (dessin, couleur) puis on vient les appeler dans une table mémoire pour les afficher à l'écran. Un bloc élémentaire est constitué de **8x8 pixels** et est appelé **fun pattern**. Ces patterns permettent de décrire le décor (background) et les personnages/objets à l'écran (sprites).
 
 La table des patterns est contenue dans une ROM (appelé CHR-ROM) sur le circuit imprimé de la cartouche de jeu. Cette ROM est généralement d'une taille de 8kB, permettant de **stocker 512 patterns**. Chaque pattern occupe 16 octets de mémoire, décrivant ainsi les couleurs avec deux bits par pixels, **soit 4 couleurs possibles pour sur un pattern** (voir l'illustration ci-dessous). Nous verrons dans la partie sur les palettes de couleur comment fonctionne le mécanisme de coloriage.
 
@@ -83,9 +144,20 @@ L'OAM peut être intégralement **écris en DMA** depuis le CPU, généralement 
 
 Baptiste
 
-### Mémoire
+### Mapper mémoire
 
-Nico. C
+a NES a besoin de **charger le contenu du jeux** dans la **mémoire de la CPU** (cf paragraphe sur la CPU). De ce fait, elle réserve 32KB pour la mémoire programme, ou PRG-ROM, entre *Ox8000* et *0xFFFF*. De plus, la PPU réserve *8KB* de ROM appelée CHR-ROM, pour stocker des élément graphiques du jeu.
+
+Un cartouche de jeux contenant *16KB* de programme est chargée deux fois : à *0x8000* et à *0xC000*, et une cartouche contenant *32KB* de programme est chargée sur la totalité de la plage réservée. Cette taille suffisait pour les premier jeux, mais très vite les jeux étaient réalisé sur plusieures banques de *32KB*.
+
+La NES utilise donc du hardware intégré à la cartouche et appelé MMC (Memory Management Chip), ou mapper mémoire, afin de savoir quelle partie de la cartouche doit être chargé dans la PRG-ROM. Lorsque le système a besoin d'accéder à des données situées **hors de la banque de donnée actuellement chargée**, le programme demande à la MCC de charger la banque de donnée d'intérêt dans la PRG-ROM, effaçant ainsi les données chargées.
+
+Voici un courte description des MMC basiques :
+- **NROM** (mapper 0) : Le premier mapper, développé par Nintendo. Les banques de données sont fixes et le chargement des données est celui décrit au paragraphe 2. Il n'existe pas de gestion du chargement de donnée dans la ROM de la PPU.
+- **UNROM** (mapper 2): Egalement développé par Nintendo et utilisé pour des jeux comme Mega man ou Castlevania, qui permet de choisir la banque de donnée chargée sur les premiers *16KB* et fixe les *16KB* de fin à la dernière banque de données.
+- **MMC1** (mapper 1) : Mapper très utilisé, notemment pour The Legend of Zelda. Il offre une grande flexibilité sur la PRG-ROM et permet de charger la CHR-ROM.
+
+Il en existe plus d'une centaine.
 
 ## Spécificités de l'émulateur
 
