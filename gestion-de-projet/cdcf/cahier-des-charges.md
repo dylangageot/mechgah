@@ -13,6 +13,10 @@ la NES ?
 - Être en capacité d'émuler la plupart des jeux sous license
 - Développer pour fonctionner sous Linux
 
+## Outils de développement
+
+Nous avons choisi développer notre émulateur à travers un Makefile, de tel manière à ce que chacun puisse utiliser son propre IDE (vim, Atom, CodeBlocks). A l'avenir, nous utiliserons CMake pour généraliser la compilation et la reprise du projet sur n'importe quel IDE.
+
 ## Comment fonctionne la NES
 
 ### CPU
@@ -85,9 +89,26 @@ Nico. C
 
 ## Spécificités de l'émulateur
 
-Dylan
-Lecture de ROM
-Fonctionnalités amélioratives
+### Format des fichiers iNES
+
+Le format de fichier iNES (extension **.nes**) est très répandue pour le stockage des données des cartouches de jeux NES. Le fichier binaire est constitué d'un header (occupant 16 octets) décrivant les caractéristiques de la cartouche (mapper utilisé et taille des mémoires). Ce header est suivi par la mémoire programme (PRG-ROM, multiple de 16kB) puis la mémoire des patterns (CHR-ROM, multiple de 8kB).
+
+### Types d'émulation
+
+Il existe différentes méthodes pour émuler un support. Dans le cas de la NES, chaque composant (CPU, PPU, Mapper) fonctionne en parallèle, ce qui implique une quantité importante de données à traiter. La plupart des émulateurs développés au début de l'an 2000 devait faire en sorte d'être optimisé au mieux pour ne pas être limité par le processeur de la machine. Ainsi, l'une des techniques utilisés était la **prédiction**, une méthode permettant de prédire l'usage de tel ou telle composants et ne l’exécuter seulement lorsque c'est nécessaire. Aujourd'hui, nos processeurs n'ont rien à envier à l'ancienne génération, ces problématiques ne sont donc plus de l'ordre du jour et les émulateurs peuvent se permettre d'être **précis (accurate)**. On entend par précis le fait d’exécuter les composants à chaque instant de l'émulation, ce qui rapproche du fonctionnement machine.
+
+Dans notre cas, nous avons choisi de concevoir un émulateur précis puisque aujourd'hui la quasi totalité des ordinateurs sont  capables de gérés un tel processus et parce que la prédiction nous aurais demandé un temps de développent bien plus élevé.
+
+### Fonctionnalités des émulateurs
+
+Voici une liste non-exhaustive de fonctionnalités que l'on retrouve sur les émulateurs NES :
+
+- **Save** : permet de sauvegarder le contexte d'exécution de la machine pour reprendre la progression de son jeu plus tard
+- **Movie/Tool-assisted speedrun** : permet de sauvegarder une série d'événement pouvant être re-exécuter plus tard
+- **Pause/Resume** : stopper/reprendre l'exécution de son jeu
+- **Speed x** : accélérer l'exécution de son jeu, pouvant être utile pendant des scènes de dialogues
+- **Rescale** : agrandir l'affichage pour avoir un meilleur confort visuel
+- **Configuration des touches claviers** : choisir ses touches claviers à associé aux contrôles de la NES
 
 ## Versions
 
