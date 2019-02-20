@@ -81,7 +81,7 @@ Additionne la valeur contenu dans l'Accumulator avec l'opérande désigné par l
 
 **LDA** - Load Accumulator : Flags Utilisés : N,Z
 
-On passe en paramètre une adresse. L'opérande situé à cette adresse en mémoire centrale est chargé dans l'Accumulator puis la valeur est évaluée puis déterminer les flags N et Z.  
+On passe en paramètre une adresse. L'opérande situé à cette adresse en mémoire centrale est chargé dans l'Accumulator puis la valeur est évaluée pour déterminer les flags N et Z.  
 
 
 ### PPU
