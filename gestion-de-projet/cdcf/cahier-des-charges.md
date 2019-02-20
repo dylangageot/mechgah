@@ -30,14 +30,14 @@ Cependant, le Programme Counter (PC) est lui de taille 16 bits. Le domaine d'adr
 
 Il possède en plus un Multi-Memory Controller (MMC) qui permet d'adresser plus de mémoire. (Voir partie mémoire).
 
-Le processeur possède un jeu d'instruction capable de manipuler les 64 Ko de mémoire et de 6 registres.
+Le processeur possède un jeu d'instruction capable de manipuler les 64 Ko de mémoire et 6 registres.
 
 **Registres 8 bits** :
-  - **Stack register** : Sauvegarde de donnée lors de l’exécution d'un fonction.
+  - **Stack register** : Garde l'adresse du haut de la pile, pile permettant de sauvegarder des données lors de l’exécution d'une fonction.
 
-  - **Processor Status** : Registre de flags, il possède en tout 7 flgas car le bit numéro 5 du registres n'est pas utilisé.  
+  - **Processor Status** : Registre de flags, il possède en tout 7 flags car le bit numéro 5 du registres n'est pas utilisé.  
       - Bit 0 : Carry out (C)  
-      - Bit 1 : Zéro flag (Z)
+      - Bit 1 : Zero flag (Z)
       - Bit 2 : Interrupt Disable Flag (I)
       - Bit 3 : Decimal mode (D)
       - Bit 5 : N/A
@@ -45,14 +45,14 @@ Le processeur possède un jeu d'instruction capable de manipuler les 64 Ko de m�
       - Bit 7 : Negative Flag (N)
 
 
-  - **Accumulator** : Registre de travail principal. Utilisé pour tous les instructions artithmétiques et logiques.
+  - **Accumulator** : Registre de travail principal. Utilisé pour tous les instructions arithmétiques et logiques.
 
   - **Registre X** : Utilisé pour les adressages indexés et le contrôle des boucles.
 
-  - **Registre Y** : Comparable au registre X mais posssède moins de fonctionnalités.
+  - **Registre Y** : Comparable au registre X mais possède moins de fonctionnalités.
 
 **Registres 16 bits**
-  - Program Counter : Adressage des 64 Ko de mémoire. Il contient l'adresse de la prochaine instruction à éxecuter.
+  - Program Counter : Adressage des 64 Ko de mémoire. Il contient l'adresse de la prochaine instruction à exécuter.
 
 #### Les modes d'adressages
 
@@ -146,7 +146,7 @@ Baptiste
 
 ### Mapper mémoire
 
-a NES a besoin de **charger le contenu du jeux** dans la **mémoire de la CPU** (cf paragraphe sur la CPU). De ce fait, elle réserve 32KB pour la mémoire programme, ou PRG-ROM, entre *Ox8000* et *0xFFFF*. De plus, la PPU réserve *8KB* de ROM appelée CHR-ROM, pour stocker des élément graphiques du jeu.
+La NES a besoin de **charger le contenu du jeux** dans la **mémoire de la CPU** (cf paragraphe sur la CPU). De ce fait, elle réserve 32KB pour la mémoire programme, ou PRG-ROM, entre *Ox8000* et *0xFFFF*. De plus, la PPU réserve *8KB* de ROM appelée CHR-ROM, pour stocker des élément graphiques du jeu.
 
 Un cartouche de jeux contenant *16KB* de programme est chargée deux fois : à *0x8000* et à *0xC000*, et une cartouche contenant *32KB* de programme est chargée sur la totalité de la plage réservée. Cette taille suffisait pour les premier jeux, mais très vite les jeux étaient réalisé sur plusieures banques de *32KB*.
 
@@ -154,8 +154,8 @@ La NES utilise donc du hardware intégré à la cartouche et appelé MMC (Memory
 
 Voici un courte description des MMC basiques :
 - **NROM** (mapper 0) : Le premier mapper, développé par Nintendo. Les banques de données sont fixes et le chargement des données est celui décrit au paragraphe 2. Il n'existe pas de gestion du chargement de donnée dans la ROM de la PPU.
-- **UNROM** (mapper 2): Egalement développé par Nintendo et utilisé pour des jeux comme Mega man ou Castlevania, qui permet de choisir la banque de donnée chargée sur les premiers *16KB* et fixe les *16KB* de fin à la dernière banque de données.
-- **MMC1** (mapper 1) : Mapper très utilisé, notemment pour The Legend of Zelda. Il offre une grande flexibilité sur la PRG-ROM et permet de charger la CHR-ROM.
+- **UNROM** (mapper 2): Également développé par Nintendo et utilisé pour des jeux comme Mega man ou Castlevania, qui permet de choisir la banque de donnée chargée sur les premiers *16KB* et fixe les *16KB* de fin à la dernière banque de données.
+- **MMC1** (mapper 1) : Mapper très utilisé, notamment pour The Legend of Zelda. Il offre une grande flexibilité sur la PRG-ROM et permet de charger la CHR-ROM.
 
 Il en existe plus d'une centaine.
 
