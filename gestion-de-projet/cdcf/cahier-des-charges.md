@@ -96,7 +96,7 @@ Le rendu des images/frames s'exécute à 60 Hz pour une NES NTSC et 50 Hz pour l
 
 Pour pallier aux contraintes de l'époque, les données décrivant les informations à l'écran sont grossières : on ne stocke pas en brut la couleur d'un pixel à des coordonnées précises, à la place, on crée des blocs contenant les informations nécessaires (dessin, couleur) puis on vient les appeler dans une table mémoire pour les afficher à l'écran. Un bloc élémentaire est constitué de **8x8 pixels** et est appelé **fun pattern**. Ces patterns permettent de décrire le décor (background) et les personnages/objets à l'écran (sprites).
 
-La table des patterns est contenue dans une ROM (appelé CHR-ROM) sur le circuit imprimé de la cartouche de jeu. Cette ROM est généralement d'une taille de 8kB, permettant de **stocker 512 patterns**. Chaque pattern occupe 16 octets de mémoire, décrivant ainsi les couleurs avec deux bits par pixels, **soit 4 couleurs possibles pour sur un pattern** (voir l'illustration ci-dessous). Nous verrons dans la partie sur les palettes de couleur comment fonctionne le mécanisme de coloriage.
+La table des patterns est contenue dans une ROM (appelé CHR-ROM) sur le circuit imprimé de la cartouche de jeu. Cette ROM est généralement d'une taille de 8KB, permettant de **stocker 512 patterns**. Chaque pattern occupe 16 octets de mémoire, décrivant ainsi les couleurs avec deux bits par pixels, **soit 4 couleurs possibles pour sur un pattern** (voir l'illustration ci-dessous). Nous verrons dans la partie sur les palettes de couleur comment fonctionne le mécanisme de coloriage.
 
 ![pattern-pixel-color](https://s3.amazonaws.com/n3s/chr.png)
 
@@ -177,12 +177,13 @@ Afin d'observer en détail les valeurs dans ces registres, prennons pour exemple
 
 * **DD** : Duty cycle (rapport cyclique)
 Décrit le rapport cyclique du signal carré. Il peut prendre 4 valeurs :
-  | D  | D  | Rapport Cyclique | Représentation "graphique"
-  | :- | :- | :--------------: | :-----------------------:
-  |  0 |  0 | 12.5 %           |  _ -‑ _ _ _ _ _ _
-  |  0 |  1 | 25 %             |  _ -‑-- _ _ _ _ _
-  |  1 |  0 | 50 %             |  _ -------- _ _ _
-  |  1 |  1 | 25 % inversé     |  -- _ _ ----------
+
+| D  | D  | Rapport Cyclique | Représentation "graphique"
+| :- | :- | :--------------: | :-----------------------:
+|  0 |  0 | 12.5 %           |  _ -‑ _ _ _ _ _ _
+|  0 |  1 | 25 %             |  _ -‑-- _ _ _ _ _
+|  1 |  0 | 50 %             |  _ -------- _ _ _
+|  1 |  1 | 25 % inversé     |  -- _ _ ----------
 
 * **L : Length Counter**
 Ce bit régit l'arrêt (1) ou non (0) du "length counter" permettant la gestion automatique de la durée des notes. Lorsque le bit **L** est à l'état 0, le compteur effectue une fonction de décomptage depuis une valeur stockée dans le registe *0x4003*. Lorsque le compteur atteint 0, la note est stoppée.
@@ -197,7 +198,7 @@ Des informations complémentaires sur l'APU sont disponibles [**ici**](http://wi
 
 ### Mapper mémoire
 
-La NES a besoin de **charger le contenu du jeu** dans la **mémoire de la CPU** (cf paragraphe sur la CPU). De ce fait, elle réserve 32KB pour la mémoire programme, ou PRG-ROM, entre *Ox8000* et *0xFFFF*. De plus, la PPU réserve *8KB* de ROM appelée CHR-ROM, pour stocker des éléments graphiques du jeu.
+La NES a besoin de **charger le contenu du jeu** dans la **mémoire de la CPU** (cf paragraphe sur la CPU). De ce fait, elle réserve 32KB pour la mémoire programme, ou PRG-ROM, entre *0x8000* et *0xFFFF*. De plus, la PPU réserve *8KB* de ROM appelée CHR-ROM, pour stocker des éléments graphiques du jeu.
 
 Une cartouche de jeux contenant *16KB* de programme est chargée deux fois : à *0x8000* et à *0xC000*, et une cartouche contenant *32KB* de programme est chargée sur la totalité de la plage réservée. Cette taille suffisait pour les premiers jeux, mais très vite les jeux étaient réalisés sur plusieurs banques de *32KB*.
 
@@ -214,13 +215,13 @@ Il en existe plus d'une centaine.
 
 ### Format des fichiers iNES
 
-Le format de fichier iNES (extension **.nes**) est très répandue pour le stockage des données des cartouches de jeux NES. Le fichier binaire est constitué d'un header (occupant 16 octets) décrivant les caractéristiques de la cartouche (mapper utilisé et taille des mémoires). Ce header est suivi par la mémoire programme (PRG-ROM, multiple de 16kB) puis la mémoire des patterns (CHR-ROM, multiple de 8kB).
+Le format de fichier iNES (extension **.nes**) est très répandue pour le stockage des données des cartouches de jeux NES. Le fichier binaire est constitué d'un header (occupant 16 octets) décrivant les caractéristiques de la cartouche (mapper utilisé et taille des mémoires). Ce header est suivi par la mémoire programme (PRG-ROM, multiple de 16KB) puis la mémoire des patterns (CHR-ROM, multiple de 8KB).
 
 ### Types d'émulation
 
 Il existe différentes méthodes pour émuler un support. Dans le cas de la NES, chaque composant (CPU, PPU, Mapper) fonctionne en parallèle, ce qui implique une quantité importante de données à traiter. La plupart des émulateurs développés au début de l'an 2000 devait faire en sorte d'être optimisés au mieux pour ne pas être limités par le processeur de la machine. Ainsi, l'une des techniques utilisées était la **prédiction**, une méthode permettant de prédire l'usage de tels ou tels composants et ne l’exécuter seulement lorsque c'est nécessaire. Aujourd'hui, nos processeurs n'ont rien à envier à l'ancienne génération, ces problématiques ne sont donc plus de l'ordre du jour et les émulateurs peuvent se permettre d'être **précis (accurate)**. On entend par précis le fait d’exécuter les composants à chaque instant de l'émulation, ce qui rapproche du fonctionnement machine.
 
-Dans notre cas, nous avons choisi de concevoir un émulateur précis puisqu'aujourd'hui la quasi totalité des ordinateurs sont  capables de gérer un tel processus et parce que la prédiction nous aurais demandé un temps de développent bien plus élevé.
+Dans notre cas, nous avons choisi de concevoir un **émulateur précis** puisque aujourd'hui la quasi totalité des ordinateurs sont capables de gérer un tel processus et parce que la prédiction nous aurais demandé un temps de développent bien plus élevé.
 
 ### Fonctionnalités des émulateurs
 
@@ -233,28 +234,35 @@ Voici une liste non-exhaustive de fonctionnalités que l'on retrouve sur les ém
 - **Rescale** : agrandir l'affichage pour avoir un meilleur confort visuel
 - **Configuration des touches claviers** : choisir ses touches claviers à associer aux contrôles de la NES
 
+## Exigences
+
+- Se rapprocher au plus du fonctionnement hardware de la NES (émulation précise)
+- Développer quelques mappers (deux ou trois)
+- Avoir des performances graphiques fluides (NTSC - 60 FPS)
+- Interface de gestion (choix des ROMs, raccourcis clavier, paramètres graphiques)
+  - Pouvoir mettre à l'échelle l'affichage (proportionnel)
+  - Pouvoir enregistrer le contexte d'exécution d'un jeu pour sauvegarder sa partie
+  - Pouvoir mettre en pause le jeu
+- (Optionnel) Développement de l'APU (moteur sonore)
+
 ## Versions
 
 ### V0
 
-1 seul mapper (pour DK par ex)
+- Émuler l'ensemble CPU et PPU
+- Interagir avec le jeu via les touches du claviers
+- Développement d'un seul mapper (NROM)
 
 ### V1
 
-plusieurs mappers
-interface de gestion
+- Développement de plusieurs mappers (MMC1, MMC3 et/ou UROM)
+- Interface de gestion (chargement ROM, configuration des touches)
 
 ### V2
 
+- Fonctionnalité graphique : rescale de l'image
+- Fonctionnalité de gameplay : sauvegarde du contexte
+
 ### V3
 
-- Se rapprocher au plus du fonctionnement hardware de la NES
-- Developper quelques mappers (deux ou trois) (mécanisme qui permet de gérer des ROM supplémentaires sur les cartouches)
-- Avoir des performances graphiques fluides (NTSC - 60 FPS)
-- Prise en charge du clavier AZERTY/QWERTY
-- Interface de gestion (choix des ROMs, raccoucis clavier, paramètres graphiques et sonores)
-- Pouvoir mettre à l'échelle l'affichage (proportionnel)
-- Pouvoir enregistrer le contexte d'exécution d'un jeu pour sauvegarder sa partie
-- Pouvoir accelèrer le gameplay (speed x fois) et mettre en pause
-- (Optionnel) Developpement de l'APU (moteur sonore)
-- (Optionnel) Prise en charge de manette
+- Développement de l'APU
