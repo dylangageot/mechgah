@@ -251,18 +251,14 @@ Voici une liste non-exhaustive de fonctionnalités que l'on retrouve sur les ém
 
 - Émuler l'ensemble CPU et PPU
 - Interagir avec le jeu via les touches du claviers
+- Chargement des ROMs via le terminal
 - Développement d'un seul mapper (NROM)
 
 ### V1
 
 - Développement de plusieurs mappers (MMC1, MMC3 et/ou UROM)
-- Interface de gestion (chargement ROM, configuration des touches)
-
-### V2
-
-- Fonctionnalité graphique : rescale de l'image
-- Fonctionnalité de gameplay : sauvegarde du contexte
-
-### V3
-
-- Développement de l'APU
+- Interface de gestion :
+  - Chargement des ROMs
+  - Configuration des touches
+  - Rescale de l'image
+  - Chargement/Sauvegarde du contexte et pause
