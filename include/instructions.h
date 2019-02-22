@@ -25,17 +25,20 @@ typedef struct {
  * \brief Mnemonic for every addressing mode
  */
 enum AddressingMode {
-	ZERO = 0,
-	INDEXED_ZERO,
-	ABSOLUTE,
-	INDEXED_ABSOLUTE,
-	INDIRECT,
-	IMPLIED,
-	ACCUMULATOR,
-	IMMEDIATE,
-	RELATIVE,
-	INDIRECT_INDEXED,
-	INDEXED_INDIRECT
+	ZER = 0,	/*! Zero page			*/
+	ZEX,		/*! Indexed-X zero page	*/
+	ZEY,		/*! Indexed-Y zero page	*/
+	ABS,		/*! Absolute			*/
+	ABX,		/*! Indexed-X absolute	*/
+	ABY,		/*! Indexed-Y absolute	*/
+	ABI,		/*! Absolute indirect	*/
+	IMM,		/*! Immediate			*/
+	ACC,		/*! Accumulator			*/
+	IMP,		/*! Implied				*/
+	INX,		/*! Indexed-X indirect	*/
+	INY,		/*! Indexed-Y indirect	*/
+	REL,		/*! Relative			*/
+	NUL			/*! Undefined			*/
 };
 
 /**

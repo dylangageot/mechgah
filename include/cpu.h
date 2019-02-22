@@ -9,7 +9,7 @@
 #ifndef CPU_H
 #define CPU_H
 
-#include "nrom.h"
+#include "mapper.h"
 #include "instructions.h"
 
 /**
@@ -17,10 +17,9 @@
  * \brief Hold CPU's register and memory
  */
 typedef struct {
-	uint8_t A, X, Y, SP, P;							/*! 8-bit registers */
-	uint16_t PC;									/*! 16-bit register */
-	uint8_t* (*mapper)(void*, uint8_t, uint16_t);	/*! Mapper callback */
-	void* memoryMap;								/*! Memory map		*/
+	uint8_t A, X, Y, SP, P;							/*! 8-bit registers		*/
+	uint16_t PC;									/*! 16-bit register		*/
+	Mapper *mapper;									/*! Mapper structure	*/
 } CPU;
 
 /**
@@ -31,26 +30,26 @@ typedef struct {
  *
  * \return instance of CPU allocated 
  */
-CPU* CPU_Create(uint8_t* (*mapper)(void*, uint8_t, uint16_t));
+CPU* CPU_Create(Mapper *mapper);
 
 /**
- * \fn CPU_SetMemoryMap
- * \brief Set memory map (mapper data)
+ * \fn CPU_SetMapper
+ * \brief Set mapper
  *
  * \param self instance of CPU
- * \param memoryMap instance of memoryMap
+ * \param memoryMap instance of Mapper
  */
-void CPU_SetMemoryMap(CPU* self, void* memoryMap);
+void CPU_SetMapper(CPU* self, Mapper* mapper);
 
 /**
- * \fn CPU_GetMemoryMap
- * \brief Get memory map (mapper data)
+ * \fn CPU_GetMapper
+ * \brief Get mapper
  *
  * \param self instance of CPU
  *
- * \return instance of memoryMap
+ * \return instance of Mapper
  */
-void* CPU_GetMemoryMap(CPU* self);
+Mapper* CPU_GetMapper(CPU* self);
 
 /**
  * \fn CPU_Execute

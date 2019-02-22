@@ -1,13 +1,23 @@
 /**
- * \file peripheralRegister.h
- * \brief Header including struct for peripheral registers
+ * \file mapper.h
+ * \brief Header including general structure for mapper
  * \author Dylan Gageot
  * \version 1.0
  * \date 2019-02-20
  */
 
-#ifndef PERIPHERALREGISTER_H
-#define PERIPHERALREGISTER_H
+#ifndef MAPPER_H
+#define MAPPER_H
+
+/**
+ * \struct Mapper
+ * \brief Generic structure to hold mapper
+ */
+typedef struct {
+	uint8_t* (*get)(void*, uint8_t, uint16_t);		/*! Get data callback	*/
+	void (*destroyer)(void);						/*! Destroyer callback	*/
+	void* memoryMap;								/*! Memory map			*/
+} Mapper;
 
 /**
  * \struct PeripheralRegister
@@ -73,8 +83,8 @@ enum Bank2Register {
  * retrieve the data.
  */
 enum AddressSpace {
-	CPU = 0,
-	PPU
+	AS_CPU = 0,
+	AS_PPU
 };
 
-#endif /* PERIPHERALREGISTER_H */
+#endif /* MAPPER_H */
