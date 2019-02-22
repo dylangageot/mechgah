@@ -9,7 +9,7 @@
 #ifndef NROM_H
 #define NROM_H
 
-#include "peripheralRegister.h"
+#include "mapper.h"
 
 #define NROM_RAM_SIZE 2048
 
