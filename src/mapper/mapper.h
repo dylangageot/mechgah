@@ -15,7 +15,7 @@
  */
 typedef struct {
 	uint8_t* (*get)(void*, uint8_t, uint16_t);		/*! Get data callback	*/
-	void (*destroyer)(void);						/*! Destroyer callback	*/
+	void (*destroyer)(void*);						/*! Destroyer callback	*/
 	void* memoryMap;								/*! Memory map			*/
 } Mapper;
 
