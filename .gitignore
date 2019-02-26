@@ -1,0 +1,10 @@
+**/out
+*.o
+*.d
+*.gcno
+*.gcov
+*.gcda
+*.info
+~*
+*~
+
