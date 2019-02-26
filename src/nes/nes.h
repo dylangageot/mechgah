@@ -21,7 +21,7 @@
 typedef struct {
 	CPU *cpu;
 	/* PPU ppu; */
-	Mapper *mapper;
+	Mapper mapper;
 	uint32_t clockCount;
 } NES;
 

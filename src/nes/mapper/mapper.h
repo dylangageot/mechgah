@@ -18,23 +18,8 @@
 typedef struct {
 	uint8_t* (*get)(void*, uint8_t, uint16_t);		/*! Get data callback	*/
 	void (*destroyer)(void*);						/*! Destroyer callback	*/
-	void* memoryMap;								/*! Memory map			*/
+	void *memoryMap;								/*! Memory map			*/
 } Mapper;
-
-/**
- * \typedef RemoteMapper
- * \brief Use to point Mapper pointer in NES structure
- */
-typedef RemoteMapper Mapper**;
-
-/**
- * \brief Get mapper pointer from a RemoteMapper
- *
- * \param x RemoteMapper to exploit
- *
- * \return Mapper* to use
- */
-#define _GetMapper(x) (*x)
 
 /**
  * \struct PeripheralRegister

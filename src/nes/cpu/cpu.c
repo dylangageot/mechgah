@@ -1,7 +1,10 @@
 #include "cpu.h"
+#include "instructions.h"
+#include <unistd.h>
+#include <stdlib.h>
 
 /* Opcode/instruction LUT */
-static Instructions opcode[256] = {
+static Instruction opcode[256] = {
 	{_BRK, IMP}, {_ORA, INX}, {NULL, NUL}, {NULL, NUL}, /* 0x00 */
 	{NULL, NUL}, {_ORA, ZER}, {_ASL, ZER}, {NULL, NUL}, /* 0x04 */
 	{_PHP, IMP}, {_ORA, IMM}, {_ASL, ACC}, {NULL, NUL}, /* 0x08 */
@@ -61,8 +64,8 @@ static Instructions opcode[256] = {
 	{_CPX, IMM}, {_SBC, INX}, {NULL, NUL}, {NULL, NUL}, /* 0xE0 */
 	{_CPX, ZER}, {_SBC, ZER}, {_INC, ZER}, {NULL, NUL}, /* 0xE4 */
 	{_INX, IMP}, {_SBC, IMM}, {_NOP, IMP}, {NULL, NUL}, /* 0xE8 */
-	{_CPX, ABS}, {_SBS, ABS}, {_INC, ABS}, {NULL, NUL}, /* 0xEC */
-	{_BEQ, IMP}, {_SBS, INY}, {NULL, NUL}, {NULL, NUL}, /* 0xF0 */
+	{_CPX, ABS}, {_SBC, ABS}, {_INC, ABS}, {NULL, NUL}, /* 0xEC */
+	{_BEQ, IMP}, {_SBC, INY}, {NULL, NUL}, {NULL, NUL}, /* 0xF0 */
 	{NULL, NUL}, {_SBC, ZEX}, {_INC, ZEX}, {NULL, NUL}, /* 0xF4 */
 	{_SED, IMP}, {_SBC, ABY}, {NULL, NUL}, {NULL, NUL}, /* 0xF8 */
 	{NULL, NUL}, {_SBC, ABX}, {_INC, ABX}, {NULL, NUL}	/* 0xFC */

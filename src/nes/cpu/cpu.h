@@ -10,7 +10,6 @@
 #define CPU_H
 
 #include "../mapper/mapper.h"
-#include "instructions.h"
 
 /**
  * \struct CPU
