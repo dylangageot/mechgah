@@ -28,11 +28,40 @@ typedef struct {
  * The structure is composed of two arrays that represent bank in memory map : 
  *  - bank1 : @0x2000, registers for PPU
  *  - bank2 : @0x4000, registers for APU and joystick
+ * Flags array are used to know if data was read or written
  */
 typedef struct {
 	uint8_t bank1[8];
 	uint8_t bank2[24];
+	uint8_t flag1[8];
+	uint8_t flag2[24];
 } PeripheralRegister;
+
+/**
+ * \fn PeripheralRegister_Get
+ * \brief Get pointer and set register as accessed
+ *
+ * \param self instance of PeripheralRegister
+ * \param bank which bank to use
+ * \param reg which register to get
+ *
+ * \return pointer of selected register 
+ */
+uint8_t* PeripheralRegister_Get(PeripheralRegister* self, uint8_t bank,
+								uint8_t reg);
+
+/**
+ * \fn PeripheralRegister_Acknowledge
+ * \brief Check if register has been edited and acknowledge it 
+ *
+ * \param self instance of PeripheralRegister
+ * \param bank which bank to use
+ * \param reg which register to get
+ *
+ * \return 1 if read/written, 0 otherwise 
+ */
+uint8_t PeripheralRegister_Acknowledge(PeripheralRegister* self, uint8_t bank,
+									   uint8_t reg);
 
 /**
  * \enum Bank1Register
