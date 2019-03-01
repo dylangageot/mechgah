@@ -42,7 +42,7 @@ $(UTEST): $(UTEST).o $(OBJS) $(SRC)
 run-test: CFLAGS  += -coverage
 run-test: LDFLAGS += -coverage
 run-test: $(UTEST)
-		./$(UTEST) ; \
+		valgrind ./$(UTEST) ; \
 		lcov --capture --directory . --output-file coverage.info ; \
 		genhtml coverage.info --output-directory out
 
