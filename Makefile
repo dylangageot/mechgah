@@ -23,13 +23,6 @@ ifeq ($(DEBUG),yes)
 	CFLAGS += -g
 endif
 
-# add coverage option to gcc
-TEST = no
-ifeq ($(TEST), yes)
-	CFLAGS 	+= -coverage
-	LDFLAGS += -coverage
-endif
-
 # compile individual object files
 OBJS    	= $(SRC:.c=.o)
 %.o: %.c
@@ -46,6 +39,8 @@ $(UTEST): $(UTEST).o $(OBJS) $(SRC)
 			  $(CC) $< $(OBJS) $(LDFLAGS) -o $@
 
 # run unit test and generate coverage page
+run-test: CFLAGS  += -coverage
+run-test: LDFLAGS += -coverage
 run-test: $(UTEST)
 		./$(UTEST) ; \
 		lcov --capture --directory . --output-file coverage.info ; \
