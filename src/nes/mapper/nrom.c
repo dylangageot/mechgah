@@ -2,6 +2,10 @@
 #include <stdio.h>
 #include "nrom.h"
 
+#define _ADDRESS_IN(x,y,z)	(((x) >= (y)) && ((x) <= (z)))
+#define _ADDRESS_SUP(x,y)	(((x) >= (y)))
+#define _ADDRESS_INF(x,y)	(((x) <= (y)))
+
 void* MapNROM_Create(uint8_t romSize, uint8_t mirroring) {
 	MapNROM *self = (MapNROM*) malloc(sizeof(MapNROM));
 	
@@ -65,17 +69,67 @@ void MapNROM_Destroy(void* mapperData) {
 	/*	Free only if it's necessary */
 	if (self->cpu.rom != NULL)
 		free((void*) self->cpu.rom);
+
 	if (self->cpu.ram != NULL)
 		free((void*) self->cpu.ram);
+	
 	if (self->cpu.sram != NULL)
 		free((void*) self->cpu.sram);
+	
 	if (self->ppu.chr != NULL)
 		free((void*) self->ppu.chr);
+	
 	if (self->ppu.nametable != NULL)
 		free((void*) self->ppu.nametable);
+	
 	if (self->ppu.palette != NULL)
 		free((void*) self->ppu.palette);
 
 	free(mapperData);
 	return;
+}
+
+uint8_t* MapNROM_Mapper(void* mapperData, uint8_t space, uint16_t address) {
+	/* If no mapperData has been given, return NULL */
+	if (mapperData == NULL)
+		return NULL;
+	
+	/* Cast to MapNROM */
+	MapNROM *map = (MapNROM*) mapperData;
+	
+	if (space == AS_CPU) {
+		
+		MapNROM_CPU *cpu = &map->cpu;
+		/* Which memory is addressed? */
+		/* 0x0000 -> 0x1FFF : RAM */
+		if (_ADDRESS_INF(address, 0x1FFF)) {
+			return cpu->ram + (address & 0x07FF);
+		/* 0x2000 -> 0x3FFF : IO bank 1 */
+		} else if (_ADDRESS_IN(address, 0x2000, 0x3FFF)) {
+			return cpu->ioReg.bank1 + (address & 0x0007);
+		/* 0x4000 -> 0x4019 : IO bank 2 */
+		} else if (_ADDRESS_IN(address, 0x4000, 0x401F)) {
+			return cpu->ioReg.bank2 + (address & 0x001F);
+		/* 0x6000 -> 0x7FFF : SRAM */
+		} else if (_ADDRESS_IN(address, 0x6000, 0x7FFF)) {
+			return cpu->sram + (address & 0x1FFF);
+		/* 0x8000 -> 0xBFFF : PRGROM 1 */
+		} else if (_ADDRESS_IN(address, 0x8000, 0xBFFF)) {
+			return cpu->rom + (address & 0x3FFF);
+		/* 0xC000 -> 0xFFFF : PRGROM 2 */
+		} else if (_ADDRESS_SUP(address, 0xC000)) {
+			/* Function of ROM size, map twice or following memory */
+			switch (map->romSize % 2) {
+				case NROM_16KIB:
+					return cpu->rom + (address & 0x3FFF);
+				case NROM_32KIB:
+					return cpu->rom + (address & 0x7FFF);
+				default:
+					break;
+			}
+		}
+	}
+	/* else if (space == AS_PPU) {*/
+
+	return NULL;
 }
