@@ -70,3 +70,63 @@ static Instruction opcode[256] = {
 	{_SED, IMP}, {_SBC, ABY}, {NULL, NUL}, {NULL, NUL}, /* 0xF8 */
 	{NULL, NUL}, {_SBC, ABX}, {_INC, ABX}, {NULL, NUL}	/* 0xFC */
 };
+
+uint8_t CPU_Execute(CPU* self, uint8_t context){
+
+	uint8_t cycleCount = 0;
+
+	/* INTERRUPT HANDLING */
+
+	/* if the N bit of context is set */
+	if (context & 0x01) {
+
+		/* fetch next insruction and discard it */
+		(self->PC) += 2;
+
+		/* push PC MSByte on stack */
+		uint8_t* ptr = MapNROM_Mapper(self->rmap->memoryMap, AS_CPU, (0x0100+self->SP));
+		*ptr = (uint_8t)(self->PC >> 8);
+		self->SP --;
+
+		/* push PC LSByte on stack */
+		ptr = MapNROM_Mapper(self->rmap->memoryMap, AS_CPU, (0x0100+self->SP));
+		*ptr = (uint_8t)self->PC;
+		self->SP --;
+
+		/* push P on stack */
+		ptr = MapNROM_Mapper(self->rmap->memoryMap, AS_CPU, (0x0100+self->SP));
+		*ptr = self->P;
+		self->SP --;
+
+		/* fetch PC LSByte @ 0xFFFA*/
+		ptr = MapNROM_Mapper(self->rmap->memoryMap, AS_CPU, 0xFFFA);
+		self->PC = (uint16_t)(*ptr);
+
+		/* fetch PC MSByte @ 0xFFFB*/
+		ptr = MapNROM_Mapper(self->rmap->memoryMap, AS_CPU, 0xFFFB);
+		self->PC |= (uint16_t)(*ptr) << 8;
+
+		/* clear context N byte */
+		context &= 0xFE;
+
+		/* add 7 cycles to timing */
+		cycleCount += 7;
+	}
+
+	/* if the I bit of context is set */
+	if ((context >> 1) & 0x01) {
+		/* same behavior as BRK but does not set B flag */
+
+		/* add 7 cycles to timing */
+		cycleCount += 7;
+	}
+
+
+	/*
+	 * Adressing mode handling
+	 * Check for Interrupt
+	 * DMA management
+	*/
+	
+	return cycleCount;
+}

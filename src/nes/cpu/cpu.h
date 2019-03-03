@@ -27,7 +27,7 @@ typedef struct {
  *
  * \param mapper address of Mapper pointer from NES struct
  *
- * \return instance of CPU allocated 
+ * \return instance of CPU allocated
  */
 CPU* CPU_Create(RemoteMapper mapper);
 
@@ -36,9 +36,12 @@ CPU* CPU_Create(RemoteMapper mapper);
  * \brief Execute the next instruction
  *
  * \param self instance of CPU
- * \param context variable that contain IRQ
- *
- * \return number of clock cycle used to execute the instruction 
+ * \param context variable that contains interrupt flags.
+ *		xxxx xxIN :
+ *			- N : NMI detected at the end of the previous instruction
+ *			- I : IRQ detected at the end of the previous instruction
+ *			- x : non used bits
+ * \return number of CPU cycle used to execute the instruction
  */
 uint8_t CPU_Execute(CPU* self, uint8_t context);
 
