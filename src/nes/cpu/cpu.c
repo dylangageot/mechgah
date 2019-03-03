@@ -71,6 +71,31 @@ static Instruction opcode[256] = {
 	{NULL, NUL}, {_SBC, ABX}, {_INC, ABX}, {NULL, NUL}	/* 0xFC */
 };
 
+CPU* CPU_Create(RemoteMapper mapper){
+	CPU* self = (CPU *)malloc(sizeof(CPU));
+
+	/*	If allocation failed, return NULL */
+	if (self == NULL) {
+		fprintf(stderr, "Error: can't allocate CPU structure "
+				"at %s, line %d.\n", __FILE__, __LINE__);
+		return self;
+	}
+	/* 8-bit registers */
+	self->A = 0;
+	self->X = 0;
+	self->Y = 0;
+	self->SP = 0xFF;
+	self->P = 0;
+
+	/* 16-bit program counter register */
+	self->PC = 0;
+
+	/* mapper used by the NES */
+	self->rmap = mapper;
+
+	return self;
+}
+
 uint8_t CPU_Execute(CPU* self, uint8_t context){
 
 	uint8_t cycleCount = 0;
@@ -127,6 +152,6 @@ uint8_t CPU_Execute(CPU* self, uint8_t context){
 	 * Check for Interrupt
 	 * DMA management
 	*/
-	
+
 	return cycleCount;
 }
