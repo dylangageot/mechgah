@@ -72,6 +72,7 @@ static Instruction opcode[256] = {
 };
 
 CPU* CPU_Create(RemoteMapper mapper){
+
 	CPU* self = (CPU *)malloc(sizeof(CPU));
 
 	/*	If allocation failed, return NULL */
@@ -80,6 +81,7 @@ CPU* CPU_Create(RemoteMapper mapper){
 				"at %s, line %d.\n", __FILE__, __LINE__);
 		return self;
 	}
+
 	/* 8-bit registers */
 	self->A = 0;
 	self->X = 0;
@@ -99,6 +101,10 @@ CPU* CPU_Create(RemoteMapper mapper){
 uint8_t CPU_Execute(CPU* self, uint8_t context){
 
 	uint8_t cycleCount = 0;
+
+	if (self == NULL) {
+		return cycleCount;
+	}
 
 	/* INTERRUPT HANDLING */
 
@@ -139,7 +145,7 @@ uint8_t CPU_Execute(CPU* self, uint8_t context){
 	}
 
 	/* if the I bit of context is set */
-	if ((context >> 1) & 0x01) {
+	else if ((context >> 1) & 0x01) {
 		/* same behavior as BRK but does not set B flag */
 
 		/* add 7 cycles to timing */
@@ -154,4 +160,14 @@ uint8_t CPU_Execute(CPU* self, uint8_t context){
 	*/
 
 	return cycleCount;
+}
+
+
+void CPU_Destroy(CPU* self){
+
+	if (self == NULL)
+		return;
+
+	free(self);
+	return;
 }
