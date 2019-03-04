@@ -18,7 +18,7 @@
 typedef struct {
 	uint8_t A, X, Y, SP, P;					/*! 8-bit registers		    */
 	uint16_t PC;							/*! 16-bit register		    */
-	RemoteMapper rmap;						/*! Mapper from NES struct	*/
+	Mapper* rmap;						/*! Mapper from NES struct	*/
 } CPU;
 
 /**
@@ -29,7 +29,7 @@ typedef struct {
  *
  * \return instance of CPU allocated
  */
-CPU* CPU_Create(RemoteMapper mapper);
+CPU* CPU_Create(Mapper* mapper);
 
 /**
  * \fn CPU_Execute
