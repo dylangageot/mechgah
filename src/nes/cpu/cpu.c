@@ -2,6 +2,7 @@
 #include "instructions.h"
 #include <unistd.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 /* Opcode/instruction LUT */
 static Instruction opcode[256] = {
@@ -71,7 +72,6 @@ static Instruction opcode[256] = {
 	{NULL, NUL}, {_SBC, ABX}, {_INC, ABX}, {NULL, NUL}	/* 0xFC */
 };
 
-CPU* CPU_Create(RemoteMapper mapper){
 CPU* CPU_Create(Mapper* mapper){
 
 	CPU* self = (CPU *)malloc(sizeof(CPU));
@@ -116,26 +116,26 @@ uint8_t CPU_Execute(CPU* self, uint8_t context){
 		(self->PC) += 2;
 
 		/* push PC MSByte on stack */
-		uint8_t* ptr = MapNROM_Mapper(self->rmap->memoryMap, AS_CPU, (0x0100+self->SP));
-		*ptr = (uint_8t)(self->PC >> 8);
+		uint8_t* ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, (0x0100+self->SP));
+		*ptr = (uint8_t)(self->PC >> 8);
 		self->SP --;
 
 		/* push PC LSByte on stack */
-		ptr = MapNROM_Mapper(self->rmap->memoryMap, AS_CPU, (0x0100+self->SP));
-		*ptr = (uint_8t)self->PC;
+		ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, (0x0100+self->SP));
+		*ptr = (uint8_t)(self->PC);
 		self->SP --;
 
 		/* push P on stack */
-		ptr = MapNROM_Mapper(self->rmap->memoryMap, AS_CPU, (0x0100+self->SP));
+		ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, (0x0100+self->SP));
 		*ptr = self->P;
 		self->SP --;
 
 		/* fetch PC LSByte @ 0xFFFA*/
-		ptr = MapNROM_Mapper(self->rmap->memoryMap, AS_CPU, 0xFFFA);
+		ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, 0xFFFA);
 		self->PC = (uint16_t)(*ptr);
 
 		/* fetch PC MSByte @ 0xFFFB*/
-		ptr = MapNROM_Mapper(self->rmap->memoryMap, AS_CPU, 0xFFFB);
+		ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, 0xFFFB);
 		self->PC |= (uint16_t)(*ptr) << 8;
 
 		/* clear context N byte */
