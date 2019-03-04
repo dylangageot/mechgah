@@ -72,6 +72,7 @@ static Instruction opcode[256] = {
 };
 
 CPU* CPU_Create(RemoteMapper mapper){
+CPU* CPU_Create(Mapper* mapper){
 
 	CPU* self = (CPU *)malloc(sizeof(CPU));
 
