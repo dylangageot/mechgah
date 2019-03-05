@@ -3,8 +3,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-/* Opcode/instruction LUT */
-static Instruction opcode[256] = {
+/* Opcode LUT */
+static Opcode opcode[256] = {
 	{_BRK, IMP}, {_ORA, INX}, {NULL, NUL}, {NULL, NUL}, /* 0x00 */
 	{NULL, NUL}, {_ORA, ZER}, {_ASL, ZER}, {NULL, NUL}, /* 0x04 */
 	{_PHP, IMP}, {_ORA, IMM}, {_ASL, ACC}, {NULL, NUL}, /* 0x08 */
@@ -70,3 +70,28 @@ static Instruction opcode[256] = {
 	{_SED, IMP}, {_SBC, ABY}, {NULL, NUL}, {NULL, NUL}, /* 0xF8 */
 	{NULL, NUL}, {_SBC, ABX}, {_INC, ABX}, {NULL, NUL}	/* 0xFC */
 };
+
+uint8_t CPU_InstructionFetch(CPU *self, Instruction *inst) {
+	if ((self == NULL) || (inst == NULL))
+		return 0;
+
+	/* Fetch data in memory space with PC value */
+	uint8_t i;
+	uint8_t *opc = self->rmap->get(self->rmap->mapperData, AS_CPU, self->PC);
+	self->PC++;
+	inst->opcode = opcode[*(opc++)];
+	/* Decode and update PC */
+	if((inst->opcode.addressingMode >= 2) && (inst->opcode.addressingMode <= 8)){
+		inst->opcodeArg[0] = *opc;
+		self->PC++;
+	}
+	else if((inst->opcode.addressingMode >= 9) && (inst->opcode.addressingMode <= 12)){
+		for (i = 0; i < 2; i++)
+			inst->opcodeArg[i] = *(opc + i);
+		self->PC += 2;
+	}
+	else
+		return 0;
+
+	return 1;
+}

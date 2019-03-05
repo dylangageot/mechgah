@@ -18,7 +18,7 @@
 typedef struct {
 	uint8_t A, X, Y, SP, P;					/*! 8-bit registers		    */
 	uint16_t PC;							/*! 16-bit register		    */
-	RemoteMapper rmap;						/*! Mapper from NES struct	*/
+	Mapper *rmap;						/*! Mapper from NES struct	*/
 } CPU;
 
 /**
@@ -27,7 +27,7 @@ typedef struct {
  *
  * \param mapper address of Mapper pointer from NES struct
  *
- * \return instance of CPU allocated 
+ * \return instance of CPU allocated
  */
 CPU* CPU_Create(RemoteMapper mapper);
 
@@ -38,9 +38,20 @@ CPU* CPU_Create(RemoteMapper mapper);
  * \param self instance of CPU
  * \param context variable that contain IRQ
  *
- * \return number of clock cycle used to execute the instruction 
+ * \return number of clock cycle used to execute the instruction
  */
 uint8_t CPU_Execute(CPU* self, uint8_t context);
+
+/**
+ * \fn CPU_InstructionFetch
+ * \brief Fetch and decode instruction from PGR-ROM
+ *
+ * \param self instance of CPU
+ * \param inst instance of Instruction
+ *
+ * \return 0 if it failed, 1 otherwise
+ */
+uint8_t CPU_InstructionFetch(CPU *self, Instruction *inst);
 
 /**
  * \fn CPU_Destroy
