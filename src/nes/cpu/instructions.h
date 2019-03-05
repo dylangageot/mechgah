@@ -12,12 +12,20 @@
 #include "cpu.h"
 
 /**
- * \struct Instruction
+ * \struct Opcode
  * \brief Hold instruction function and addressing mode associated
  */
 typedef struct {
-	uint8_t (*inst)(CPU*, uint8_t*);
+	uint8_t (*inst)(CPU*, Instruction*);
 	uint8_t addressingMode;
+} Opcode;
+
+/**
+ * \struct Instruction
+ * \brief Hold Opcode and arguments associated
+ */
+typedef struct {
+	Opcode opcode;
 	uint8_t opcodeArg[2];
 	uint8_t *dataMem;
 } Instruction;
