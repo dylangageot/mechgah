@@ -12,6 +12,13 @@
 #include "stdint.h"
 
 /**
+ * \brief Useful macro when dealing with address mapping
+ */
+#define _ADDRESS_IN(x,y,z)	(((x) >= (y)) && ((x) <= (z)))
+#define _ADDRESS_SUP(x,y)	(((x) >= (y)))
+#define _ADDRESS_INF(x,y)	(((x) <= (y)))
+
+/**
  * \struct Mapper
  * \brief Generic structure to hold mapper
  */
@@ -22,7 +29,7 @@ typedef struct {
 } Mapper;
 
 /**
- * \struct PeripheralRegister
+ * \struct IOReg
  * \brief Register use to communicate with PPU, APU and joystick
  *
  * The structure is composed of two arrays that represent bank in memory map : 
@@ -32,36 +39,46 @@ typedef struct {
  */
 typedef struct {
 	uint8_t bank1[8];
-	uint8_t bank2[24];
-	uint8_t flag1[8];
-	uint8_t flag2[24];
-} PeripheralRegister;
+	uint8_t bank2[32];
+	uint8_t acknowledge[40];
+} IOReg;
 
 /**
- * \fn PeripheralRegister_Get
- * \brief Get pointer and set register as accessed
+ * \fn IOReg_Create
+ * \brief Instanciation of IOReg
  *
- * \param self instance of PeripheralRegister
- * \param bank which bank to use
- * \param reg which register to get
- *
- * \return pointer of selected register 
+ * \return instance of IOReg if succeed
  */
-uint8_t* PeripheralRegister_Get(PeripheralRegister* self, uint8_t bank,
-								uint8_t reg);
+IOReg* IOReg_Create(void);
 
 /**
- * \fn PeripheralRegister_Acknowledge
- * \brief Check if register has been edited and acknowledge it 
+ * \brief Get pointer to access IO register
  *
- * \param self instance of PeripheralRegister
- * \param bank which bank to use
- * \param reg which register to get
+ * \param self instance of IOReg
+ * \param address address to access
  *
- * \return 1 if read/written, 0 otherwise 
+ * \return pointer to selected IO register 
  */
-uint8_t PeripheralRegister_Acknowledge(PeripheralRegister* self, uint8_t bank,
-									   uint8_t reg);
+uint8_t* IOReg_Get(IOReg *self, uint16_t address);
+
+/**
+ * \brief Check if the selected IO register was accessed before and acknowledge
+ * it
+ *
+ * \param self instance of IOReg
+ * \param address address to check
+ *
+ * \return 1 if accessed, 0 otherwise 
+ */
+uint8_t IOReg_Ack(IOReg *self, uint16_t address);
+
+/**
+ * \fn IOReg_Destroy
+ * \brief Free instance of IOReg
+ *
+ * \param self instance of IOReg
+ */
+void IOReg_Destroy(IOReg *self);
 
 /**
  * \enum Bank1Register

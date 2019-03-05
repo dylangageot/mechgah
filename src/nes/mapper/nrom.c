@@ -2,9 +2,6 @@
 #include <stdio.h>
 #include "nrom.h"
 
-#define _ADDRESS_IN(x,y,z)	(((x) >= (y)) && ((x) <= (z)))
-#define _ADDRESS_SUP(x,y)	(((x) >= (y)))
-#define _ADDRESS_INF(x,y)	(((x) <= (y)))
 
 void* MapNROM_Create(uint8_t romSize, uint8_t mirroring) {
 	MapNROM *self = (MapNROM*) malloc(sizeof(MapNROM));
@@ -35,6 +32,9 @@ void* MapNROM_Create(uint8_t romSize, uint8_t mirroring) {
 	/*	Allocation of SRAM space */
 	self->cpu.sram = (uint8_t*) malloc(8192);
 	
+	/*	Allocation of IOReg space */
+	self->cpu.ioReg = IOReg_Create();
+
 	/*	Allocation of RAM space */
 	self->cpu.ram = (uint8_t*) malloc(8192);
 	
@@ -47,10 +47,12 @@ void* MapNROM_Create(uint8_t romSize, uint8_t mirroring) {
 	/*	Allocation of palette space */
 	self->ppu.palette = (uint8_t*) malloc(32);
 
+
 	/*	Test if allocation failed */
 	if ((self->cpu.rom == NULL) || (self->cpu.ram == NULL) ||
-		(self->cpu.sram == NULL) || (self->ppu.chr == NULL) ||
-		(self->ppu.nametable == NULL) || (self->ppu.palette == NULL)) {
+		(self->cpu.ioReg == NULL) || (self->cpu.sram == NULL) || 
+		(self->ppu.chr == NULL) || (self->ppu.nametable == NULL) || 
+		(self->ppu.palette == NULL)) {
 		fprintf(stderr, "Error: can't allocate memory for NROM "
 				"at %s, line %d.\n", __FILE__, __LINE__);
 		MapNROM_Destroy((void*) self);
@@ -73,6 +75,8 @@ void MapNROM_Destroy(void* mapperData) {
 	if (self->cpu.ram != NULL)
 		free((void*) self->cpu.ram);
 	
+	IOReg_Destroy(self->cpu.ioReg);
+
 	if (self->cpu.sram != NULL)
 		free((void*) self->cpu.sram);
 	
@@ -89,7 +93,7 @@ void MapNROM_Destroy(void* mapperData) {
 	return;
 }
 
-uint8_t* MapNROM_Mapper(void* mapperData, uint8_t space, uint16_t address) {
+uint8_t* MapNROM_Get(void* mapperData, uint8_t space, uint16_t address) {
 	/* If no mapperData has been given, return NULL */
 	if (mapperData == NULL)
 		return NULL;
@@ -104,12 +108,9 @@ uint8_t* MapNROM_Mapper(void* mapperData, uint8_t space, uint16_t address) {
 		/* 0x0000 -> 0x1FFF : RAM */
 		if (_ADDRESS_INF(address, 0x1FFF)) {
 			return cpu->ram + (address & 0x07FF);
-		/* 0x2000 -> 0x3FFF : IO bank 1 */
-		} else if (_ADDRESS_IN(address, 0x2000, 0x3FFF)) {
-			return cpu->ioReg.bank1 + (address & 0x0007);
-		/* 0x4000 -> 0x4019 : IO bank 2 */
-		} else if (_ADDRESS_IN(address, 0x4000, 0x401F)) {
-			return cpu->ioReg.bank2 + (address & 0x001F);
+		/* 0x2000 -> 0x4017 : IO bank 1 */
+		} else if (_ADDRESS_IN(address, 0x2000, 0x401F)) {
+			return IOReg_Get(cpu->ioReg, address);
 		/* 0x6000 -> 0x7FFF : SRAM */
 		} else if (_ADDRESS_IN(address, 0x6000, 0x7FFF)) {
 			return cpu->sram + (address & 0x1FFF);
@@ -132,4 +133,11 @@ uint8_t* MapNROM_Mapper(void* mapperData, uint8_t space, uint16_t address) {
 	/* else if (space == AS_PPU) {*/
 
 	return NULL;
+}
+
+uint8_t MapNROM_Ack(void *mapperData, uint16_t address) {
+	if (mapperData == NULL)
+		return 0;
+	MapNROM *self = (MapNROM*) mapperData;
+	return IOReg_Ack(self->cpu.ioReg, address);
 }
