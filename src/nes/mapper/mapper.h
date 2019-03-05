@@ -12,6 +12,13 @@
 #include "stdint.h"
 
 /**
+ * \brief Useful macro when dealing with address mapping
+ */
+#define _ADDRESS_IN(x,y,z)	(((x) >= (y)) && ((x) <= (z)))
+#define _ADDRESS_SUP(x,y)	(((x) >= (y)))
+#define _ADDRESS_INF(x,y)	(((x) <= (y)))
+
+/**
  * \struct Mapper
  * \brief Generic structure to hold mapper
  */
@@ -22,17 +29,56 @@ typedef struct {
 } Mapper;
 
 /**
- * \struct PeripheralRegister
+ * \struct IOReg
  * \brief Register use to communicate with PPU, APU and joystick
  *
  * The structure is composed of two arrays that represent bank in memory map : 
  *  - bank1 : @0x2000, registers for PPU
  *  - bank2 : @0x4000, registers for APU and joystick
+ * Flags array are used to know if data was read or written
  */
 typedef struct {
 	uint8_t bank1[8];
-	uint8_t bank2[24];
-} PeripheralRegister;
+	uint8_t bank2[32];
+	uint8_t acknowledge[40];
+} IOReg;
+
+/**
+ * \fn IOReg_Create
+ * \brief Instanciation of IOReg
+ *
+ * \return instance of IOReg if succeed
+ */
+IOReg* IOReg_Create(void);
+
+/**
+ * \brief Get pointer to access IO register
+ *
+ * \param self instance of IOReg
+ * \param address address to access
+ *
+ * \return pointer to selected IO register 
+ */
+uint8_t* IOReg_Get(IOReg *self, uint16_t address);
+
+/**
+ * \brief Check if the selected IO register was accessed before and acknowledge
+ * it
+ *
+ * \param self instance of IOReg
+ * \param address address to check
+ *
+ * \return 1 if accessed, 0 otherwise 
+ */
+uint8_t IOReg_Ack(IOReg *self, uint16_t address);
+
+/**
+ * \fn IOReg_Destroy
+ * \brief Free instance of IOReg
+ *
+ * \param self instance of IOReg
+ */
+void IOReg_Destroy(IOReg *self);
 
 /**
  * \enum Bank1Register
