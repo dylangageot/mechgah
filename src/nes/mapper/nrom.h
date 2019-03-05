@@ -39,7 +39,7 @@ typedef struct {
  * \brief Memory map used when using NROM mapper
  */
 typedef struct {
-	/*	Accessible data */	
+	/*	Accessible data */
 	MapNROM_CPU cpu;
 	MapNROM_PPU ppu;
 	/*	Mapper data */
@@ -72,22 +72,22 @@ enum NROMMirroring {
  *
  * \param romSize size of PGR-ROM
  * \param mirroring PPU's mirroring mecanism
- * 
+ *
  * \return pointer to the new allocated mapper
  */
 void* MapNROM_Create(uint8_t romSize, uint8_t mirroring);
 
 /**
- * \fn MapNROM_Mapper
+ * \fn MapNROM_Get
  * \brief Give access to the data addressed in argument
  *
  * \param mapperData Memory map pointer
  * \param space CPU or PPU address space ?
  * \param address Address of the data to fetch
  *
- * \return uint8_t pointer of the data addressed 
+ * \return uint8_t pointer of the data addressed
  */
-uint8_t* MapNROM_Mapper(void* mapperData, uint8_t space, uint16_t address);
+uint8_t* MapNROM_Get(void* mapperData, uint8_t space, uint16_t address);
 
 /**
  * \fn MapNROM_Destroy
