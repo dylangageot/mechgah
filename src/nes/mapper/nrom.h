@@ -19,7 +19,7 @@
  */
 typedef struct {
 	uint8_t *ram;
-	PeripheralRegister ioReg;
+	IOReg *ioReg;
 	uint8_t *sram;
 	uint8_t *rom;
 } MapNROM_CPU;
@@ -78,7 +78,7 @@ enum NROMMirroring {
 void* MapNROM_Create(uint8_t romSize, uint8_t mirroring);
 
 /**
- * \fn MapNROM_Mapper
+ * \fn MapNROM_Get
  * \brief Give access to the data addressed in argument
  *
  * \param mapperData Memory map pointer
@@ -87,7 +87,18 @@ void* MapNROM_Create(uint8_t romSize, uint8_t mirroring);
  *
  * \return uint8_t pointer of the data addressed 
  */
-uint8_t* MapNROM_Mapper(void* mapperData, uint8_t space, uint16_t address);
+uint8_t* MapNROM_Get(void* mapperData, uint8_t space, uint16_t address);
+
+/**
+ * \fn MapNROM_Ack
+ * \brief Acknowledge IOReg from MapNROM
+ *
+ * \param mapperData instance of MapNROM
+ * \param address address to check if it was accessed
+ *
+ * \return 1 if it was accessed, 0 otherwise 
+ */
+uint8_t MapNROM_Ack(void *mapperData, uint16_t address);
 
 /**
  * \fn MapNROM_Destroy

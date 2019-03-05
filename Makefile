@@ -8,7 +8,8 @@ UTEST		= unit_test
 
 # directories and sources definition
 NESDIR		= src/nes
-SRC  		= $(NESDIR)/mapper/nrom.c
+SRC  		= $(NESDIR)/mapper/nrom.c \
+			  $(NESDIR)/mapper/mapper.c
 
 # use gcc
 CC			= gcc
