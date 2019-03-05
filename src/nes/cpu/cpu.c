@@ -76,22 +76,26 @@ uint8_t CPU_InstructionFetch(CPU *self, Instruction *inst) {
 		return 0;
 
 	/* Fetch data in memory space with PC value */
-	uint8_t i;
 	uint8_t *opc = self->rmap->get(self->rmap->mapperData, AS_CPU, self->PC);
 	self->PC++;
 	inst->opcode = opcode[*(opc++)];
+
 	/* Decode and update PC */
-	if((inst->opcode.addressingMode >= 2) && (inst->opcode.addressingMode <= 8)){
+	if (inst->opcode.addressingMode <= 1) {
+		return 1;
+	} else if ((inst->opcode.addressingMode >= 2) &&
+			(inst->opcode.addressingMode <= 8)) {
 		inst->opcodeArg[0] = *opc;
 		self->PC++;
-	}
-	else if((inst->opcode.addressingMode >= 9) && (inst->opcode.addressingMode <= 12)){
+		return 1;
+	} else if ((inst->opcode.addressingMode >= 9) &&
+			(inst->opcode.addressingMode <= 12)){
+		uint8_t i;
 		for (i = 0; i < 2; i++)
 			inst->opcodeArg[i] = *(opc + i);
 		self->PC += 2;
+		return 1;
 	}
-	else
-		return 0;
 
-	return 1;
+	return 0;
 }
