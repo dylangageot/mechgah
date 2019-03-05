@@ -28,6 +28,7 @@ typedef struct {
 	Opcode opcode;
 	uint8_t opcodeArg[2];
 	uint8_t *dataMem;
+	uint8_t pageCrossed;
 } Instruction;
 
 /**
@@ -56,9 +57,9 @@ enum AddressingMode {
  * \brief Get the data to execute the instruction
  *
  * \param cpu instance of cpu
- * \param addressingMode addressing mode used by the instruction
+ * \param Instruction data used by the instruction
  *
- * \return data fetch from memory according from instruction's addressing mode
+ * \return 0 if it failed, 1 otherwise
  */
 uint8_t AddressingMode_Execute(CPU *cpu, Instruction *inst);
 
