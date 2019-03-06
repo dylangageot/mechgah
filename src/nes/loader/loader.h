@@ -9,27 +9,35 @@
 #ifndef LOADER_H
 #define LOADER_H
 
-//#include "../cpu/cpu.h"
+#include <stdint.h>
+#include <string.h>
+#include "../cpu/cpu.h"
 #include "../mapper/mapper.h"
+#include "../mapper/nrom.h"
+
+#define MAPPER_TOTAL 1
 
 /**
  * \struct Header
- * \brief Header of a .nes file
+ * \brief Header of a .nes file, modified for programming purposes
  */
- typedef struct{
- 	__uint8_t N;
- 	__uint8_t E;
- 	__uint8_t S;
- 	__uint8_t EOF;
-  __uint8_t romSize; // Number of 16 kB ROM (PRG-ROM) banks
-  __uint8_t vromSize; // Number of 8 kB VROM (CHR-ROM) banks
-  __uint8_t flags6; // Mapper, mirroring, battery, trainer
-  __uint8_t flags7; // Mapper, VS/Playchoice, NES 2.O
-  __uint8_t flags8; // PRG-RAM size
-  __uint8_t flags9; // TV System
-  __uint32_t flags10to13; // Must be all 0
-  __uint16_t flags14to15; // Must be all 0
- } Header;
+typedef struct{
+  uint8_t romSize; // Number of 16 kB ROM (PRG-ROM) banks
+  uint8_t vromSize; // Number of 8 kB VROM (CHR-ROM) banks
+  uint8_t ramSize; // Size of PRG RAM, in 8 kB units
+  uint8_t mapper; // iNES 1.0 mapper number
+  uint8_t mirroring;
+  // 1=Vertical mirroring, 0=Horizontal or mapper-controlled mirroring
+  uint8_t battery_backed_RAM;
+  // 1=Batter-backed RAM at $6000-$7FFF or other persistent memory
+  uint8_t trainer; // 1=512-Byte trainer at $7000-$71FF
+  uint8_t four_screen_VRAM; // 1=Hard-wired Four-screen VRAM layout
+  uint8_t VS_System; // 1=VS-System cartridges
+  uint8_t playchoice; // 1=Playchoice-10 bit, Not official
+  //uint8_t NES2; // 1=NES 2.0 format
+  uint8_t tvSystem; // 0=PAL, 1=NSTC
+
+} Header;
 
 /**
  * \brief Load ROM into Mapper structure
