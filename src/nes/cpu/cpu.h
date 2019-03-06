@@ -10,7 +10,6 @@
 #define CPU_H
 
 #include "../mapper/mapper.h"
-#include "instructions.h"
 
 /**
  * \struct CPU
@@ -19,7 +18,7 @@
 typedef struct {
 	uint8_t A, X, Y, SP, P;					/*! 8-bit registers		    */
 	uint16_t PC;							/*! 16-bit register		    */
-	Mapper *rmap;						/*! Mapper from NES struct	*/
+	Mapper *rmap;							/*! Mapper from NES struct	*/
 } CPU;
 
 /**
@@ -43,16 +42,6 @@ CPU* CPU_Create(Mapper *mapper);
  */
 uint8_t CPU_Execute(CPU* self, uint8_t context);
 
-/**
- * \fn CPU_InstructionFetch
- * \brief Fetch and decode instruction from PGR-ROM
- *
- * \param self instance of CPU
- * \param inst instance of Instruction
- *
- * \return 0 if it failed, 1 otherwise
- */
-uint8_t CPU_InstructionFetch(CPU *self, Instruction *inst);
 
 /**
  * \fn CPU_Destroy

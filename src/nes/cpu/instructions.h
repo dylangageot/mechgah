@@ -12,6 +12,7 @@
 #include "cpu.h"
 
 typedef struct Instruction Instruction;
+
 /**
  * \struct Opcode
  * \brief Hold instruction function and addressing mode associated
@@ -54,15 +55,26 @@ enum AddressingMode {
 };
 
 /**
- * \fn AddressingMode_Execute
- * \brief Get the data to execute the instruction
+ * \fn Instruction_Fetch
+ * \brief Fetch and decode instruction from PGR-ROM
  *
- * \param cpu instance of cpu
- * \param Instruction data used by the instruction
+ * \param self instance of Instruction
+ * \param cpu instance of CPU
  *
  * \return 0 if it failed, 1 otherwise
  */
-uint8_t AddressingMode_Execute(CPU *cpu, Instruction *inst);
+uint8_t Instruction_Fetch(Instruction *inst, CPU *cpu);
+
+/**
+ * \fn Instruction_Resolve
+ * \brief Get the data to execute the instruction
+ *
+ * \param self instance of Instruction
+ * \param cpu instance of CPU
+ *
+ * \return 0 if it failed, 1 otherwise
+ */
+uint8_t Instruction_Resolve(Instruction *self, CPU *cpu);
 
 uint8_t _ADC(CPU *cpu, Instruction *arg);
 uint8_t _AND(CPU *cpu, Instruction *arg);
