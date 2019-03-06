@@ -9,14 +9,17 @@ UTEST		= unit_test
 # directories and sources definition
 NESDIR		= src/nes
 SRC  		= $(NESDIR)/mapper/nrom.c \
-			  $(NESDIR)/mapper/mapper.c
+			  $(NESDIR)/mapper/mapper.c \
+			  $(NESDIR)/cpu/instructions.c \
+			  $(NESDIR)/cpu/cpu.c
+
 
 # use gcc
 CC			= gcc
 # compilation options
 CFLAGS  	= -Wall -Wextra -MMD
 # linking options
-LDFLAGS 	= -lcmocka 
+LDFLAGS 	= -lcmocka
 
 # add debug option to gcc if needed
 DEBUG = no
@@ -35,7 +38,7 @@ all: $(OUTNAME) $(UTEST)
 $(OUTNAME): $(OUTNAME).o $(OBJS) $(SRC)
 			  $(CC) $< $(OBJS) $(LDFLAGS) -o $@
 
-# unit test executable compilation 
+# unit test executable compilation
 $(UTEST): $(UTEST).o $(OBJS) $(SRC)
 			  $(CC) $< $(OBJS) $(LDFLAGS) -o $@
 
@@ -52,4 +55,4 @@ clean:
 	rm -f *.o *.d $(OBJS) $(SRC:.c=.gcda) $(SRC:.c=.d) $(OUTNAME) $(UTEST) \
 	$(SRC:.c=.gcno) $(SRC:.c=.gcov) *.gcda *.gcno *.gcov *.info *~ -r out
 
-include $(shell find -name '*.d' | sed 's\./\\')  
+include $(shell find -name '*.d' | sed 's\./\\')
