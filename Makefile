@@ -4,15 +4,16 @@
 
 # target definition
 OUTNAME		= main
-UTEST		= unit_test
+UTEST		= UTest
 
 # directories and sources definition
 NESDIR		= src/nes
+UTESTDIR	= src/unit-test
 SRC  		= $(NESDIR)/mapper/nrom.c \
 			  $(NESDIR)/mapper/mapper.c \
 			  $(NESDIR)/cpu/instructions.c \
-			  $(NESDIR)/cpu/cpu.c
-
+			  $(NESDIR)/cpu/cpu.c \
+			  $(UTESTDIR)/UTnrom.c 
 
 # use gcc
 CC			= gcc
@@ -39,7 +40,7 @@ $(OUTNAME): $(OUTNAME).o $(OBJS) $(SRC)
 			  $(CC) $< $(OBJS) $(LDFLAGS) -o $@
 
 # unit test executable compilation
-$(UTEST): $(UTEST).o $(OBJS) $(SRC)
+$(UTEST): $(UTESTDIR)/$(UTEST).o $(OBJS) $(SRC)
 			  $(CC) $< $(OBJS) $(LDFLAGS) -o $@
 
 # run unit test and generate coverage page

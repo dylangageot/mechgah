@@ -1,10 +1,5 @@
-/* CMocka library */
-#include <stdarg.h>
-#include <stddef.h>
-#include <setjmp.h>
-#include <cmocka.h>
-
-#include "src/nes/mapper/nrom.h"
+#include "UTest.h"
+#include "../nes/mapper/nrom.h"
 
 static int setup_NROM_16(void **state) {
 	*state = (void *) MapNROM_Create(NROM_16KIB, NROM_HORIZONTAL);
@@ -60,19 +55,19 @@ static void test_MapNROM_Get(void **state) {
 	}
 }
 
-static void test_IOReg_AckNoRead(void **state) {
+static void test_MapNROM_Ack_NoRead(void **state) {
 	uint16_t i;
 	for (i = 0x2000; i < 0x4020; i++)
 		assert_int_equal(0, MapNROM_Ack(*state, i)); 
 }
 
-static void test_IOReg_AckIsRead(void **state) {
+static void test_MapNROM_Ack_IsRead(void **state) {
 	uint16_t i;
 	for (i = 0x3FF8; i < 0x4020; i++)
 		assert_int_equal(1, MapNROM_Ack(*state, i)); 
 }
 
-static int teardown(void **state) {
+static int teardown_NROM(void **state) {
 	if (*state != NULL) {
 		MapNROM_Destroy(*state);
 		return 0;
@@ -80,15 +75,15 @@ static int teardown(void **state) {
 		return -1;
 }
 
-const struct CMUnitTest test_nrom[] = {
-	cmocka_unit_test(test_IOReg_AckNoRead),
-	cmocka_unit_test(test_MapNROM_Get),
-	cmocka_unit_test(test_IOReg_AckIsRead),
-	cmocka_unit_test(test_IOReg_AckNoRead),
-};
-
-int main() {
-	cmocka_run_group_tests(test_nrom, setup_NROM_16, teardown);
-	return cmocka_run_group_tests(test_nrom, setup_NROM_32, teardown);
+int run_UTnrom(void) {
+	const struct CMUnitTest test_NROM[] = {
+		cmocka_unit_test(test_MapNROM_Ack_NoRead),
+		cmocka_unit_test(test_MapNROM_Get),
+		cmocka_unit_test(test_MapNROM_Ack_IsRead),
+		cmocka_unit_test(test_MapNROM_Ack_NoRead),
+	};
+	int out = 0;
+	out += cmocka_run_group_tests(test_NROM, setup_NROM_16, teardown_NROM);
+	out += cmocka_run_group_tests(test_NROM, setup_NROM_32, teardown_NROM);
+	return out;
 }
-
