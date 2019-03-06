@@ -23,9 +23,10 @@
  * \brief Generic structure to hold mapper
  */
 typedef struct {
-	uint8_t* (*get)(void*, uint8_t, uint16_t);		/*! Get data callback	*/
-	void (*destroyer)(void*);						/*! Destroyer callback	*/
-	void *memoryMap;								/*! Memory map			*/
+	uint8_t* (*get)(void*, uint8_t, uint16_t);		/*! Get callback	     */
+	void (*destroyer)(void*);						/*! Destroyer callback	 */
+	uint8_t (*ack)(void*, uint16_t);				/*! Acknowledge callback */
+	void *memoryMap;								/*! Memory map			 */
 } Mapper;
 
 /**
@@ -132,7 +133,17 @@ enum Bank2Register {
  */
 enum AddressSpace {
 	AS_CPU = 0,
-	AS_PPU
+	AS_PPU,
+	AS_LDR
+};
+
+/**
+ * \enum LoaderData
+ * \brief Use to get pointer to PRGROM and CHRROM
+ */
+enum LoaderData {
+	LDR_PRG = 0,
+	LDR_CHR
 };
 
 #endif /* MAPPER_H */
