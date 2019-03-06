@@ -10,6 +10,7 @@
 #define CPU_H
 
 #include "../mapper/mapper.h"
+#include "instructions.h"
 
 /**
  * \struct CPU
@@ -29,7 +30,7 @@ typedef struct {
  *
  * \return instance of CPU allocated
  */
-CPU* CPU_Create(RemoteMapper mapper);
+CPU* CPU_Create(Mapper *mapper);
 
 /**
  * \fn CPU_Execute

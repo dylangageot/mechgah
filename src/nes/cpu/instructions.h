@@ -11,6 +11,7 @@
 
 #include "cpu.h"
 
+typedef struct Instruction Instruction;
 /**
  * \struct Opcode
  * \brief Hold instruction function and addressing mode associated
@@ -24,12 +25,12 @@ typedef struct {
  * \struct Instruction
  * \brief Hold Opcode and arguments associated
  */
-typedef struct {
+struct Instruction {
 	Opcode opcode;
 	uint8_t opcodeArg[2];
 	uint8_t *dataMem;
 	uint8_t pageCrossed;
-} Instruction;
+};
 
 /**
  * \enum AddressingMode
