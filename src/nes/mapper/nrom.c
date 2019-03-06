@@ -129,6 +129,18 @@ uint8_t* MapNROM_Get(void* mapperData, uint8_t space, uint16_t address) {
 					break;
 			}
 		}
+
+	} else if (space == AS_LDR) {
+		
+		switch (address) {
+			case LDR_PRG:
+				return map->cpu.rom;
+			case LDR_CHR:
+				return map->ppu.chr;
+			default:
+				break;
+		}
+
 	}
 	/* else if (space == AS_PPU) {*/
 

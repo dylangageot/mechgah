@@ -53,6 +53,14 @@ static void test_MapNROM_Get(void **state) {
 		ptr = MapNROM_Get(self, AS_CPU, i);
 		assert_ptr_equal((void*) ptr, (void*) (self->cpu.rom + (i % mod)));
 	}
+
+	/* Test LDR ROM access */
+	ptr = MapNROM_Get(self, AS_LDR, LDR_PRG);
+	assert_ptr_equal((void*) ptr, (void*) self->cpu.rom);
+
+	/* Test LDR CHR access */
+	ptr = MapNROM_Get(self, AS_LDR, LDR_CHR);
+	assert_ptr_equal((void*) ptr, (void*) self->ppu.chr);
 }
 
 static void test_MapNROM_Ack_NoRead(void **state) {
