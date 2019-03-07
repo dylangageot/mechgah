@@ -76,6 +76,98 @@ static Opcode opcode[256] = {
 	{NULL, NUL}, {_SBC, ABX}, {_INC, ABX}, {NULL, NUL}	/* 0xFC */
 };
 
+void _SET_SIGN(CPU *cpu, uint8_t *src) {
+	if (*src & 0x80)
+		cpu->P |= 0x80;
+	else 
+		cpu->P &= ~0x80;
+}
+
+void _SET_ZERO(CPU *cpu, uint8_t *src) {
+	if (*src == 0)
+		cpu->P |= 0x02;
+	else
+		cpu->P &= ~0x02;
+}
+
+void _SET_CARRY(CPU *cpu, uint8_t cond) {
+	if (cond)
+		cpu->P |= 0x01;
+	else
+		cpu->P &= ~0x01;
+}
+
+void _SET_OVERFLOW(CPU *cpu, uint8_t cond) {
+	if (cond)
+		cpu->P |= 0x40;
+	else
+		cpu->P &= ~0x40;
+}
+
+void _SET_INTERRUPT(CPU *cpu) {
+	cpu->P |= 0x04;
+}
+
+void _SET_BREAK(CPU *cpu) {
+	cpu->P |= 0x10;
+}
+
+uint16_t _REL_ADDR(CPU *cpu, int8_t *src) {
+	return cpu->PC + (int16_t) *src;
+}
+
+void _SET_SR(CPU *cpu, uint8_t *src) {
+	cpu->P = *src;
+}
+
+uint8_t _GET_SR(CPU *cpu) {
+	return cpu->P;
+}
+
+uint8_t _PULL(CPU *cpu) {
+	return *cpu->rmap->get(cpu->rmap->memoryMap, AS_CPU, 0x0100 | (++cpu->SP));
+}
+
+void _PUSH(CPU *cpu, uint8_t *src) {
+	uint8_t *ptr = NULL;
+	ptr = cpu->rmap->get(cpu->rmap->memoryMap, AS_CPU, 0x0100 | (cpu->SP--));
+	*ptr = *src;
+}
+
+uint8_t _LOAD(CPU *cpu, uint16_t address) {
+	return *cpu->rmap->get(cpu->rmap->memoryMap, AS_CPU, address);
+}
+
+void _STORE(CPU *cpu, uint16_t address, uint8_t *src) {
+	uint8_t *ptr = NULL;
+	ptr = cpu->rmap->get(cpu->rmap->memoryMap, AS_CPU, address);
+	*ptr = *src;
+}
+
+uint8_t _IF_CARRY(CPU *cpu) {
+	return (cpu->P & 0x01) == 0x01;
+}
+
+uint8_t _IF_OVERFLOW(CPU *cpu) {
+	return (cpu->P & 0x40) == 0x40;
+}
+
+uint8_t _IF_SIGN(CPU *cpu) {
+	return (cpu->P & 0x80) == 0x80;
+}
+
+uint8_t _IF_ZERO(CPU *cpu) {
+	return (cpu->P & 0x02) == 0x02;
+}
+
+uint8_t _IF_INTERRUPT(CPU *cpu) {
+	return (cpu->P & 0x04) == 0x04;
+}
+
+uint8_t _IF_BREAK(CPU *cpu) {
+	return (cpu->P & 0x10) == 0x10;
+}
+
 uint8_t Instruction_Fetch(Instruction *self, CPU *cpu) {
 	if ((self == NULL) || (cpu == NULL))
 		return 0;
