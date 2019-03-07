@@ -11,3 +11,12 @@
  * \return 0 if passed, number of failed otherwise
  */
 int run_UTnrom(void);
+
+
+/**
+ * \fn run_UTinstruction
+ * \brief Unit test of instructions
+ *
+ * \return 0 if passed, number of failed otherwise
+ */
+int run_instruction(void);

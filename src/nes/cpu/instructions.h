@@ -76,6 +76,28 @@ uint8_t Instruction_Fetch(Instruction *inst, CPU *cpu);
  */
 uint8_t Instruction_Resolve(Instruction *self, CPU *cpu);
 
+
+void _SET_SIGN(CPU *cpu, uint8_t *src);
+void _SET_ZERO(CPU *cpu, uint8_t *src);
+void _SET_CARRY(CPU *cpu, uint8_t cond);
+void _SET_OVERFLOW(CPU *cpu, uint8_t cond);
+void _SET_INTERRUPT(CPU *cpu);
+void _SET_BREAK(CPU *cpu);
+uint16_t _REL_ADDR(CPU *cpu, int8_t *src);
+void _SET_SR(CPU *cpu, uint8_t *src);
+uint8_t _GET_SR(CPU *cpu);
+uint8_t _PULL(CPU *cpu);
+void _PUSH(CPU *cpu, uint8_t *src);
+uint8_t _LOAD(CPU *cpu, uint16_t address);
+void _STORE(CPU *cpu, uint16_t address, uint8_t *src);
+uint8_t _IF_CARRY(CPU *cpu);
+uint8_t _IF_OVERFLOW(CPU *cpu);
+uint8_t _IF_SIGN(CPU *cpu);
+uint8_t _IF_ZERO(CPU *cpu);
+uint8_t _IF_INTERRUPT(CPU *cpu);
+uint8_t _IF_BREAK(CPU *cpu);
+
+
 uint8_t _ADC(CPU *cpu, Instruction *arg);
 uint8_t _AND(CPU *cpu, Instruction *arg);
 uint8_t _ASL(CPU *cpu, Instruction *arg);
