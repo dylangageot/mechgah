@@ -216,79 +216,82 @@ uint8_t Instruction_Resolve(Instruction *self, CPU *cpu) {
 	uint8_t lWeight, hWeight;
 	uint16_t address = 0;
 	self->pageCrossed = 0;
-	Mapper *mapper = mapper;
+	Mapper *mapper = cpu->rmap;
 	switch (self->opcode.addressingMode) {
 		case IMP : /* Implied : Nothing to do*/
 			break;
 
-		case ACC : /*Accumulator : Nothing to do */
+		case ACC : 
+			self->dataMem = &cpu->A;
 			break;
 
 		case ZEX :
-			address = (0x00FF) & (uint16_t)(self->opcodeArg[0] + cpu->X);
+			address = (self->opcodeArg[0] + cpu->X) & 0xFF;
 			self->dataMem = mapper->get(mapper->memoryMap, AS_CPU, address);
 			break;
 
 		case ZEY :
-			address = (0x00FF) & (uint16_t)(self->opcodeArg[0] + cpu->Y);
+			address = (self->opcodeArg[0] + cpu->Y) & 0xFF;
 			self->dataMem = mapper->get(mapper->memoryMap, AS_CPU, address);
 			break;
 
 		case INX :
-			address = (0x00FF) & (uint16_t)(self->opcodeArg[0] + cpu->X);
+			address = (self->opcodeArg[0] + cpu->X) & 0xFF;
 			lWeight = *(mapper->get(mapper->memoryMap, AS_CPU, address));
 			hWeight = *(mapper->get(mapper->memoryMap, AS_CPU, address + 1));
-			address = (uint16_t)(hWeight<<8 + lWeight);
+			address = (hWeight << 8) + lWeight;
 			self->dataMem = mapper->get(mapper->memoryMap, AS_CPU, address);
 			break;
 
 		case INY :
-			address = (0x00FF) & (uint16_t)(self->opcodeArg[0]);
+			address = self->opcodeArg[0] & 0xFF;
 			lWeight = *(mapper->get(mapper->memoryMap, AS_CPU, address));
 			hWeight = *(mapper->get(mapper->memoryMap, AS_CPU, address + 1));
-			address = (uint16_t)(hWeight<<8 + lWeight);
+			address = (hWeight << 8) + lWeight;
 			if ((address & 0xFF00) != ((address + cpu->Y) & 0xFF00))
 				self->pageCrossed = 1;
-			address = (uint16_t)(hWeight<<8 + lWeight + cpu->Y);
+			address = (hWeight << 8) + lWeight + cpu->Y;
 			self->dataMem = mapper->get(mapper->memoryMap, AS_CPU, address);
 			break;
 
 		case IMM : /* Immediate : Nothing to do*/
+			self->dataMem = self->opcodeArg;
 			break;
 
 		case ZER :
-			address = (0x00FF) & (uint16_t)(self->opcodeArg[0]);
+			address = self->opcodeArg[0] & 0xFF;
 			self->dataMem = mapper->get(mapper->memoryMap, AS_CPU, address);
 			break;
 
 		case REL : /* Immediate : Nothing to do*/
+			self->dataMem = self->opcodeArg;
 			break;
 
 		case ABS :
-			address = (uint16_t)(self->opcodeArg[1]<<8 + self->opcodeArg[0]);
+			address = (self->opcodeArg[1] << 8) + self->opcodeArg[0];
 			self->dataMem = mapper->get(mapper->memoryMap, AS_CPU, address);
 			break;
 
 		case ABX :
-			address = (uint16_t)(self->opcodeArg[1]<<8 + self->opcodeArg[0]);
+			address = (self->opcodeArg[1] << 8) + self->opcodeArg[0];
 			if ((address & 0xFF00) != ((address + cpu->X) & 0xFF00))
 				self->pageCrossed = 1;
-			address = (uint16_t)(self->opcodeArg[1]<<8 + self->opcodeArg[0] + cpu->X);
+			address = (self->opcodeArg[1] << 8) + self->opcodeArg[0] + cpu->X;
 			self->dataMem = mapper->get(mapper->memoryMap, AS_CPU, address);
 			break;
 
 		case ABY :
-			address = (uint16_t)(self->opcodeArg[1]<<8 + self->opcodeArg[0]);
+			address = (self->opcodeArg[1] << 8) + self->opcodeArg[0];
 			if ((address & 0xFF00) != ((address + cpu->X) & 0xFF00))
 				self->pageCrossed = 1;
-			address = (uint16_t)(self->opcodeArg[1]<<8 + self->opcodeArg[0] + cpu->Y);
+			address = (self->opcodeArg[1] << 8) + self->opcodeArg[0] + cpu->Y;
 			self->dataMem = mapper->get(mapper->memoryMap, AS_CPU, address);
 			break;
 
 		case ABI :
 			lWeight = *(mapper->get(mapper->memoryMap, AS_CPU, address));
 			hWeight = *(mapper->get(mapper->memoryMap, AS_CPU, address + 1));
-			address = (uint16_t)(hWeight<<8 + lWeight);
+			address = (hWeight << 8) + lWeight;
 			self->dataMem = mapper->get(mapper->memoryMap, AS_CPU, address);
 			break;
 
