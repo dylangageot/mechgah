@@ -186,6 +186,30 @@ static void test_IF_BREAK(void **state) {
 	assert_int_equal(_IF_BREAK(self), 0);
 }
 
+static void test_BRANCH(void **state) {
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t src = 0x40, clk = 0;
+	inst.dataMem = &src;
+
+	/* Test : Condition low */
+	self->PC = 0x8000;
+	clk = _BRANCH(self, &inst, 0);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->PC, 0x8000);
+	/* Test : Condition high */
+	self->PC = 0x8000;
+	clk = _BRANCH(self, &inst, 1);
+	assert_int_equal(clk, 3);
+	assert_int_equal(self->PC, 0x8000 + src);
+	/* Test : Carry bit low and branch on different page */
+	self->PC = 0x8000;
+	src = 0xC0;
+	clk = _BRANCH(self, &inst, 1);
+	assert_int_equal(clk, 4);
+	assert_int_equal(self->PC, 0x7FC0);
+}
+
 static void test_ADC(void **state) {
 	CPU *self = (CPU*) *state;
 	Instruction inst;
@@ -270,7 +294,6 @@ static void test_ASL(void **state) {
 	CPU *self = (CPU*) *state;
 	Instruction inst;
 	uint8_t src = 0xAA, clk = 0;
-	inst.opcode.inst = _ASL;
 	inst.dataMem = &src;
 
 	/* Test ASL general behavior */
@@ -326,32 +349,145 @@ static void test_BCC(void **state) {
 	CPU *self = (CPU*) *state;
 	Instruction inst;
 	uint8_t src = 0x40, clk = 0;
-	inst.opcode.inst = _BCC;
 	inst.dataMem = &src;
+	self->PC = 0x8000;
 
 	/* Test BCC general behavior */
 	/* Test : Carry bit high */
-	inst.opcode.addressingMode = IMP;
 	self->P = 0x01;
-	self->PC = 0x8000;
 	clk = _BCC(self, &inst);
 	assert_int_equal(clk, 2);
-	assert_int_equal(self->PC, 0x8000);
 	/* Test : Carry bit low */
-	self->P = 0;
-	self->PC = 0x8000;
+	self->P = 0x00;
 	clk = _BCC(self, &inst);
 	assert_int_equal(clk, 3);
-	assert_int_equal(self->PC, 0x8000 + src);
-	/* Test : Carry bit low and branch on different page */
-	self->P = 0;
-	self->PC = 0x8000;
-	src = 0xC0;
-	clk = _BCC(self, &inst);
-	assert_int_equal(clk, 4);
-	assert_int_equal(self->PC, 0x7FC0);
 }
 
+static void test_BCS(void **state) {
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t src = 0x40, clk = 0;
+	inst.dataMem = &src;
+	self->PC = 0x8000;
+
+	/* Test BCS general behavior */
+	/* Test : Carry bit low */
+	self->P = 0x00;
+	clk = _BCS(self, &inst);
+	assert_int_equal(clk, 2);
+	/* Test : Carry bit high */
+	self->P = 0x01;
+	clk = _BCS(self, &inst);
+	assert_int_equal(clk, 3);
+}
+
+static void test_BEQ(void **state) {
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t src = 0x40, clk = 0;
+	inst.dataMem = &src;
+	self->PC = 0x8000;
+
+	/* Test BEQ general behavior */
+	/* Test : Zero bit low */
+	self->P = 0x00;
+	clk = _BEQ(self, &inst);
+	assert_int_equal(clk, 2);
+	/* Test : Zero bit high */
+	self->P = 0x02;
+	clk = _BEQ(self, &inst);
+	assert_int_equal(clk, 3);
+}
+
+static void test_BMI(void **state) {
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t src = 0x40, clk = 0;
+	inst.dataMem = &src;
+	self->PC = 0x8000;
+
+	/* Test BMI general behavior */
+	/* Test : Sign bit low */
+	self->P = 0x00;
+	clk = _BMI(self, &inst);
+	assert_int_equal(clk, 2);
+	/* Test : Sign bit high */
+	self->P = 0x80;
+	clk = _BMI(self, &inst);
+	assert_int_equal(clk, 3);
+}
+
+static void test_BNE(void **state) {
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t src = 0x40, clk = 0;
+	inst.dataMem = &src;
+	self->PC = 0x8000;
+
+	/* Test BNE general behavior */
+	/* Test : Zero bit high */
+	self->P = 0x02;
+	clk = _BNE(self, &inst);
+	assert_int_equal(clk, 2);
+	/* Test : Zero bit low */
+	self->P = 0x00;
+	clk = _BNE(self, &inst);
+	assert_int_equal(clk, 3);
+}
+
+static void test_BPL(void **state) {
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t src = 0x40, clk = 0;
+	inst.dataMem = &src;
+	self->PC = 0x8000;
+
+	/* Test BPL general behavior */
+	/* Test : Sign bit high */
+	self->P = 0x80;
+	clk = _BPL(self, &inst);
+	assert_int_equal(clk, 2);
+	/* Test : Sign bit low */
+	self->P = 0x00;
+	clk = _BPL(self, &inst);
+	assert_int_equal(clk, 3);
+}
+
+static void test_BVC(void **state) {
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t src = 0x40, clk = 0;
+	inst.dataMem = &src;
+	self->PC = 0x8000;
+
+	/* Test BVC general behavior */
+	/* Test : Overflow bit high */
+	self->P = 0x40;
+	clk = _BVC(self, &inst);
+	assert_int_equal(clk, 2);
+	/* Test : Overflow bit low */
+	self->P = 0x00;
+	clk = _BVC(self, &inst);
+	assert_int_equal(clk, 3);
+}
+
+static void test_BVS(void **state) {
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t src = 0x40, clk = 0;
+	inst.dataMem = &src;
+	self->PC = 0x8000;
+
+	/* Test BVS general behavior */
+	/* Test : Overflow bit low */
+	self->P = 0x00;
+	clk = _BVS(self, &inst);
+	assert_int_equal(clk, 2);
+	/* Test : Overflow bit high */
+	self->P = 0x40;
+	clk = _BVS(self, &inst);
+	assert_int_equal(clk, 3);
+}
 
 static int teardown_CPU(void **state) {
 	if (*state != NULL) {
@@ -385,11 +521,19 @@ int run_instruction(void) {
 		cmocka_unit_test(test_IF_ZERO),
 		cmocka_unit_test(test_IF_INTERRUPT),
 		cmocka_unit_test(test_IF_BREAK),
+		cmocka_unit_test(test_BRANCH),
 	};
 	const struct CMUnitTest test_instruction[] = {
 		cmocka_unit_test(test_ADC),
 		cmocka_unit_test(test_ASL),
 		cmocka_unit_test(test_BCC),
+		cmocka_unit_test(test_BCS),
+		cmocka_unit_test(test_BEQ),
+		cmocka_unit_test(test_BMI),
+		cmocka_unit_test(test_BNE),
+		cmocka_unit_test(test_BPL),
+		cmocka_unit_test(test_BVC),
+		cmocka_unit_test(test_BVS),
 	};
 	int out = 0;
 	out += cmocka_run_group_tests(test_instruction_macro, setup_CPU, teardown_CPU);
