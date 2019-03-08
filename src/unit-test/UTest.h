@@ -20,3 +20,12 @@ int run_UTnrom(void);
  * \return 0 if passed, number of failed otherwise
  */
 int run_instruction(void);
+
+
+/**
+ * \fn run_UTinterrupt
+ * \brief Unit test of interrupt manager
+ *
+ * \return 0 if passed, number of failed otherwise
+ */
+int run_UTinterrupt(void);
