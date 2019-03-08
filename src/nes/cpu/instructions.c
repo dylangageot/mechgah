@@ -186,7 +186,7 @@ uint8_t Instruction_Fetch(Instruction *self, CPU *cpu) {
 		cpu->PC++;
 		return 1;
 	} else if ((self->opcode.addressingMode >= 9) &&
-			   (self->opcode.addressingMode <= 12)) {
+			(self->opcode.addressingMode <= 12)) {
 		uint8_t i;
 		for (i = 0; i < 2; i++)
 			self->opcodeArg[i] = *(opc + i);
@@ -288,7 +288,25 @@ uint8_t Instruction_Resolve(Instruction *self, CPU *cpu) {
 	return 1;
 }
 
-uint8_t _ADC(CPU *cpu, Instruction *arg){return 0;}
+uint8_t _ADC(CPU *cpu, Instruction *arg) {
+	uint8_t clk[] = {0, 0, 4, 0, 6, 5, 2, 3, 0, 4, 4, 4, 0};
+	uint16_t temp = *arg->dataMem + cpu->A + (_IF_CARRY(cpu) ? 1 : 0);
+	/* Set bit flag */
+	_SET_ZERO(cpu, (uint8_t*) &temp);
+	_SET_SIGN(cpu, (uint8_t*) &temp);
+	_SET_OVERFLOW(cpu, !((cpu->A ^ *arg->dataMem) & 0x80) && 
+			((cpu->A ^ temp) & 0x80));
+	_SET_CARRY(cpu, temp > 0xFF);
+	/* Save in Accumulator */
+	cpu->A = ((uint8_t) temp & 0xFF);
+	if ((arg->opcode.addressingMode == ABX) ||
+		(arg->opcode.addressingMode == ABY) ||
+		(arg->opcode.addressingMode == INY))
+		return clk[arg->opcode.addressingMode] + arg->pageCrossed;
+	else
+		return clk[arg->opcode.addressingMode];
+}
+
 uint8_t _AND(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _ASL(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _BCC(CPU *cpu, Instruction *arg){return 0;}

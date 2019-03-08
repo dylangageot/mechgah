@@ -186,6 +186,86 @@ static void test_IF_BREAK(void **state) {
 	assert_int_equal(_IF_BREAK(self), 0);
 }
 
+static void test_ADC(void **state) {
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t src = 0xAA, clk = 0;
+	inst.opcode.inst = _ADC;
+	inst.dataMem = &src;
+
+	/* Test ADC general behavior */
+	/* Test : Sign bit */
+	inst.opcode.addressingMode = IMM;
+	self->P = 0;
+	self->A = 0x11;
+	clk = _ADC(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->A, 0xAA + 0x11);
+	assert_int_equal(self->P, 0x80);
+	/* Test : Overflow and Sign bit */
+	self->P = 0;
+	self->A = 0x7F;
+	src = 1;
+	clk = _ADC(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->A, 0x7F + 1);
+	assert_int_equal(self->P, 0xC0);
+	/* Test : Zero and Carry bit */
+	self->P = 0;
+	self->A = 0xFF;
+	src = 1;
+	clk = _ADC(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->A, 0x00);
+	assert_int_equal(self->P, 0x03);
+	/* Test : Add with carry */
+	self->P = 0x01;
+	self->A = 1;
+	src = 1;
+	clk = _ADC(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->A, 0x03);
+	assert_int_equal(self->P, 0x00);
+	
+	/* Test addressing mode clock */
+	inst.pageCrossed = 1;
+	inst.opcode.addressingMode = ZER;
+	clk = _ADC(self, &inst);
+	assert_int_equal(clk, 3);
+	inst.opcode.addressingMode = ZEX;
+	clk = _ADC(self, &inst);
+	assert_int_equal(clk, 4);
+	inst.opcode.addressingMode = ABS;
+	clk = _ADC(self, &inst);
+	assert_int_equal(clk, 4);
+	inst.opcode.addressingMode = ABX;
+	clk = _ADC(self, &inst);
+	assert_int_equal(clk, 5);
+	inst.pageCrossed = 0;
+	inst.opcode.addressingMode = ABX;
+	clk = _ADC(self, &inst);
+	assert_int_equal(clk, 4);
+	inst.pageCrossed = 1;
+	inst.opcode.addressingMode = ABY;
+	clk = _ADC(self, &inst);
+	assert_int_equal(clk, 5);
+	inst.pageCrossed = 0;
+	inst.opcode.addressingMode = ABY;
+	clk = _ADC(self, &inst);
+	assert_int_equal(clk, 4);
+	inst.pageCrossed = 1;
+	inst.opcode.addressingMode = INX;
+	clk = _ADC(self, &inst);
+	assert_int_equal(clk, 6);
+	inst.opcode.addressingMode = INY;
+	clk = _ADC(self, &inst);
+	assert_int_equal(clk, 6);
+	inst.pageCrossed = 0;
+	inst.opcode.addressingMode = INY;
+	clk = _ADC(self, &inst);
+	assert_int_equal(clk, 5);
+}
+
 static int teardown_CPU(void **state) {
 	if (*state != NULL) {
 		CPU *self = (CPU*) *state;
@@ -198,7 +278,7 @@ static int teardown_CPU(void **state) {
 }
 
 int run_instruction(void) {
-	const struct CMUnitTest test_instruction[] = {
+	const struct CMUnitTest test_instruction_macro[] = {
 		cmocka_unit_test(test_SET_SIGN),
 		cmocka_unit_test(test_SET_ZERO),
 		cmocka_unit_test(test_SET_CARRY),
@@ -219,7 +299,11 @@ int run_instruction(void) {
 		cmocka_unit_test(test_IF_INTERRUPT),
 		cmocka_unit_test(test_IF_BREAK),
 	};
+	const struct CMUnitTest test_instruction[] = {
+		cmocka_unit_test(test_ADC),
+	};
 	int out = 0;
+	out += cmocka_run_group_tests(test_instruction_macro, setup_CPU, teardown_CPU);
 	out += cmocka_run_group_tests(test_instruction, setup_CPU, teardown_CPU);
 	return out;
 }
