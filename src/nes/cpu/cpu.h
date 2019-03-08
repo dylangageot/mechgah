@@ -18,7 +18,7 @@
 typedef struct {
 	uint8_t A, X, Y, SP, P;					/*! 8-bit registers		    */
 	uint16_t PC;							/*! 16-bit register		    */
-	Mapper* rmap;						/*! Mapper from NES struct	*/
+	Mapper* rmap;							/*! Mapper from NES struct	*/
 } CPU;
 
 /**
@@ -51,9 +51,12 @@ uint8_t CPU_InterruptManager(CPU* self, uint8_t* context);
  * \brief Execute the next instruction
  *
  * \param self instance of CPU
- * \return number of CPU cycle used to execute the instruction
+ * \param context variable containing interrupt flags
+ *
+ * \return number of clock cycle used to execute the instruction
  */
 uint8_t CPU_Execute(CPU* self, uint8_t* context);
+
 
 /**
  * \fn CPU_Destroy
