@@ -68,7 +68,7 @@ uint8_t CPU_InterruptManager(CPU* self, uint8_t* context){
 		self->PC |= (uint16_t)(*ptr) << 8;
 
 		/* set I flag to disable further IRQs */
-		self->I=1;
+		self->P |= (0x01 << 2);
 
 		/* clear context N byte */
 		*context &= 0xFE;
