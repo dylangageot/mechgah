@@ -299,6 +299,7 @@ uint8_t _ADC(CPU *cpu, Instruction *arg) {
 	_SET_CARRY(cpu, temp > 0xFF);
 	/* Save in Accumulator */
 	cpu->A = ((uint8_t) temp & 0xFF);
+	/* Manage CPU cycle */
 	if ((arg->opcode.addressingMode == ABX) ||
 		(arg->opcode.addressingMode == ABY) ||
 		(arg->opcode.addressingMode == INY))
@@ -308,7 +309,18 @@ uint8_t _ADC(CPU *cpu, Instruction *arg) {
 }
 
 uint8_t _AND(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _ASL(CPU *cpu, Instruction *arg){return 0;}
+
+uint8_t _ASL(CPU *cpu, Instruction *arg) {
+	uint8_t clk[] = {0, 2, 6, 0, 0, 0, 0, 5, 0, 6, 7, 0, 0};
+	/* Execute */
+	_SET_CARRY(cpu, *arg->dataMem & 0x80);
+	*arg->dataMem <<= 1;
+	_SET_SIGN(cpu, arg->dataMem);
+	_SET_ZERO(cpu, arg->dataMem);
+	/* Manage CPU cycle */
+	return clk[arg->opcode.addressingMode];
+}
+
 uint8_t _BCC(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _BCS(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _BEQ(CPU *cpu, Instruction *arg){return 0;}

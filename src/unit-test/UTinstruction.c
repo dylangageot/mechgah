@@ -266,6 +266,62 @@ static void test_ADC(void **state) {
 	assert_int_equal(clk, 5);
 }
 
+static void test_ASL(void **state) {
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t src = 0xAA, clk = 0;
+	inst.opcode.inst = _ASL;
+	inst.dataMem = &src;
+
+	/* Test ASL general behavior */
+	/* Test : Carry bit */
+	inst.opcode.addressingMode = ACC;
+	self->P = 0;
+	clk = _ASL(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(src, (0xAA << 1) & 0xFF);
+	assert_int_equal(self->P, 0x01);
+	/* Test : Zero and carry bit */
+	self->P = 0;
+	src = 0x80;
+	clk = _ASL(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(src, 0x00);
+	assert_int_equal(self->P, 0x03);
+	/* Test : Sign and carry bit */
+	self->P = 0;
+	src = 0xC0;
+	clk = _ASL(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(src, 0x80);
+	assert_int_equal(self->P, 0x81);
+	/* Test : No carry bit */
+	self->P = 0;
+	src = 0x3F;
+	clk = _ASL(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(src, 0x3F << 1);
+	assert_int_equal(self->P, 0x00);
+	
+	/* Test addressing mode clock */
+	inst.pageCrossed = 1;
+	inst.opcode.addressingMode = ACC;
+	clk = _ASL(self, &inst);
+	assert_int_equal(clk, 2);
+	inst.opcode.addressingMode = ZER;
+	clk = _ASL(self, &inst);
+	assert_int_equal(clk, 5);
+	inst.opcode.addressingMode = ZEX;
+	clk = _ASL(self, &inst);
+	assert_int_equal(clk, 6);
+	inst.opcode.addressingMode = ABS;
+	clk = _ASL(self, &inst);
+	assert_int_equal(clk, 6);
+	inst.opcode.addressingMode = ABX;
+	clk = _ASL(self, &inst);
+	assert_int_equal(clk, 7);
+}
+
 static int teardown_CPU(void **state) {
 	if (*state != NULL) {
 		CPU *self = (CPU*) *state;
@@ -301,6 +357,7 @@ int run_instruction(void) {
 	};
 	const struct CMUnitTest test_instruction[] = {
 		cmocka_unit_test(test_ADC),
+		cmocka_unit_test(test_ASL),
 	};
 	int out = 0;
 	out += cmocka_run_group_tests(test_instruction_macro, setup_CPU, teardown_CPU);
