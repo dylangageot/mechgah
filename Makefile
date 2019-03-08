@@ -15,6 +15,7 @@ SRC  		= $(NESDIR)/mapper/nrom.c \
 			  $(NESDIR)/cpu/cpu.c \
 			  $(UTESTDIR)/UTnrom.c \
 			  $(UTESTDIR)/UTinstruction.c \
+			  $(UTESTDIR)/UTinterrupt.c \
 
 
 # use gcc
