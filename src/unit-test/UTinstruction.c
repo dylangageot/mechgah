@@ -399,6 +399,44 @@ static void test_BEQ(void **state) {
 	assert_int_equal(clk, 3);
 }
 
+static void test_BIT(void **state) {
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t src = 0xC0, clk = 0;
+	inst.dataMem = &src;
+
+	/* Test BIT general behavior */
+	/* Test : Sign, overflow and zero bit */
+	inst.opcode.addressingMode = ZER;
+	self->A = 0;
+	self->P = 0;
+	clk = _BIT(self, &inst);
+	assert_int_equal(clk, 3);
+	assert_int_equal(self->P, 0xC2);
+	/* Test : Sign and overflow bit */
+	self->A = 0xC0;
+	self->P = 0;
+	clk = _BIT(self, &inst);
+	assert_int_equal(clk, 3);
+	assert_int_equal(self->P, 0xC0);
+	/* Test : No bit */
+	self->A = 0x20;
+	self->P = 0;
+	src = 0x20;
+	clk = _BIT(self, &inst);
+	assert_int_equal(clk, 3);
+	assert_int_equal(self->P, 0x00);
+	
+	/* Test addressing mode clock */
+	inst.pageCrossed = 1;
+	inst.opcode.addressingMode = ZER;
+	clk = _BIT(self, &inst);
+	assert_int_equal(clk, 3);
+	inst.opcode.addressingMode = ABS;
+	clk = _BIT(self, &inst);
+	assert_int_equal(clk, 4);
+}
+
 static void test_BMI(void **state) {
 	CPU *self = (CPU*) *state;
 	Instruction inst;
@@ -453,6 +491,29 @@ static void test_BPL(void **state) {
 	assert_int_equal(clk, 3);
 }
 
+static void test_BRK(void **state) {
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t clk = 0;
+	uint8_t temp = 0xDC;
+	/* Test BRK general behavior */
+	/* Test : change PC */
+	self->SP = 0xFF;
+	self->PC = 0xABCC;
+	self->P = 0x00;
+	_STORE(self, 0xFFFE, &temp);
+	temp = 0xFE;
+	_STORE(self, 0xFFFF, &temp);
+	clk = _BRK(self, &inst);
+	assert_int_equal(clk, 7);
+	assert_int_equal(self->PC, 0xFEDC);
+	assert_int_equal(self->SP, 0xFC);
+	assert_int_equal(0x10, _PULL(self));
+	assert_int_equal(0xCD, _PULL(self));
+	assert_int_equal(0xAB, _PULL(self));
+	assert_int_equal(0x14, self->P);
+}
+
 static void test_BVC(void **state) {
 	CPU *self = (CPU*) *state;
 	Instruction inst;
@@ -488,6 +549,51 @@ static void test_BVS(void **state) {
 	clk = _BVS(self, &inst);
 	assert_int_equal(clk, 3);
 }
+
+static void test_JMP(void **state) {
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t src[2] = {0xAA, 0xBB}, clk = 0;
+	inst.dataMem = src;
+
+	/* Test JMP general behavior */
+	/* Test : change PC */
+	inst.opcode.addressingMode = ABS;
+	self->PC = 0x0000;
+	clk = _JMP(self, &inst);
+	assert_int_equal(clk, 3);
+	assert_int_equal(self->PC, 0xBBAA);
+	
+	/* Test addressing mode clock */
+	inst.pageCrossed = 1;
+	inst.opcode.addressingMode = ABS;
+	clk = _JMP(self, &inst);
+	assert_int_equal(clk, 3);
+	inst.opcode.addressingMode = ABI;
+	clk = _JMP(self, &inst);
+	assert_int_equal(clk, 5);
+}
+
+static void test_JSR(void **state) {
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t src[2] = {0xAA, 0xBB}, clk = 0;
+	inst.dataMem = src;
+
+	/* Test JSR general behavior */
+	/* Test : change PC */
+	inst.opcode.addressingMode = ABS;
+	self->SP = 0xFF;
+	self->PC = 0xABCE;
+	clk = _JSR(self, &inst);
+	assert_int_equal(clk, 6);
+	assert_int_equal(self->PC, 0xBBAA);
+	assert_int_equal(self->SP, 0xFD);
+	assert_int_equal(0xCD, _PULL(self));
+	assert_int_equal(0xAB, _PULL(self));
+}
+
+
 
 static int teardown_CPU(void **state) {
 	if (*state != NULL) {
@@ -529,11 +635,15 @@ int run_instruction(void) {
 		cmocka_unit_test(test_BCC),
 		cmocka_unit_test(test_BCS),
 		cmocka_unit_test(test_BEQ),
+		cmocka_unit_test(test_BIT),
 		cmocka_unit_test(test_BMI),
 		cmocka_unit_test(test_BNE),
 		cmocka_unit_test(test_BPL),
+		cmocka_unit_test(test_BRK),
 		cmocka_unit_test(test_BVC),
 		cmocka_unit_test(test_BVS),
+		cmocka_unit_test(test_JMP),
+		cmocka_unit_test(test_JSR),
 	};
 	int out = 0;
 	out += cmocka_run_group_tests(test_instruction_macro, setup_CPU, teardown_CPU);

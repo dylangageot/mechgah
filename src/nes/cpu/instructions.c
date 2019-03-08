@@ -346,9 +346,10 @@ uint8_t _BEQ(CPU *cpu, Instruction *arg) {
 
 uint8_t _BIT(CPU *cpu, Instruction *arg) {
 	uint8_t clk[] = {0, 0, 0, 0, 0, 0, 0, 3, 0, 4, 0, 0, 0};
+	uint8_t temp = *arg->dataMem & cpu->A;
 	_SET_SIGN(cpu, arg->dataMem);
 	_SET_OVERFLOW(cpu, 0x40 & *arg->dataMem);
-	_SET_ZERO(cpu, *arg->dataMem & cpu->A);
+	_SET_ZERO(cpu, &temp);
 	return clk[arg->opcode.addressingMode];
 }
 
@@ -364,7 +365,21 @@ uint8_t _BPL(CPU *cpu, Instruction *arg) {
 	return _BRANCH(cpu, arg, !_IF_SIGN(cpu));
 }
 
-uint8_t _BRK(CPU *cpu, Instruction *arg){return 0;}
+uint8_t _BRK(CPU *cpu, Instruction *arg) {
+	uint8_t clk = 7;
+	cpu->PC++; /* Increment PC */
+	/* Push return address to stack */
+	uint8_t temp = (cpu->PC >> 8) & 0xFF;
+	_PUSH(cpu, &temp);
+	temp = cpu->PC & 0xFF;
+	_PUSH(cpu, &temp);
+	_SET_BREAK(cpu);
+	_PUSH(cpu, &cpu->P);
+	_SET_INTERRUPT(cpu);
+	/* Set program counter from memory */
+	cpu->PC = _LOAD(cpu, 0xFFFE) | (_LOAD(cpu, 0xFFFF) << 8);
+	return clk;
+}
 
 uint8_t _BVC(CPU *cpu, Instruction *arg) {
 	return _BRANCH(cpu, arg, !_IF_OVERFLOW(cpu));
@@ -388,8 +403,29 @@ uint8_t _EOR(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _INC(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _INX(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _INY(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _JMP(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _JSR(CPU *cpu, Instruction *arg){return 0;}
+
+uint8_t _JMP(CPU *cpu, Instruction *arg) {
+	uint8_t clk[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 5};
+	/* Set program counter from memory */
+	uint16_t newPC = (*(arg->dataMem+1) << 8) + *arg->dataMem;
+	cpu->PC = newPC;
+	return clk[arg->opcode.addressingMode];
+}
+
+uint8_t _JSR(CPU *cpu, Instruction *arg) {
+	uint8_t clk = 6;
+	cpu->PC--; /* Decrement PC */
+	/* Push return address to stack */
+	uint8_t temp = (cpu->PC >> 8) & 0xFF;
+	_PUSH(cpu, &temp);
+	temp = cpu->PC & 0xFF;
+	_PUSH(cpu, &temp);
+	/* Set program counter from memory */
+	uint16_t newPC = (*(arg->dataMem+1) << 8) + *arg->dataMem;
+	cpu->PC = newPC;
+	return clk;
+}
+
 uint8_t _LDA(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _LDX(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _LDY(CPU *cpu, Instruction *arg){return 0;}
