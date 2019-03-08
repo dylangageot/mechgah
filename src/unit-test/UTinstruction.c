@@ -322,6 +322,37 @@ static void test_ASL(void **state) {
 	assert_int_equal(clk, 7);
 }
 
+static void test_BCC(void **state) {
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t src = 0x40, clk = 0;
+	inst.opcode.inst = _BCC;
+	inst.dataMem = &src;
+
+	/* Test BCC general behavior */
+	/* Test : Carry bit high */
+	inst.opcode.addressingMode = IMP;
+	self->P = 0x01;
+	self->PC = 0x8000;
+	clk = _BCC(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->PC, 0x8000);
+	/* Test : Carry bit low */
+	self->P = 0;
+	self->PC = 0x8000;
+	clk = _BCC(self, &inst);
+	assert_int_equal(clk, 3);
+	assert_int_equal(self->PC, 0x8000 + src);
+	/* Test : Carry bit low and branch on different page */
+	self->P = 0;
+	self->PC = 0x8000;
+	src = 0xC0;
+	clk = _BCC(self, &inst);
+	assert_int_equal(clk, 4);
+	assert_int_equal(self->PC, 0x7FC0);
+}
+
+
 static int teardown_CPU(void **state) {
 	if (*state != NULL) {
 		CPU *self = (CPU*) *state;
@@ -358,6 +389,7 @@ int run_instruction(void) {
 	const struct CMUnitTest test_instruction[] = {
 		cmocka_unit_test(test_ADC),
 		cmocka_unit_test(test_ASL),
+		cmocka_unit_test(test_BCC),
 	};
 	int out = 0;
 	out += cmocka_run_group_tests(test_instruction_macro, setup_CPU, teardown_CPU);

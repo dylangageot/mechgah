@@ -321,7 +321,18 @@ uint8_t _ASL(CPU *cpu, Instruction *arg) {
 	return clk[arg->opcode.addressingMode];
 }
 
-uint8_t _BCC(CPU *cpu, Instruction *arg){return 0;}
+uint8_t _BCC(CPU *cpu, Instruction *arg) { 
+    uint8_t clk = 2;
+	uint16_t newPC;
+	if (!_IF_CARRY(cpu)) {
+		newPC = _REL_ADDR(cpu, (int8_t*) arg->dataMem); 
+		/* Check if the branch occurs to same page */
+		clk += ((cpu->PC & 0xFF00) != (newPC & 0xFF00) ? 2 : 1);
+		cpu->PC = newPC;
+    }
+	return clk;
+}
+
 uint8_t _BCS(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _BEQ(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _BIT(CPU *cpu, Instruction *arg){return 0;}
