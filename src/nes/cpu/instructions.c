@@ -168,6 +168,18 @@ uint8_t _IF_BREAK(CPU *cpu) {
 	return (cpu->P & 0x10) == 0x10;
 }
 
+uint8_t _BRANCH(CPU* cpu, Instruction *arg, uint8_t cond) {
+    uint8_t clk = 2;
+	uint16_t newPC;
+	if (cond) {
+		newPC = _REL_ADDR(cpu, (int8_t*) arg->dataMem); 
+		/* Check if the branch occurs to same page */
+		clk += ((cpu->PC & 0xFF00) != (newPC & 0xFF00) ? 2 : 1);
+		cpu->PC = newPC;
+    }
+	return clk;
+}
+
 uint8_t Instruction_Fetch(Instruction *self, CPU *cpu) {
 	if ((self == NULL) || (cpu == NULL))
 		return 0;
@@ -274,7 +286,6 @@ uint8_t Instruction_Resolve(Instruction *self, CPU *cpu) {
 			break;
 
 		case ABI :
-			address = (uint16_t)(self->opcodeArg[1]<<8 + self->opcodeArg[0]);
 			lWeight = *(mapper->get(mapper->memoryMap, AS_CPU, address));
 			hWeight = *(mapper->get(mapper->memoryMap, AS_CPU, address + 1));
 			address = (uint16_t)(hWeight<<8 + lWeight);
@@ -322,26 +333,47 @@ uint8_t _ASL(CPU *cpu, Instruction *arg) {
 }
 
 uint8_t _BCC(CPU *cpu, Instruction *arg) { 
-    uint8_t clk = 2;
-	uint16_t newPC;
-	if (!_IF_CARRY(cpu)) {
-		newPC = _REL_ADDR(cpu, (int8_t*) arg->dataMem); 
-		/* Check if the branch occurs to same page */
-		clk += ((cpu->PC & 0xFF00) != (newPC & 0xFF00) ? 2 : 1);
-		cpu->PC = newPC;
-    }
-	return clk;
+	return _BRANCH(cpu, arg, !_IF_CARRY(cpu));
 }
 
-uint8_t _BCS(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _BEQ(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _BIT(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _BMI(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _BNE(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _BPL(CPU *cpu, Instruction *arg){return 0;}
+uint8_t _BCS(CPU *cpu, Instruction *arg) {
+	return _BRANCH(cpu, arg, _IF_CARRY(cpu));
+}
+
+uint8_t _BEQ(CPU *cpu, Instruction *arg) {
+	return _BRANCH(cpu, arg, _IF_ZERO(cpu));
+}
+
+uint8_t _BIT(CPU *cpu, Instruction *arg) {
+	uint8_t clk[] = {0, 0, 0, 0, 0, 0, 0, 3, 0, 4, 0, 0, 0};
+	_SET_SIGN(cpu, arg->dataMem);
+	_SET_OVERFLOW(cpu, 0x40 & *arg->dataMem);
+	_SET_ZERO(cpu, *arg->dataMem & cpu->A);
+	return clk[arg->opcode.addressingMode];
+}
+
+uint8_t _BMI(CPU *cpu, Instruction *arg) {
+	return _BRANCH(cpu, arg, _IF_SIGN(cpu));
+}
+
+uint8_t _BNE(CPU *cpu, Instruction *arg) {
+	return _BRANCH(cpu, arg, !_IF_ZERO(cpu));
+}
+
+uint8_t _BPL(CPU *cpu, Instruction *arg) {
+	return _BRANCH(cpu, arg, !_IF_SIGN(cpu));
+}
+
 uint8_t _BRK(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _BVC(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _BVS(CPU *cpu, Instruction *arg){return 0;}
+
+uint8_t _BVC(CPU *cpu, Instruction *arg) {
+	return _BRANCH(cpu, arg, !_IF_OVERFLOW(cpu));
+}
+
+uint8_t _BVS(CPU *cpu, Instruction *arg) {
+	return _BRANCH(cpu, arg, _IF_OVERFLOW(cpu));
+}
+
 uint8_t _CLC(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _CLD(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _CLI(CPU *cpu, Instruction *arg){return 0;}

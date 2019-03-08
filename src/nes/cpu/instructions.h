@@ -96,7 +96,7 @@ uint8_t _IF_SIGN(CPU *cpu);
 uint8_t _IF_ZERO(CPU *cpu);
 uint8_t _IF_INTERRUPT(CPU *cpu);
 uint8_t _IF_BREAK(CPU *cpu);
-
+uint8_t _BRANCH(CPU* cpu, Instruction *arg, uint8_t cond); 
 
 uint8_t _ADC(CPU *cpu, Instruction *arg);
 uint8_t _AND(CPU *cpu, Instruction *arg);
