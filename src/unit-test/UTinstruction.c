@@ -855,6 +855,29 @@ static void test_CLD(void **state){
 	assert_int_equal(((self->P)&0x08),0);
 }
 
+
+static void test_CLI(void **state){
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*) = _CLC;
+	inst.opcode = Opcode_Get(0x58); /* CLI */
+	uint8_t clk = inst.opcode.inst(self, &inst);
+	self->SP = 0xFF;
+	assert_int_equal(clk,2);
+	assert_int_equal(((self->P)&0x04),0);
+}
+
+static void test_CLV(void **state){
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*) = _CLC;
+	inst.opcode = Opcode_Get(0xB8); /* CLV */
+	uint8_t clk = inst.opcode.inst(self, &inst);
+	self->SP = 0xFF;
+	assert_int_equal(clk,2);
+	assert_int_equal(((self->P)&0x40),0);
+}
+
 static int teardown_CPU(void **state) {
 	if (*state != NULL) {
 		CPU *self = (CPU*) *state;
@@ -906,6 +929,8 @@ int run_instruction(void) {
 		cmocka_unit_test(test_JSR),
 		cmocka_unit_test(test_CLC),
 		cmocka_unit_test(test_CLD),
+		cmocka_unit_test(test_CLI),
+		cmocka_unit_test(test_CLV),
 		};
 	const struct CMUnitTest test_addressing_Mode[] = {
 		cmocka_unit_test(test_addressing_IMP),
