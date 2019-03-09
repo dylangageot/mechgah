@@ -191,6 +191,7 @@ static void test_BRANCH(void **state) {
 	Instruction inst;
 	uint8_t src = 0x40, clk = 0;
 	inst.dataMem = &src;
+	inst.opcode.cycle = 2;
 
 	/* Test : Condition low */
 	self->PC = 0x8000;
@@ -198,11 +199,13 @@ static void test_BRANCH(void **state) {
 	assert_int_equal(clk, 2);
 	assert_int_equal(self->PC, 0x8000);
 	/* Test : Condition high */
+	inst.opcode.cycle = 2;
 	self->PC = 0x8000;
 	clk = _BRANCH(self, &inst, 1);
 	assert_int_equal(clk, 3);
 	assert_int_equal(self->PC, 0x8000 + src);
 	/* Test : Carry bit low and branch on different page */
+	inst.opcode.cycle = 2;
 	self->PC = 0x8000;
 	src = 0xC0;
 	clk = _BRANCH(self, &inst, 1);
@@ -213,16 +216,20 @@ static void test_BRANCH(void **state) {
 static void test_ADC(void **state) {
 	CPU *self = (CPU*) *state;
 	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*)  = _ADC;
 	uint8_t src = 0xAA, clk = 0;
-	inst.opcode.inst = _ADC;
 	inst.dataMem = &src;
+	inst.pageCrossed = 0;
+	
+	/* Verify Opcode LUT */
+	inst.opcode = Opcode_Get(0x69); /* ADC IMM */
+	assert_ptr_equal(ptr, inst.opcode.inst);	
 
 	/* Test ADC general behavior */
 	/* Test : Sign bit */
-	inst.opcode.addressingMode = IMM;
 	self->P = 0;
 	self->A = 0x11;
-	clk = _ADC(self, &inst);
+	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 2);
 	assert_int_equal(self->A, 0xAA + 0x11);
 	assert_int_equal(self->P, 0x80);
@@ -230,7 +237,7 @@ static void test_ADC(void **state) {
 	self->P = 0;
 	self->A = 0x7F;
 	src = 1;
-	clk = _ADC(self, &inst);
+	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 2);
 	assert_int_equal(self->A, 0x7F + 1);
 	assert_int_equal(self->P, 0xC0);
@@ -238,7 +245,7 @@ static void test_ADC(void **state) {
 	self->P = 0;
 	self->A = 0xFF;
 	src = 1;
-	clk = _ADC(self, &inst);
+	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 2);
 	assert_int_equal(self->A, 0x00);
 	assert_int_equal(self->P, 0x03);
@@ -246,177 +253,190 @@ static void test_ADC(void **state) {
 	self->P = 0x01;
 	self->A = 1;
 	src = 1;
-	clk = _ADC(self, &inst);
+	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 2);
 	assert_int_equal(self->A, 0x03);
 	assert_int_equal(self->P, 0x00);
 	
 	/* Test addressing mode clock */
-	inst.pageCrossed = 1;
-	inst.opcode.addressingMode = ZER;
-	clk = _ADC(self, &inst);
+	inst.opcode = Opcode_Get(0x65); /* ADC ZER */
+	assert_ptr_equal(ptr, inst.opcode.inst);	
+	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 3);
-	inst.opcode.addressingMode = ZEX;
-	clk = _ADC(self, &inst);
+
+	inst.opcode = Opcode_Get(0x75); /* ADC ZEX */
+	assert_ptr_equal(ptr, inst.opcode.inst);	
+	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 4);
-	inst.opcode.addressingMode = ABS;
-	clk = _ADC(self, &inst);
+
+	inst.opcode = Opcode_Get(0x6D); /* ADC ABS */
+	assert_ptr_equal(ptr, inst.opcode.inst);	
+	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 4);
-	inst.opcode.addressingMode = ABX;
-	clk = _ADC(self, &inst);
+
+	inst.opcode = Opcode_Get(0x7D); /* ADC ABX */
+	assert_ptr_equal(ptr, inst.opcode.inst);	
+	inst.pageCrossed = 1;
+	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 5);
 	inst.pageCrossed = 0;
-	inst.opcode.addressingMode = ABX;
-	clk = _ADC(self, &inst);
+	
+	inst.opcode = Opcode_Get(0x7D); /* ADC ABX */
+	assert_ptr_equal(ptr, inst.opcode.inst);	
+	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 4);
+	
 	inst.pageCrossed = 1;
-	inst.opcode.addressingMode = ABY;
-	clk = _ADC(self, &inst);
+	inst.opcode = Opcode_Get(0x79); /* ADC ABY */
+	assert_ptr_equal(ptr, inst.opcode.inst);	
+	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 5);
+	
 	inst.pageCrossed = 0;
-	inst.opcode.addressingMode = ABY;
-	clk = _ADC(self, &inst);
+	inst.opcode = Opcode_Get(0x79); /* ADC ABY */
+	assert_ptr_equal(ptr, inst.opcode.inst);	
+	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 4);
+	
+	inst.opcode = Opcode_Get(0x61); /* ADC INX */
+	assert_ptr_equal(ptr, inst.opcode.inst);	
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 6);
+	
 	inst.pageCrossed = 1;
-	inst.opcode.addressingMode = INX;
-	clk = _ADC(self, &inst);
+	inst.opcode = Opcode_Get(0x71); /* ADC INY */
+	assert_ptr_equal(ptr, inst.opcode.inst);	
+	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 6);
-	inst.opcode.addressingMode = INY;
-	clk = _ADC(self, &inst);
-	assert_int_equal(clk, 6);
+	
 	inst.pageCrossed = 0;
-	inst.opcode.addressingMode = INY;
-	clk = _ADC(self, &inst);
+	inst.opcode = Opcode_Get(0x71); /* ADC INY */
+	assert_ptr_equal(ptr, inst.opcode.inst);	
+	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 5);
 }
 
 static void test_ASL(void **state) {
 	CPU *self = (CPU*) *state;
 	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*) = _ASL;
 	uint8_t src = 0xAA, clk = 0;
 	inst.dataMem = &src;
+	inst.pageCrossed = 1;
+
+	/* Verify Opcode LUT */
+	inst.opcode = Opcode_Get(0x0A); /* ASL ACC */
+	assert_ptr_equal(ptr, inst.opcode.inst);	
 
 	/* Test ASL general behavior */
 	/* Test : Carry bit */
-	inst.opcode.addressingMode = ACC;
 	self->P = 0;
-	clk = _ASL(self, &inst);
+	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 2);
 	assert_int_equal(src, (0xAA << 1) & 0xFF);
 	assert_int_equal(self->P, 0x01);
 	/* Test : Zero and carry bit */
 	self->P = 0;
 	src = 0x80;
-	clk = _ASL(self, &inst);
+	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 2);
 	assert_int_equal(src, 0x00);
 	assert_int_equal(self->P, 0x03);
 	/* Test : Sign and carry bit */
 	self->P = 0;
 	src = 0xC0;
-	clk = _ASL(self, &inst);
+	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 2);
 	assert_int_equal(src, 0x80);
 	assert_int_equal(self->P, 0x81);
 	/* Test : No carry bit */
 	self->P = 0;
 	src = 0x3F;
-	clk = _ASL(self, &inst);
+	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 2);
 	assert_int_equal(src, 0x3F << 1);
 	assert_int_equal(self->P, 0x00);
 	
 	/* Test addressing mode clock */
-	inst.pageCrossed = 1;
-	inst.opcode.addressingMode = ACC;
-	clk = _ASL(self, &inst);
-	assert_int_equal(clk, 2);
-	inst.opcode.addressingMode = ZER;
-	clk = _ASL(self, &inst);
+	inst.opcode = Opcode_Get(0x06); /* ASL ZER */
+	assert_ptr_equal(ptr, inst.opcode.inst);	
+	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 5);
-	inst.opcode.addressingMode = ZEX;
-	clk = _ASL(self, &inst);
+
+	inst.opcode = Opcode_Get(0x16); /* ASL ZEX */
+	assert_ptr_equal(ptr, inst.opcode.inst);	
+	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 6);
-	inst.opcode.addressingMode = ABS;
-	clk = _ASL(self, &inst);
+
+	inst.opcode = Opcode_Get(0x0E); /* ASL ABS */
+	assert_ptr_equal(ptr, inst.opcode.inst);	
+	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 6);
-	inst.opcode.addressingMode = ABX;
-	clk = _ASL(self, &inst);
+	
+	inst.opcode = Opcode_Get(0x1E); /* ASL ABX */
+	assert_ptr_equal(ptr, inst.opcode.inst);	
+	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 7);
 }
 
-static void test_BCC(void **state) {
+static void test_BXX(void **state, uint8_t keep, uint8_t branch, 
+		uint8_t opcode, uint8_t (*ptr)(CPU*, Instruction*)) {
 	CPU *self = (CPU*) *state;
 	Instruction inst;
 	uint8_t src = 0x40, clk = 0;
 	inst.dataMem = &src;
 	self->PC = 0x8000;
 
-	/* Test BCC general behavior */
-	/* Test : Carry bit high */
-	self->P = 0x01;
-	clk = _BCC(self, &inst);
+	/* Verify Opcode LUT */
+	inst.opcode = Opcode_Get(opcode);
+	assert_ptr_equal(ptr, inst.opcode.inst);	
+
+	/* Test BXX general behavior */
+	/* Test : Conserve PC */
+	self->P = keep;
+	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 2);
-	/* Test : Carry bit low */
-	self->P = 0x00;
-	clk = _BCC(self, &inst);
+	/* Test : Branch */
+	self->P = branch;
+	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 3);
+}
+
+static void test_BCC(void **state) {
+	test_BXX(state, 0x01, 0x00, 0x90, _BCC);
 }
 
 static void test_BCS(void **state) {
-	CPU *self = (CPU*) *state;
-	Instruction inst;
-	uint8_t src = 0x40, clk = 0;
-	inst.dataMem = &src;
-	self->PC = 0x8000;
-
-	/* Test BCS general behavior */
-	/* Test : Carry bit low */
-	self->P = 0x00;
-	clk = _BCS(self, &inst);
-	assert_int_equal(clk, 2);
-	/* Test : Carry bit high */
-	self->P = 0x01;
-	clk = _BCS(self, &inst);
-	assert_int_equal(clk, 3);
+	test_BXX(state, 0x00, 0x01, 0xB0, _BCS);
 }
 
 static void test_BEQ(void **state) {
-	CPU *self = (CPU*) *state;
-	Instruction inst;
-	uint8_t src = 0x40, clk = 0;
-	inst.dataMem = &src;
-	self->PC = 0x8000;
-
-	/* Test BEQ general behavior */
-	/* Test : Zero bit low */
-	self->P = 0x00;
-	clk = _BEQ(self, &inst);
-	assert_int_equal(clk, 2);
-	/* Test : Zero bit high */
-	self->P = 0x02;
-	clk = _BEQ(self, &inst);
-	assert_int_equal(clk, 3);
+	test_BXX(state, 0x00, 0x02, 0xF0, _BEQ);
 }
 
 static void test_BIT(void **state) {
 	CPU *self = (CPU*) *state;
 	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*) = _BIT;
 	uint8_t src = 0xC0, clk = 0;
 	inst.dataMem = &src;
+	inst.pageCrossed = 1; /* Supposed to have no effect */
+
+	/* Verify Opcode LUT */
+	inst.opcode = Opcode_Get(0x24); /* BIT ZER */
+	assert_ptr_equal(ptr, inst.opcode.inst);	
 
 	/* Test BIT general behavior */
 	/* Test : Sign, overflow and zero bit */
-	inst.opcode.addressingMode = ZER;
 	self->A = 0;
 	self->P = 0;
-	clk = _BIT(self, &inst);
+	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 3);
 	assert_int_equal(self->P, 0xC2);
 	/* Test : Sign and overflow bit */
 	self->A = 0xC0;
 	self->P = 0;
-	clk = _BIT(self, &inst);
+	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 3);
 	assert_int_equal(self->P, 0xC0);
 	/* Test : No bit */
@@ -424,78 +444,39 @@ static void test_BIT(void **state) {
 	self->P = 0;
 	src = 0x20;
 	clk = _BIT(self, &inst);
+	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 3);
 	assert_int_equal(self->P, 0x00);
 	
 	/* Test addressing mode clock */
-	inst.pageCrossed = 1;
-	inst.opcode.addressingMode = ZER;
-	clk = _BIT(self, &inst);
-	assert_int_equal(clk, 3);
-	inst.opcode.addressingMode = ABS;
-	clk = _BIT(self, &inst);
+	inst.opcode = Opcode_Get(0x2C); /* BIT ABS */
+	assert_ptr_equal(ptr, inst.opcode.inst);	
+	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 4);
 }
 
 static void test_BMI(void **state) {
-	CPU *self = (CPU*) *state;
-	Instruction inst;
-	uint8_t src = 0x40, clk = 0;
-	inst.dataMem = &src;
-	self->PC = 0x8000;
-
-	/* Test BMI general behavior */
-	/* Test : Sign bit low */
-	self->P = 0x00;
-	clk = _BMI(self, &inst);
-	assert_int_equal(clk, 2);
-	/* Test : Sign bit high */
-	self->P = 0x80;
-	clk = _BMI(self, &inst);
-	assert_int_equal(clk, 3);
+	test_BXX(state, 0x00, 0x80, 0x30, _BMI);
 }
 
 static void test_BNE(void **state) {
-	CPU *self = (CPU*) *state;
-	Instruction inst;
-	uint8_t src = 0x40, clk = 0;
-	inst.dataMem = &src;
-	self->PC = 0x8000;
-
-	/* Test BNE general behavior */
-	/* Test : Zero bit high */
-	self->P = 0x02;
-	clk = _BNE(self, &inst);
-	assert_int_equal(clk, 2);
-	/* Test : Zero bit low */
-	self->P = 0x00;
-	clk = _BNE(self, &inst);
-	assert_int_equal(clk, 3);
+	test_BXX(state, 0x02, 0x00, 0xD0, _BNE);
 }
 
 static void test_BPL(void **state) {
-	CPU *self = (CPU*) *state;
-	Instruction inst;
-	uint8_t src = 0x40, clk = 0;
-	inst.dataMem = &src;
-	self->PC = 0x8000;
-
-	/* Test BPL general behavior */
-	/* Test : Sign bit high */
-	self->P = 0x80;
-	clk = _BPL(self, &inst);
-	assert_int_equal(clk, 2);
-	/* Test : Sign bit low */
-	self->P = 0x00;
-	clk = _BPL(self, &inst);
-	assert_int_equal(clk, 3);
+	test_BXX(state, 0x80, 0x00, 0x10, _BPL);
 }
 
 static void test_BRK(void **state) {
 	CPU *self = (CPU*) *state;
 	Instruction inst;
-	uint8_t clk = 0;
-	uint8_t temp = 0xDC;
+	uint8_t (*ptr)(CPU*, Instruction*) = _BRK;
+	uint8_t clk = 0, temp = 0xDC;
+
+	/* Verify Opcode LUT */
+	inst.opcode = Opcode_Get(0x00); /* BRK */
+	assert_ptr_equal(ptr, inst.opcode.inst);	
+
 	/* Test BRK general behavior */
 	/* Test : change PC */
 	self->SP = 0xFF;
@@ -504,7 +485,7 @@ static void test_BRK(void **state) {
 	_STORE(self, 0xFFFE, &temp);
 	temp = 0xFE;
 	_STORE(self, 0xFFFF, &temp);
-	clk = _BRK(self, &inst);
+	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 7);
 	assert_int_equal(self->PC, 0xFEDC);
 	assert_int_equal(self->SP, 0xFC);
@@ -515,77 +496,56 @@ static void test_BRK(void **state) {
 }
 
 static void test_BVC(void **state) {
-	CPU *self = (CPU*) *state;
-	Instruction inst;
-	uint8_t src = 0x40, clk = 0;
-	inst.dataMem = &src;
-	self->PC = 0x8000;
-
-	/* Test BVC general behavior */
-	/* Test : Overflow bit high */
-	self->P = 0x40;
-	clk = _BVC(self, &inst);
-	assert_int_equal(clk, 2);
-	/* Test : Overflow bit low */
-	self->P = 0x00;
-	clk = _BVC(self, &inst);
-	assert_int_equal(clk, 3);
+	test_BXX(state, 0x40, 0x00, 0x50, _BVC);
 }
 
 static void test_BVS(void **state) {
-	CPU *self = (CPU*) *state;
-	Instruction inst;
-	uint8_t src = 0x40, clk = 0;
-	inst.dataMem = &src;
-	self->PC = 0x8000;
-
-	/* Test BVS general behavior */
-	/* Test : Overflow bit low */
-	self->P = 0x00;
-	clk = _BVS(self, &inst);
-	assert_int_equal(clk, 2);
-	/* Test : Overflow bit high */
-	self->P = 0x40;
-	clk = _BVS(self, &inst);
-	assert_int_equal(clk, 3);
+	test_BXX(state, 0x00, 0x40, 0x70, _BVS);
 }
 
 static void test_JMP(void **state) {
 	CPU *self = (CPU*) *state;
 	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*) = _JMP;
 	uint8_t src[2] = {0xAA, 0xBB}, clk = 0;
 	inst.dataMem = src;
+	inst.pageCrossed = 1; /* Supposed to have no effect */
+
+	/* Verify Opcode LUT */
+	inst.opcode = Opcode_Get(0x4C); /* JMP ABS */
+	assert_ptr_equal(ptr, inst.opcode.inst);	
 
 	/* Test JMP general behavior */
 	/* Test : change PC */
-	inst.opcode.addressingMode = ABS;
 	self->PC = 0x0000;
-	clk = _JMP(self, &inst);
+	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 3);
 	assert_int_equal(self->PC, 0xBBAA);
 	
 	/* Test addressing mode clock */
-	inst.pageCrossed = 1;
-	inst.opcode.addressingMode = ABS;
-	clk = _JMP(self, &inst);
-	assert_int_equal(clk, 3);
-	inst.opcode.addressingMode = ABI;
-	clk = _JMP(self, &inst);
+	inst.opcode = Opcode_Get(0x6C); /* JMP ABI */
+	assert_ptr_equal(ptr, inst.opcode.inst);	
+	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 5);
 }
 
 static void test_JSR(void **state) {
 	CPU *self = (CPU*) *state;
 	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*) = _JSR;
 	uint8_t src[2] = {0xAA, 0xBB}, clk = 0;
 	inst.dataMem = src;
+
+	/* Verify Opcode LUT */
+	inst.opcode = Opcode_Get(0x20); /* JSR */
+	assert_ptr_equal(ptr, inst.opcode.inst);	
 
 	/* Test JSR general behavior */
 	/* Test : change PC */
 	inst.opcode.addressingMode = ABS;
 	self->SP = 0xFF;
 	self->PC = 0xABCE;
-	clk = _JSR(self, &inst);
+	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 6);
 	assert_int_equal(self->PC, 0xBBAA);
 	assert_int_equal(self->SP, 0xFD);

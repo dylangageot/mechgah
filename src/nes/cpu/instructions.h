@@ -39,20 +39,20 @@ struct Instruction {
  * \brief Mnemonic for every addressing mode
  */
 enum AddressingMode {
-	IMP = 0,	/*! Implied	 		              0 byte is read in ROM   */
-	ACC,		  /*! Accumulator	              0 byte is read in ROM   */
+	IMP = 0,      /*! Implied	 		        0 byte is read in ROM   */
+	ACC,		  /*! Accumulator	            0 byte is read in ROM   */
 	ZEX,		  /*! Zero-page Indexed X       1 bytes is read in ROM  */
-	ZEY,	  	/*! Zero-page Indexed Y       1 bytes is read in ROM  */
-	INX,	  	/*! Pre-indexed indirect X	  1 bytes is read in ROM  */
-	INY,	  	/*! Post-indexed indirect Y	  1 bytes is read in ROM  */
-	IMM,		  /*! Immediate			            1 bytes is read in ROM  */
-	ZER,		  /*! Zero page		          	  1 bytes is read in ROM  */
-	REL,		  /*! Relative            		  1 bytes is read in ROM  */
-	ABS,		  /*! Absolute              	  2 bytes is read in ROM  */
-	ABX,		  /*! Indexed X              	  2 bytes is read in ROM  */
-	ABY,		  /*! Indexed Y         			  2 bytes is read in ROM  */
+	ZEY,          /*! Zero-page Indexed Y       1 bytes is read in ROM  */
+	INX,          /*! Pre-indexed indirect X	1 bytes is read in ROM  */
+	INY,          /*! Post-indexed indirect Y	1 bytes is read in ROM  */
+	IMM,		  /*! Immediate			        1 bytes is read in ROM  */
+	ZER,		  /*! Zero page		          	1 bytes is read in ROM  */
+	REL,		  /*! Relative            		1 bytes is read in ROM  */
+	ABS,		  /*! Absolute                  2 bytes is read in ROM  */
+	ABX,		  /*! Indexed X                 2 bytes is read in ROM  */
+	ABY,		  /*! Indexed Y         	    2 bytes is read in ROM  */
 	ABI,		  /*! Absolute indirect	        2 bytes is read in ROM  */
-	NUL 			/*! Undefined			            0 bytes is read in ROM  */
+	NUL           /*! Undefined			        0 bytes is read in ROM  */
 };
 
 /**
@@ -64,7 +64,7 @@ enum AddressingMode {
  *
  * \return 0 if it failed, 1 otherwise
  */
-uint8_t Instruction_Fetch(Instruction *inst, CPU *cpu);
+uint8_t Instruction_Fetch(Instruction *self, CPU *cpu);
 
 /**
  * \fn Instruction_Resolve
@@ -77,7 +77,19 @@ uint8_t Instruction_Fetch(Instruction *inst, CPU *cpu);
  */
 uint8_t Instruction_Resolve(Instruction *self, CPU *cpu);
 
+/**
+ * \fn Opcode_Get
+ * \brief Function to use opcode LUT in unit-test
+ *
+ * \param index
+ *
+ * \return Opcode struct 
+ */
+Opcode Opcode_Get(uint8_t index);
 
+/**
+ * \brief Useful function to ease implementation of the following instructions 
+ */
 void _SET_SIGN(CPU *cpu, uint8_t *src);
 void _SET_ZERO(CPU *cpu, uint8_t *src);
 void _SET_CARRY(CPU *cpu, uint8_t cond);
@@ -99,6 +111,14 @@ uint8_t _IF_INTERRUPT(CPU *cpu);
 uint8_t _IF_BREAK(CPU *cpu);
 uint8_t _BRANCH(CPU* cpu, Instruction *arg, uint8_t cond); 
 
+/**
+ * \brief Instruction set of 6502
+ *
+ * \param cpu instance of CPU
+ * \param arg instance of Instruction
+ *
+ * \return number of CPU cycle consumed
+ */
 uint8_t _ADC(CPU *cpu, Instruction *arg);
 uint8_t _AND(CPU *cpu, Instruction *arg);
 uint8_t _ASL(CPU *cpu, Instruction *arg);
