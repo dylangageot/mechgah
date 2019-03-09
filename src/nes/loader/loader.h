@@ -9,9 +9,11 @@
 #ifndef LOADER_H
 #define LOADER_H
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-#include "../cpu/cpu.h"
+//#include "../cpu/cpu.h"
 #include "../mapper/mapper.h"
 #include "../mapper/nrom.h"
 
@@ -36,8 +38,14 @@ typedef struct{
   uint8_t playchoice; // 1=Playchoice-10 bit, Not official
   //uint8_t NES2; // 1=NES 2.0 format
   uint8_t tvSystem; // 0=PAL, 1=NSTC
-
 } Header;
+
+/**
+ * \brief Fills the header with its attributes
+ * \param header a pointer to the Header structure to be filled
+ * \param h a pointer to the char array containing the raw data
+ */
+void fillHeader(Header * header, char * h);
 
 /**
  * \brief Load ROM into Mapper structure
@@ -45,5 +53,14 @@ typedef struct{
  * \return instance of Mapper
  */
 Mapper* loadROM(char* filename);
+
+
+
+/**
+  * \brief Function pointer which creates the mapper
+  * \param a pointer to a Header structure
+  * \return a pointer to the Mapper's Memory Map Structure
+  */
+void* (*createMapper)(Header*);
 
 #endif /* LOADER_H */
