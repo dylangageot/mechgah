@@ -15,7 +15,7 @@ static Opcode opcode[256] = {
 	{_PHP, IMP, 3}, {_ORA, IMM, 2}, {_ASL, ACC, 2}, {NULL, NUL, 0}, /* 0x08 */
 	{NULL, NUL, 0}, {_ORA, ABS, 4}, {_ASL, ABS, 6}, {NULL, NUL, 0}, /* 0x0C */
 	{_BPL, IMP, 2}, {_ORA, INY, 5}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x10 */
-	{NULL, NUL, 0}, {_ORA, ZEX, 4}, {_ASL, ZEX, 5}, {NULL, NUL, 0}, /* 0x14 */
+	{NULL, NUL, 0}, {_ORA, ZEX, 4}, {_ASL, ZEX, 6}, {NULL, NUL, 0}, /* 0x14 */
 	{_CLC, IMP, 2}, {_ORA, ABY, 4}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x18 */
 	{NULL, NUL, 0}, {_ORA, ABX, 4}, {_ASL, ABX, 7}, {NULL, NUL, 0}, /* 0x1C */
 	{_JSR, IMP, 6}, {_AND, INX, 6}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x20 */
@@ -75,6 +75,10 @@ static Opcode opcode[256] = {
 	{_SED, IMP, 2}, {_SBC, ABY, 4}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0xF8 */
 	{NULL, NUL, 0}, {_SBC, ABX, 4}, {_INC, ABX, 7}, {NULL, NUL, 0}	/* 0xFC */
 };
+
+Opcode Opcode_Get(uint8_t index) {
+	return opcode[index];
+}
 
 void _SET_SIGN(CPU *cpu, uint8_t *src) {
 	if (*src & 0x80)
@@ -169,15 +173,14 @@ uint8_t _IF_BREAK(CPU *cpu) {
 }
 
 uint8_t _BRANCH(CPU* cpu, Instruction *arg, uint8_t cond) {
-    uint8_t clk = 2;
 	uint16_t newPC;
 	if (cond) {
 		newPC = _REL_ADDR(cpu, (int8_t*) arg->dataMem);
 		/* Check if the branch occurs to same page */
-		clk += ((cpu->PC & 0xFF00) != (newPC & 0xFF00) ? 2 : 1);
+		arg->opcode.cycle += ((cpu->PC & 0xFF00) != (newPC & 0xFF00) ? 2 : 1);
 		cpu->PC = newPC;
     }
-	return clk;
+	return arg->opcode.cycle;
 }
 
 uint8_t Instruction_Fetch(Instruction *self, CPU *cpu) {
@@ -305,7 +308,8 @@ uint8_t Instruction_Resolve(Instruction *self, CPU *cpu) {
 }
 
 uint8_t _ADC(CPU *cpu, Instruction *arg) {
-	uint8_t clk[] = {0, 0, 4, 0, 6, 5, 2, 3, 0, 4, 4, 4, 0};
+	/* If page crossed in ABX, ABY and INY, add +1 to cycle */
+	arg->opcode.cycle += arg->pageCrossed;
 	uint16_t temp = *arg->dataMem + cpu->A + (_IF_CARRY(cpu) ? 1 : 0);
 	/* Set bit flag */
 	_SET_ZERO(cpu, (uint8_t*) &temp);
@@ -316,25 +320,19 @@ uint8_t _ADC(CPU *cpu, Instruction *arg) {
 	/* Save in Accumulator */
 	cpu->A = ((uint8_t) temp & 0xFF);
 	/* Manage CPU cycle */
-	if ((arg->opcode.addressingMode == ABX) ||
-		(arg->opcode.addressingMode == ABY) ||
-		(arg->opcode.addressingMode == INY))
-		return clk[arg->opcode.addressingMode] + arg->pageCrossed;
-	else
-		return clk[arg->opcode.addressingMode];
+	return arg->opcode.cycle;
 }
 
 uint8_t _AND(CPU *cpu, Instruction *arg){return 0;}
 
 uint8_t _ASL(CPU *cpu, Instruction *arg) {
-	uint8_t clk[] = {0, 2, 6, 0, 0, 0, 0, 5, 0, 6, 7, 0, 0};
 	/* Execute */
 	_SET_CARRY(cpu, *arg->dataMem & 0x80);
 	*arg->dataMem <<= 1;
 	_SET_SIGN(cpu, arg->dataMem);
 	_SET_ZERO(cpu, arg->dataMem);
 	/* Manage CPU cycle */
-	return clk[arg->opcode.addressingMode];
+	return arg->opcode.cycle;
 }
 
 uint8_t _BCC(CPU *cpu, Instruction *arg) {
@@ -350,12 +348,11 @@ uint8_t _BEQ(CPU *cpu, Instruction *arg) {
 }
 
 uint8_t _BIT(CPU *cpu, Instruction *arg) {
-	uint8_t clk[] = {0, 0, 0, 0, 0, 0, 0, 3, 0, 4, 0, 0, 0};
 	uint8_t temp = *arg->dataMem & cpu->A;
 	_SET_SIGN(cpu, arg->dataMem);
 	_SET_OVERFLOW(cpu, 0x40 & *arg->dataMem);
 	_SET_ZERO(cpu, &temp);
-	return clk[arg->opcode.addressingMode];
+	return arg->opcode.cycle;
 }
 
 uint8_t _BMI(CPU *cpu, Instruction *arg) {
@@ -371,7 +368,6 @@ uint8_t _BPL(CPU *cpu, Instruction *arg) {
 }
 
 uint8_t _BRK(CPU *cpu, Instruction *arg) {
-	uint8_t clk = 7;
 	cpu->PC++; /* Increment PC */
 	/* Push return address to stack */
 	uint8_t temp = (cpu->PC >> 8) & 0xFF;
@@ -383,7 +379,7 @@ uint8_t _BRK(CPU *cpu, Instruction *arg) {
 	_SET_INTERRUPT(cpu);
 	/* Set program counter from memory */
 	cpu->PC = _LOAD(cpu, 0xFFFE) | (_LOAD(cpu, 0xFFFF) << 8);
-	return clk;
+	return arg->opcode.cycle;
 }
 
 uint8_t _BVC(CPU *cpu, Instruction *arg) {
@@ -410,15 +406,13 @@ uint8_t _INX(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _INY(CPU *cpu, Instruction *arg){return 0;}
 
 uint8_t _JMP(CPU *cpu, Instruction *arg) {
-	uint8_t clk[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 5};
 	/* Set program counter from memory */
 	uint16_t newPC = (*(arg->dataMem+1) << 8) + *arg->dataMem;
 	cpu->PC = newPC;
-	return clk[arg->opcode.addressingMode];
+	return arg->opcode.cycle;
 }
 
 uint8_t _JSR(CPU *cpu, Instruction *arg) {
-	uint8_t clk = 6;
 	cpu->PC--; /* Decrement PC */
 	/* Push return address to stack */
 	uint8_t temp = (cpu->PC >> 8) & 0xFF;
@@ -428,7 +422,7 @@ uint8_t _JSR(CPU *cpu, Instruction *arg) {
 	/* Set program counter from memory */
 	uint16_t newPC = (*(arg->dataMem+1) << 8) + *arg->dataMem;
 	cpu->PC = newPC;
-	return clk;
+	return arg->opcode.cycle;
 }
 
 uint8_t _LDA(CPU *cpu, Instruction *arg){return 0;}
