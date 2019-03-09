@@ -3,9 +3,9 @@
 #include "nrom.h"
 
 
-void* MapNROM_Create(uint8_t romSize, uint8_t mirroring) {
+void* MapNROM_Create(Header * header) {
 	MapNROM *self = (MapNROM*) malloc(sizeof(MapNROM));
-	
+
 	/*	If allocation failed, return NULL */
 	if (self == NULL) {
 		fprintf(stderr, "Error: can't allocate MapNROM structure "
@@ -14,16 +14,16 @@ void* MapNROM_Create(uint8_t romSize, uint8_t mirroring) {
 	}
 
 	/*	Save context */
-	self->romSize = romSize;
-	self->mirroring = mirroring;
+	self->romSize = header->romSize;
+	self->mirroring = header->mirroring;
 
-	/*	Allocation of ROM space */	
+	/*	Allocation of ROM space */
 	switch (self->romSize % 2) {
 		case NROM_16KIB:
 			self->cpu.rom = (uint8_t*) malloc(16384);
 			break;
 		case NROM_32KIB:
-			self->cpu.rom = (uint8_t*) malloc(32768); 
+			self->cpu.rom = (uint8_t*) malloc(32768);
 			break;
 		default:
 			break;
@@ -31,13 +31,13 @@ void* MapNROM_Create(uint8_t romSize, uint8_t mirroring) {
 
 	/*	Allocation of SRAM space */
 	self->cpu.sram = (uint8_t*) malloc(8192);
-	
+
 	/*	Allocation of IOReg space */
 	self->cpu.ioReg = IOReg_Create();
 
 	/*	Allocation of RAM space */
 	self->cpu.ram = (uint8_t*) malloc(8192);
-	
+
 	/*	Allocation of CHR-ROM space */
 	self->ppu.chr = (uint8_t*) malloc(8192);
 
@@ -50,15 +50,15 @@ void* MapNROM_Create(uint8_t romSize, uint8_t mirroring) {
 
 	/*	Test if allocation failed */
 	if ((self->cpu.rom == NULL) || (self->cpu.ram == NULL) ||
-		(self->cpu.ioReg == NULL) || (self->cpu.sram == NULL) || 
-		(self->ppu.chr == NULL) || (self->ppu.nametable == NULL) || 
+		(self->cpu.ioReg == NULL) || (self->cpu.sram == NULL) ||
+		(self->ppu.chr == NULL) || (self->ppu.nametable == NULL) ||
 		(self->ppu.palette == NULL)) {
 		fprintf(stderr, "Error: can't allocate memory for NROM "
 				"at %s, line %d.\n", __FILE__, __LINE__);
 		MapNROM_Destroy((void*) self);
 		return NULL;
 	}
-	
+
 	return self;
 }
 
@@ -74,18 +74,18 @@ void MapNROM_Destroy(void* mapperData) {
 
 	if (self->cpu.ram != NULL)
 		free((void*) self->cpu.ram);
-	
+
 	IOReg_Destroy(self->cpu.ioReg);
 
 	if (self->cpu.sram != NULL)
 		free((void*) self->cpu.sram);
-	
+
 	if (self->ppu.chr != NULL)
 		free((void*) self->ppu.chr);
-	
+
 	if (self->ppu.nametable != NULL)
 		free((void*) self->ppu.nametable);
-	
+
 	if (self->ppu.palette != NULL)
 		free((void*) self->ppu.palette);
 
@@ -97,12 +97,12 @@ uint8_t* MapNROM_Get(void* mapperData, uint8_t space, uint16_t address) {
 	/* If no mapperData has been given, return NULL */
 	if (mapperData == NULL)
 		return NULL;
-	
+
 	/* Cast to MapNROM */
 	MapNROM *map = (MapNROM*) mapperData;
-	
+
 	if (space == AS_CPU) {
-		
+
 		MapNROM_CPU *cpu = &map->cpu;
 		/* Which memory is addressed? */
 		/* 0x0000 -> 0x1FFF : RAM */
@@ -131,7 +131,7 @@ uint8_t* MapNROM_Get(void* mapperData, uint8_t space, uint16_t address) {
 		}
 
 	} else if (space == AS_LDR) {
-		
+
 		switch (address) {
 			case LDR_PRG:
 				return map->cpu.rom;
