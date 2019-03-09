@@ -219,6 +219,7 @@ uint8_t Instruction_Resolve(Instruction *self, CPU *cpu) {
 	Mapper *mapper = cpu->rmap;
 	switch (self->opcode.addressingMode) {
 		case IMP : /* Implied : Nothing to do*/
+			return 1;
 			break;
 
 		case ACC :
