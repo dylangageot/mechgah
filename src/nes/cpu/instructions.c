@@ -10,70 +10,70 @@
 
 /* Opcode LUT */
 static Opcode opcode[256] = {
-	{_BRK, IMP}, {_ORA, INX}, {NULL, NUL}, {NULL, NUL}, /* 0x00 */
-	{NULL, NUL}, {_ORA, ZER}, {_ASL, ZER}, {NULL, NUL}, /* 0x04 */
-	{_PHP, IMP}, {_ORA, IMM}, {_ASL, ACC}, {NULL, NUL}, /* 0x08 */
-	{NULL, NUL}, {_ORA, ABS}, {_ASL, ABS}, {NULL, NUL}, /* 0x0C */
-	{_BPL, IMP}, {_ORA, INY}, {NULL, NUL}, {NULL, NUL},	/* 0x10 */
-	{NULL, NUL}, {_ORA, ZEX}, {_ASL, ZEX}, {NULL, NUL},	/* 0x14 */
-	{_CLC, IMP}, {_ORA, ABY}, {NULL, NUL}, {NULL, NUL},	/* 0x18 */
-	{NULL, NUL}, {_ORA, ABX}, {_ASL, ABX}, {NULL, NUL}, /* 0x1C */
-	{_JSR, IMP}, {_AND, INX}, {NULL, NUL}, {NULL, NUL},	/* 0x20 */
-	{_BIT, ZER}, {_AND, ZER}, {_ROL, ZER}, {NULL, NUL},	/* 0x24 */
-	{_PLP, IMP}, {_AND, IMM}, {_ROL, ACC}, {NULL, NUL}, /* 0x28 */
-	{_BIT, ABS}, {_AND, ABS}, {_ROL, ABS}, {NULL, NUL},	/* 0x2C */
-	{_BMI, IMP}, {_AND, INY}, {NULL, NUL}, {NULL, NUL},	/* 0x30 */
-	{NULL, NUL}, {_AND, ZEX}, {_ROL, ZEX}, {NULL, NUL}, /* 0x34 */
-	{_SEC, IMP}, {_AND, ABY}, {NULL, NUL}, {NULL, NUL}, /* 0x38 */
-	{NULL, NUL}, {_AND, ABX}, {_ROL, ABX}, {NULL, NUL},	/* 0x3C */
-	{_RTI, IMP}, {_EOR, INX}, {NULL, NUL}, {NULL, NUL}, /* 0x40 */
-	{NULL, NUL}, {_EOR, ZER}, {_LSR, ZER}, {NULL, NUL},	/* 0x44 */
-	{_PHA, IMP}, {_EOR, IMM}, {_LSR, ACC}, {NULL, NUL},	/* 0x48 */
-	{_JMP, ABS}, {_EOR, ABS}, {_LSR, ABS}, {NULL, NUL}, /* 0x4C */
-	{_BVC, IMP}, {_EOR, INY}, {NULL, NUL}, {NULL, NUL}, /* 0x50 */
-	{NULL, NUL}, {_EOR, ZEX}, {_LSR, ZEX}, {NULL, NUL}, /* 0x54 */
-	{_CLI, IMP}, {_EOR, ABY}, {NULL, NUL}, {NULL, NUL},	/* 0x58 */
-	{NULL, NUL}, {_EOR, ABX}, {_LSR, ABX}, {NULL, NUL},	/* 0x5C */
-	{_RTS, IMP}, {_ADC, INX}, {NULL, NUL}, {NULL, NUL},	/* 0x60 */
-	{NULL, NUL}, {_ADC, ZER}, {_ROR, ZER}, {NULL, NUL}, /* 0x64 */
-	{_PLA, IMP}, {_ADC, IMM}, {_ROR, IMM}, {NULL, NUL}, /* 0x68 */
-	{_JMP, ABI}, {_ADC, ABS}, {_ROR, ABS}, {NULL, NUL},	/* 0x6C */
-	{_BVS, IMP}, {_ADC, INY}, {NULL, NUL}, {NULL, NUL},	/* 0x70 */
-	{NULL, NUL}, {_ADC, ZEX}, {_ROR, ZER}, {NULL, NUL}, /* 0x74 */
-	{_SEI, IMP}, {_ADC, ABY}, {NULL, NUL}, {NULL, NUL},	/* 0x78 */
-	{NULL, NUL}, {_ADC, ABX}, {_ROR, ABX}, {NULL, NUL}, /* 0x7C */
-	{NULL, NUL}, {_STA, INX}, {NULL, NUL}, {NULL, NUL}, /* 0x80 */
-	{_STY, ZER}, {_STA, ZER}, {_STX, ZER}, {NULL, NUL},	/* 0x84 */
-	{_DEY, IMP}, {NULL, NUL}, {_TXA, IMP}, {NULL, NUL}, /* 0x88 */
-	{_STY, ABS}, {_STA, ABS}, {_STX, ABS}, {NULL, NUL}, /* 0x8C */
-	{_BCC, IMP}, {_STA, INY}, {NULL, NUL}, {NULL, NUL}, /* 0x90 */
-	{_STY, ZEX}, {_STA, ZEX}, {_STX, ZEY}, {NULL, NUL}, /* 0x94 */
-	{_TYA, IMP}, {_STA, ABY}, {_TXS, IMP}, {NULL, NUL}, /* 0x98 */
-	{NULL, NUL}, {_STA, ABX}, {NULL, NUL}, {NULL, NUL}, /* 0x9C */
-	{_LDY, IMM}, {_LDA, INX}, {_LDX, IMM}, {NULL, NUL}, /* 0xA0 */
-	{_LDY, ZER}, {_LDA, ZER}, {_LDX, ZER}, {NULL, NUL}, /* 0xA4 */
-	{_TAY, IMP}, {_LDA, IMM}, {_TAX, IMP}, {NULL, NUL}, /* 0xA8 */
-	{_LDY, ABS}, {_LDA, ABS}, {_LDX, ABS}, {NULL, NUL}, /* 0xAC */
-	{_BCS, IMP}, {_LDA, INY}, {NULL, NUL}, {NULL, NUL}, /* 0xB0 */
-	{_LDY, ZEX}, {_LDA, ZEX}, {_LDX, ZEY}, {NULL, NUL}, /* 0xB4 */
-	{_CLV, IMP}, {_LDA, ABY}, {_TSX, IMP}, {NULL, NUL}, /* 0xB8 */
-	{_LDY, ABX}, {_LDA, ABX}, {_LDX, ABY}, {NULL, NUL}, /* 0xBC */
-	{_CPY, IMM}, {_CMP, INX}, {NULL, NUL}, {NULL, NUL}, /* 0xC0 */
-	{_CPY, ZER}, {_CMP, ZER}, {_DEC, ZER}, {NULL, NUL}, /* 0xC4 */
-	{_INY, IMP}, {_CMP, IMM}, {_DEX, IMP}, {NULL, NUL}, /* 0xC8 */
-	{_CPY, ABS}, {_CMP, ABS}, {_DEC, ABS}, {NULL, NUL}, /* 0xCC */
-	{_BNE, IMP}, {_CMP, INY}, {NULL, NUL}, {NULL, NUL}, /* 0xD0 */
-	{NULL, NUL}, {_CMP, ZEX}, {_DEC, ZEX}, {NULL, NUL}, /* 0xD4 */
-	{_CLD, IMP}, {_CMP, ABY}, {NULL, NUL}, {NULL, NUL}, /* 0xD8 */
-	{NULL, NUL}, {_CMP, ABX}, {_DEC, ABX}, {NULL, NUL}, /* 0xDC */
-	{_CPX, IMM}, {_SBC, INX}, {NULL, NUL}, {NULL, NUL}, /* 0xE0 */
-	{_CPX, ZER}, {_SBC, ZER}, {_INC, ZER}, {NULL, NUL}, /* 0xE4 */
-	{_INX, IMP}, {_SBC, IMM}, {_NOP, IMP}, {NULL, NUL}, /* 0xE8 */
-	{_CPX, ABS}, {_SBC, ABS}, {_INC, ABS}, {NULL, NUL}, /* 0xEC */
-	{_BEQ, IMP}, {_SBC, INY}, {NULL, NUL}, {NULL, NUL}, /* 0xF0 */
-	{NULL, NUL}, {_SBC, ZEX}, {_INC, ZEX}, {NULL, NUL}, /* 0xF4 */
-	{_SED, IMP}, {_SBC, ABY}, {NULL, NUL}, {NULL, NUL}, /* 0xF8 */
-	{NULL, NUL}, {_SBC, ABX}, {_INC, ABX}, {NULL, NUL}	/* 0xFC */
+	{_BRK, IMP, 7}, {_ORA, INX, 6}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x00 */
+	{NULL, NUL, 0}, {_ORA, ZER, 3}, {_ASL, ZER, 5}, {NULL, NUL, 0}, /* 0x04 */
+	{_PHP, IMP, 3}, {_ORA, IMM, 2}, {_ASL, ACC, 2}, {NULL, NUL, 0}, /* 0x08 */
+	{NULL, NUL, 0}, {_ORA, ABS, 4}, {_ASL, ABS, 6}, {NULL, NUL, 0}, /* 0x0C */
+	{_BPL, IMP, 2}, {_ORA, INY, 5}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x10 */
+	{NULL, NUL, 0}, {_ORA, ZEX, 4}, {_ASL, ZEX, 5}, {NULL, NUL, 0}, /* 0x14 */
+	{_CLC, IMP, 2}, {_ORA, ABY, 4}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x18 */
+	{NULL, NUL, 0}, {_ORA, ABX, 4}, {_ASL, ABX, 7}, {NULL, NUL, 0}, /* 0x1C */
+	{_JSR, IMP, 6}, {_AND, INX, 6}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x20 */
+	{_BIT, ZER, 3}, {_AND, ZER, 3}, {_ROL, ZER, 5}, {NULL, NUL, 0}, /* 0x24 */
+	{_PLP, IMP, 4}, {_AND, IMM, 2}, {_ROL, ACC, 2}, {NULL, NUL, 0}, /* 0x28 */
+	{_BIT, ABS, 4}, {_AND, ABS, 4}, {_ROL, ABS, 6}, {NULL, NUL, 0}, /* 0x2C */
+	{_BMI, IMP, 2}, {_AND, INY, 5}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x30 */
+	{NULL, NUL, 0}, {_AND, ZEX, 3}, {_ROL, ZEX, 6}, {NULL, NUL, 0}, /* 0x34 */
+	{_SEC, IMP, 2}, {_AND, ABY, 4}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x38 */
+	{NULL, NUL, 0}, {_AND, ABX, 4}, {_ROL, ABX, 7}, {NULL, NUL, 0}, /* 0x3C */
+	{_RTI, IMP, 6}, {_EOR, INX, 6}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x40 */
+	{NULL, NUL, 0}, {_EOR, ZER, 3}, {_LSR, ZER, 5}, {NULL, NUL, 0}, /* 0x44 */
+	{_PHA, IMP, 3}, {_EOR, IMM, 2}, {_LSR, ACC, 2}, {NULL, NUL, 0}, /* 0x48 */
+	{_JMP, ABS, 3}, {_EOR, ABS, 4}, {_LSR, ABS, 6}, {NULL, NUL, 0}, /* 0x4C */
+	{_BVC, IMP, 2}, {_EOR, INY, 5}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x50 */
+	{NULL, NUL, 0}, {_EOR, ZEX, 4}, {_LSR, ZEX, 6}, {NULL, NUL, 0}, /* 0x54 */
+	{_CLI, IMP, 2}, {_EOR, ABY, 4}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x58 */
+	{NULL, NUL, 0}, {_EOR, ABX, 4}, {_LSR, ABX, 7}, {NULL, NUL, 0}, /* 0x5C */
+	{_RTS, IMP, 6}, {_ADC, INX, 6}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x60 */
+	{NULL, NUL, 0}, {_ADC, ZER, 3}, {_ROR, ZER, 5}, {NULL, NUL, 0}, /* 0x64 */
+	{_PLA, IMP, 4}, {_ADC, IMM, 2}, {_ROR, ACC, 2}, {NULL, NUL, 0}, /* 0x68 */
+	{_JMP, ABI, 5}, {_ADC, ABS, 4}, {_ROR, ABS, 6}, {NULL, NUL, 0}, /* 0x6C */
+	{_BVS, IMP, 2}, {_ADC, INY, 5}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x70 */
+	{NULL, NUL, 0}, {_ADC, ZEX, 4}, {_ROR, ZEX, 6}, {NULL, NUL, 0}, /* 0x74 */
+	{_SEI, IMP, 2}, {_ADC, ABY, 4}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x78 */
+	{NULL, NUL, 0}, {_ADC, ABX, 4}, {_ROR, ABX, 7}, {NULL, NUL, 0}, /* 0x7C */
+	{NULL, NUL, 0}, {_STA, INX, 6}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x80 */
+	{_STY, ZER, 3}, {_STA, ZER, 3}, {_STX, ZER, 3}, {NULL, NUL, 0}, /* 0x84 */
+	{_DEY, IMP, 2}, {NULL, NUL, 0}, {_TXA, IMP, 2}, {NULL, NUL, 0}, /* 0x88 */
+	{_STY, ABS, 4}, {_STA, ABS, 4}, {_STX, ABS, 4}, {NULL, NUL, 0}, /* 0x8C */
+	{_BCC, IMP, 2}, {_STA, INY, 6}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x90 */
+	{_STY, ZEX, 4}, {_STA, ZEX, 4}, {_STX, ZEY, 4}, {NULL, NUL, 0}, /* 0x94 */
+	{_TYA, IMP, 2}, {_STA, ABY, 5}, {_TXS, IMP, 2}, {NULL, NUL, 0}, /* 0x98 */
+	{NULL, NUL, 0}, {_STA, ABX, 5}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x9C */
+	{_LDY, IMM, 2}, {_LDA, INX, 6}, {_LDX, IMM, 2}, {NULL, NUL, 0}, /* 0xA0 */
+	{_LDY, ZER, 3}, {_LDA, ZER, 3}, {_LDX, ZER, 3}, {NULL, NUL, 0}, /* 0xA4 */
+	{_TAY, IMP, 2}, {_LDA, IMM, 2}, {_TAX, IMP, 2}, {NULL, NUL, 0}, /* 0xA8 */
+	{_LDY, ABS, 4}, {_LDA, ABS, 4}, {_LDX, ABS, 4}, {NULL, NUL, 0}, /* 0xAC */
+	{_BCS, IMP, 2}, {_LDA, INY, 5}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0xB0 */
+	{_LDY, ZEX, 4}, {_LDA, ZEX, 4}, {_LDX, ZEY, 4}, {NULL, NUL, 0}, /* 0xB4 */
+	{_CLV, IMP, 2}, {_LDA, ABY, 4}, {_TSX, IMP, 2}, {NULL, NUL, 0}, /* 0xB8 */
+	{_LDY, ABX, 4}, {_LDA, ABX, 4}, {_LDX, ABY, 4}, {NULL, NUL, 0}, /* 0xBC */
+	{_CPY, IMM, 2}, {_CMP, INX, 6}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0xC0 */
+	{_CPY, ZER, 3}, {_CMP, ZER, 3}, {_DEC, ZER, 5}, {NULL, NUL, 0}, /* 0xC4 */
+	{_INY, IMP, 2}, {_CMP, IMM, 2}, {_DEX, IMP, 2}, {NULL, NUL, 0}, /* 0xC8 */
+	{_CPY, ABS, 4}, {_CMP, ABS, 4}, {_DEC, ABS, 6}, {NULL, NUL, 0}, /* 0xCC */
+	{_BNE, IMP, 2}, {_CMP, INY, 5}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0xD0 */
+	{NULL, NUL, 0}, {_CMP, ZEX, 4}, {_DEC, ZEX, 6}, {NULL, NUL, 0}, /* 0xD4 */
+	{_CLD, IMP, 2}, {_CMP, ABY, 4}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0xD8 */
+	{NULL, NUL, 0}, {_CMP, ABX, 4}, {_DEC, ABX, 7}, {NULL, NUL, 0}, /* 0xDC */
+	{_CPX, IMM, 2}, {_SBC, INX, 6}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0xE0 */
+	{_CPX, ZER, 3}, {_SBC, ZER, 3}, {_INC, ZER, 5}, {NULL, NUL, 0}, /* 0xE4 */
+	{_INX, IMP, 2}, {_SBC, IMM, 2}, {_NOP, IMP, 2}, {NULL, NUL, 0}, /* 0xE8 */
+	{_CPX, ABS, 4}, {_SBC, ABS, 4}, {_INC, ABS, 6}, {NULL, NUL, 0}, /* 0xEC */
+	{_BEQ, IMP, 2}, {_SBC, INY, 5}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0xF0 */
+	{NULL, NUL, 0}, {_SBC, ZEX, 4}, {_INC, ZEX, 6}, {NULL, NUL, 0}, /* 0xF4 */
+	{_SED, IMP, 2}, {_SBC, ABY, 4}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0xF8 */
+	{NULL, NUL, 0}, {_SBC, ABX, 4}, {_INC, ABX, 7}, {NULL, NUL, 0}	/* 0xFC */
 };
 
 void _SET_SIGN(CPU *cpu, uint8_t *src) {
