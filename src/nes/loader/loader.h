@@ -13,9 +13,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-//#include "../cpu/cpu.h"
 #include "../mapper/mapper.h"
-#include "../mapper/nrom.h"
 
 #define MAPPER_TOTAL 1
 

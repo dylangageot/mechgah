@@ -6,7 +6,9 @@
  * \date 2019-03-2
  */
 
+
 #include "loader.h"
+#include "../mapper/nrom.h"
 
 /* Map<Mapper>_Create function LUT */
 void* createLUT[MAPPER_TOTAL] = {
