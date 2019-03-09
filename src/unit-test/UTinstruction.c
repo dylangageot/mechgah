@@ -29,6 +29,42 @@ static int setup_CPU(void **state) {
 	return 0;
 }
 
+static void test_instruction_fetch(void **state){
+	CPU *self =(CPU*)*state;
+	Mapper *mapper = self->rmap;
+	Instruction * instru = malloc(sizeof(Instruction));
+	if(instru == NULL) return;
+
+	*(mapper->get(mapper->memoryMap, AS_CPU, 0x80F1)) = 0x12;
+	*(mapper->get(mapper->memoryMap, AS_CPU, 0x80F2)) = 0x13;
+	/* 0x98 -> opcode d'une instruction utilisant comme m_d IMPLED*/
+	self->PC = 0x80F0;
+	*(mapper->get(mapper->memoryMap, AS_CPU, 0x80F0)) = 0x98;
+	assert_int_equal(Instruction_Fetch(instru,self),1);
+	/* 0xB5 -> opcode d'une instruction utilisant comme m_d ZEX*/
+	self->PC = 0x80F0;
+	*(mapper->get(mapper->memoryMap, AS_CPU, 0x80F0)) = 0xB5;
+	assert_int_equal(Instruction_Fetch(instru,self),1);
+	assert_int_equal(instru->opcodeArg[0],0x12);
+	/* 0x98 -> opcode d'une instruction utilisant comme m_d ABX*/
+	self->PC = 0x80F0;
+	*(mapper->get(mapper->memoryMap, AS_CPU, 0x80F0)) = 0xD9;
+	assert_int_equal(Instruction_Fetch(instru,self),1);
+	assert_int_equal(instru->opcodeArg[0],0x12);
+	assert_int_equal(instru->opcodeArg[1],0x13);
+
+	/* 0x03 -> opcode inexistant*/
+	self->PC = 0x80F0;
+	*(mapper->get(mapper->memoryMap, AS_CPU, 0x80F0)) = 0x03;
+	assert_int_equal(Instruction_Fetch(NULL,NULL),0);
+	assert_int_equal(Instruction_Fetch(instru,self),0);
+
+	assert_int_equal(Instruction_Fetch(NULL,NULL),0);
+
+
+	free(instru);
+}
+
 static void test_addressing_IMP(void **state){
 	CPU *self =(CPU*)*state;
 	Instruction * instru = malloc(sizeof(Instruction));
@@ -264,8 +300,6 @@ static void test_addressing_ABI(void **state){
 
 static void test_addressing_MIS(void **state){
 	CPU *self=(CPU*)*state;
-	Mapper *mapper = self->rmap;
-	uint8_t vTest = 0x25;
 	Instruction * instru = malloc(sizeof(Instruction));
 	if(instru == NULL) return;
 
@@ -468,10 +502,10 @@ static void test_ADC(void **state) {
 	uint8_t src = 0xAA, clk = 0;
 	inst.dataMem = &src;
 	inst.pageCrossed = 0;
-	
+
 	/* Verify Opcode LUT */
 	inst.opcode = Opcode_Get(0x69); /* ADC IMM */
-	assert_ptr_equal(ptr, inst.opcode.inst);	
+	assert_ptr_equal(ptr, inst.opcode.inst);
 
 	/* Test ADC general behavior */
 	/* Test : Sign bit */
@@ -508,58 +542,58 @@ static void test_ADC(void **state) {
 
 	/* Test addressing mode clock */
 	inst.opcode = Opcode_Get(0x65); /* ADC ZER */
-	assert_ptr_equal(ptr, inst.opcode.inst);	
+	assert_ptr_equal(ptr, inst.opcode.inst);
 	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 3);
 
 	inst.opcode = Opcode_Get(0x75); /* ADC ZEX */
-	assert_ptr_equal(ptr, inst.opcode.inst);	
+	assert_ptr_equal(ptr, inst.opcode.inst);
 	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 4);
 
 	inst.opcode = Opcode_Get(0x6D); /* ADC ABS */
-	assert_ptr_equal(ptr, inst.opcode.inst);	
+	assert_ptr_equal(ptr, inst.opcode.inst);
 	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 4);
 
 	inst.opcode = Opcode_Get(0x7D); /* ADC ABX */
-	assert_ptr_equal(ptr, inst.opcode.inst);	
+	assert_ptr_equal(ptr, inst.opcode.inst);
 	inst.pageCrossed = 1;
 	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 5);
 	inst.pageCrossed = 0;
-	
+
 	inst.opcode = Opcode_Get(0x7D); /* ADC ABX */
-	assert_ptr_equal(ptr, inst.opcode.inst);	
+	assert_ptr_equal(ptr, inst.opcode.inst);
 	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 4);
-	
+
 	inst.pageCrossed = 1;
 	inst.opcode = Opcode_Get(0x79); /* ADC ABY */
-	assert_ptr_equal(ptr, inst.opcode.inst);	
+	assert_ptr_equal(ptr, inst.opcode.inst);
 	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 5);
-	
+
 	inst.pageCrossed = 0;
 	inst.opcode = Opcode_Get(0x79); /* ADC ABY */
-	assert_ptr_equal(ptr, inst.opcode.inst);	
+	assert_ptr_equal(ptr, inst.opcode.inst);
 	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 4);
-	
+
 	inst.opcode = Opcode_Get(0x61); /* ADC INX */
-	assert_ptr_equal(ptr, inst.opcode.inst);	
+	assert_ptr_equal(ptr, inst.opcode.inst);
 	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 6);
-	
+
 	inst.pageCrossed = 1;
 	inst.opcode = Opcode_Get(0x71); /* ADC INY */
-	assert_ptr_equal(ptr, inst.opcode.inst);	
+	assert_ptr_equal(ptr, inst.opcode.inst);
 	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 6);
-	
+
 	inst.pageCrossed = 0;
 	inst.opcode = Opcode_Get(0x71); /* ADC INY */
-	assert_ptr_equal(ptr, inst.opcode.inst);	
+	assert_ptr_equal(ptr, inst.opcode.inst);
 	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 5);
 }
@@ -574,7 +608,7 @@ static void test_ASL(void **state) {
 
 	/* Verify Opcode LUT */
 	inst.opcode = Opcode_Get(0x0A); /* ASL ACC */
-	assert_ptr_equal(ptr, inst.opcode.inst);	
+	assert_ptr_equal(ptr, inst.opcode.inst);
 
 	/* Test ASL general behavior */
 	/* Test : Carry bit */
@@ -607,27 +641,27 @@ static void test_ASL(void **state) {
 
 	/* Test addressing mode clock */
 	inst.opcode = Opcode_Get(0x06); /* ASL ZER */
-	assert_ptr_equal(ptr, inst.opcode.inst);	
+	assert_ptr_equal(ptr, inst.opcode.inst);
 	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 5);
 
 	inst.opcode = Opcode_Get(0x16); /* ASL ZEX */
-	assert_ptr_equal(ptr, inst.opcode.inst);	
+	assert_ptr_equal(ptr, inst.opcode.inst);
 	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 6);
 
 	inst.opcode = Opcode_Get(0x0E); /* ASL ABS */
-	assert_ptr_equal(ptr, inst.opcode.inst);	
+	assert_ptr_equal(ptr, inst.opcode.inst);
 	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 6);
-	
+
 	inst.opcode = Opcode_Get(0x1E); /* ASL ABX */
-	assert_ptr_equal(ptr, inst.opcode.inst);	
+	assert_ptr_equal(ptr, inst.opcode.inst);
 	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 7);
 }
 
-static void test_BXX(void **state, uint8_t keep, uint8_t branch, 
+static void test_BXX(void **state, uint8_t keep, uint8_t branch,
 		uint8_t opcode, uint8_t (*ptr)(CPU*, Instruction*)) {
 	CPU *self = (CPU*) *state;
 	Instruction inst;
@@ -637,7 +671,7 @@ static void test_BXX(void **state, uint8_t keep, uint8_t branch,
 
 	/* Verify Opcode LUT */
 	inst.opcode = Opcode_Get(opcode);
-	assert_ptr_equal(ptr, inst.opcode.inst);	
+	assert_ptr_equal(ptr, inst.opcode.inst);
 
 	/* Test BXX general behavior */
 	/* Test : Conserve PC */
@@ -672,7 +706,7 @@ static void test_BIT(void **state) {
 
 	/* Verify Opcode LUT */
 	inst.opcode = Opcode_Get(0x24); /* BIT ZER */
-	assert_ptr_equal(ptr, inst.opcode.inst);	
+	assert_ptr_equal(ptr, inst.opcode.inst);
 
 	/* Test BIT general behavior */
 	/* Test : Sign, overflow and zero bit */
@@ -698,7 +732,7 @@ static void test_BIT(void **state) {
 
 	/* Test addressing mode clock */
 	inst.opcode = Opcode_Get(0x2C); /* BIT ABS */
-	assert_ptr_equal(ptr, inst.opcode.inst);	
+	assert_ptr_equal(ptr, inst.opcode.inst);
 	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 4);
 }
@@ -723,7 +757,7 @@ static void test_BRK(void **state) {
 
 	/* Verify Opcode LUT */
 	inst.opcode = Opcode_Get(0x00); /* BRK */
-	assert_ptr_equal(ptr, inst.opcode.inst);	
+	assert_ptr_equal(ptr, inst.opcode.inst);
 
 	/* Test BRK general behavior */
 	/* Test : change PC */
@@ -761,7 +795,7 @@ static void test_JMP(void **state) {
 
 	/* Verify Opcode LUT */
 	inst.opcode = Opcode_Get(0x4C); /* JMP ABS */
-	assert_ptr_equal(ptr, inst.opcode.inst);	
+	assert_ptr_equal(ptr, inst.opcode.inst);
 
 	/* Test JMP general behavior */
 	/* Test : change PC */
@@ -772,7 +806,7 @@ static void test_JMP(void **state) {
 
 	/* Test addressing mode clock */
 	inst.opcode = Opcode_Get(0x6C); /* JMP ABI */
-	assert_ptr_equal(ptr, inst.opcode.inst);	
+	assert_ptr_equal(ptr, inst.opcode.inst);
 	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 5);
 }
@@ -786,7 +820,7 @@ static void test_JSR(void **state) {
 
 	/* Verify Opcode LUT */
 	inst.opcode = Opcode_Get(0x20); /* JSR */
-	assert_ptr_equal(ptr, inst.opcode.inst);	
+	assert_ptr_equal(ptr, inst.opcode.inst);
 
 	/* Test JSR general behavior */
 	/* Test : change PC */
@@ -868,9 +902,13 @@ int run_instruction(void) {
 		cmocka_unit_test(test_addressing_ABI),
 		cmocka_unit_test(test_addressing_MIS),
 	};
+	const struct CMUnitTest test_fetch[] = {
+		cmocka_unit_test(test_instruction_fetch),
+	};
 	int out = 0;
 	out += cmocka_run_group_tests(test_instruction_macro, setup_CPU, teardown_CPU);
 	out += cmocka_run_group_tests(test_instruction, setup_CPU, teardown_CPU);
 	out += cmocka_run_group_tests(test_addressing_Mode, setup_CPU, teardown_CPU);
+	out += cmocka_run_group_tests(test_fetch, setup_CPU, teardown_CPU);
 	return out;
 }
