@@ -32,6 +32,17 @@ typedef struct {
 CPU* CPU_Create(Mapper* mapper);
 
 /**
+ * \fn CPU_Init
+ * \brief Initialize all CPU registers (A,X,Y,SP,P adn PC)
+ *
+ * \param self instance of CPU
+ *
+ * \return 0 if success, 1 otherwise
+ */
+
+uint8_t* CPU_Init(CPU* self);
+
+/**
  * \fn CPU_InterruptManager
  * \brief Handle the NMI, IRQ and BRK interrupts
  *
@@ -42,7 +53,7 @@ CPU* CPU_Create(Mapper* mapper);
  *			- I : IRQ detected at the end of the previous instruction
  *			- R : RESET signal detected
  *			- x : non used bits
- * \return
+ * \return number of clock cycle used to execute the instruction
 */
 uint8_t CPU_InterruptManager(CPU* self, uint8_t* context);
 

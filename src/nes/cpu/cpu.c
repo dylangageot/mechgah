@@ -15,6 +15,17 @@ CPU* CPU_Create(Mapper* mapper){
 		return self;
 	}
 
+	/* mapper used by the NES */
+	self->rmap = mapper;
+
+	return self;
+}
+
+uint8_t* CPU_Init(CPU* self) {
+
+	if (self == NULL)
+		return 1;
+
 	/* 8-bit registers */
 	self->A = 0;
 	self->X = 0;
@@ -25,19 +36,15 @@ CPU* CPU_Create(Mapper* mapper){
 	/* 16-bit program counter register */
 	self->PC = 0;
 
-	/* mapper used by the NES */
-	self->rmap = mapper;
-
-	return self;
+	return 0;
 }
 
 uint8_t CPU_InterruptManager(CPU* self, uint8_t* context){
 
 	uint8_t cycleCount = 0;
 
-	if (self == NULL) {
+	if (self == NULL)
 		return cycleCount;
-	}
 
 	/* INTERRUPT HANDLING */
 
