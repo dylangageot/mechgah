@@ -19,7 +19,7 @@
  */
 typedef struct {
 	uint8_t *ram;
-	IOReg *ioReg;
+	PeripheralRegister ioReg;
 	uint8_t *sram;
 	uint8_t *rom;
 } MapNROM_CPU;
