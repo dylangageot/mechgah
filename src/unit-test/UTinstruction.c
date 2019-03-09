@@ -2,6 +2,7 @@
 #include "../nes/cpu/instructions.h"
 #include "../nes/mapper/nrom.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 static int setup_CPU(void **state) {
 	*state = malloc(sizeof(CPU));
@@ -26,6 +27,253 @@ static int setup_CPU(void **state) {
 	self->rmap->ack = MapNROM_Ack;
 	self->rmap->get = MapNROM_Get;
 	return 0;
+}
+
+static void test_addressing_IMP(void **state){
+	CPU *self =(CPU*)*state;
+	Instruction * instru = malloc(sizeof(Instruction));
+	if(instru == NULL) return;
+
+	instru->opcode.addressingMode = IMP;
+
+	assert_int_equal(Instruction_Resolve(instru,self),1);
+	free(instru);
+}
+
+static void test_addressing_ACC(void **state){
+	CPU *self =(CPU*)*state;
+	uint8_t vTest = 0x55;
+	Instruction * instru = malloc(sizeof(Instruction));
+	if(instru == NULL) return;
+
+	instru->opcode.addressingMode = ACC;
+	instru->dataMem = NULL;
+	self->A = vTest;
+
+	Instruction_Resolve(instru,self);
+	assert_int_equal(*(instru->dataMem),vTest);
+	free(instru);
+}
+
+static void test_addressing_ZEX(void **state){
+	CPU *self=(CPU*)*state;
+	Mapper *mapper = self->rmap;
+	uint8_t vTest = 0x25;
+	Instruction * instru = malloc(sizeof(Instruction));
+	if(instru == NULL) return;
+
+	*(mapper->get(mapper->memoryMap, AS_CPU, 0x0013)) = vTest;
+
+	instru->opcode.addressingMode = ZEX;
+	instru->opcodeArg[0] = 0x0E;
+	self->X = 0x05;
+	instru->dataMem = NULL;
+
+
+	Instruction_Resolve(instru,self);
+	assert_int_equal(*(instru->dataMem),vTest);
+	free(instru);
+}
+
+static void test_addressing_ZEY(void **state){
+	CPU *self=(CPU*)*state;
+	Mapper *mapper = self->rmap;
+	uint8_t vTest = 25;
+	Instruction * instru = malloc(sizeof(Instruction));
+	if(instru == NULL) return;
+
+	*(mapper->get(mapper->memoryMap, AS_CPU, 0x000A)) = vTest;
+
+	instru->opcode.addressingMode = ZEY;
+	instru->opcodeArg[0] = 0x08;
+	self->Y = 0x02;
+	instru->dataMem = NULL;
+
+	Instruction_Resolve(instru,self);
+	assert_int_equal(*(instru->dataMem),vTest);
+	free(instru);
+}
+
+static void test_addressing_INX(void **state){
+	CPU *self=(CPU*)*state;
+	Mapper *mapper = self->rmap;
+	uint8_t vTest = 0x25;
+	Instruction * instru = malloc(sizeof(Instruction));
+	if(instru == NULL) return;
+
+	*(mapper->get(mapper->memoryMap, AS_CPU, 0x2415)) = vTest;
+	*(mapper->get(mapper->memoryMap, AS_CPU, 0x0043)) = 0x15;
+	*(mapper->get(mapper->memoryMap, AS_CPU, 0x0044)) = 0x24;
+
+	instru->opcode.addressingMode = INX;
+	instru->opcodeArg[0] = 0x3E;
+	self->X = 0x05;
+	instru->dataMem = NULL;
+
+
+	Instruction_Resolve(instru,self);
+	assert_int_equal(*(instru->dataMem),vTest);
+	free(instru);
+}
+
+static void test_addressing_INY(void **state){
+	CPU *self=(CPU*)*state;
+	Mapper *mapper = self->rmap;
+	uint8_t vTest = 0x6D;
+	Instruction * instru = malloc(sizeof(Instruction));
+	if(instru == NULL) return;
+
+	*(mapper->get(mapper->memoryMap, AS_CPU, 0x2204)) = vTest;
+	*(mapper->get(mapper->memoryMap, AS_CPU, 0x004C)) = 0x05;
+	*(mapper->get(mapper->memoryMap, AS_CPU, 0x004D)) = 0x21;
+
+	instru->opcode.addressingMode = INY;
+	instru->opcodeArg[0] = 0x4C;
+	self->Y = 0xFF;
+	instru->dataMem = NULL;
+
+
+	Instruction_Resolve(instru,self);
+	assert_int_equal(*(instru->dataMem),vTest);
+	assert_int_equal(instru->pageCrossed,1);
+	free(instru);
+}
+
+static void test_addressing_IMM(void **state){
+	CPU *self=(CPU*)*state;
+	uint8_t vTest = 0x25;
+	Instruction * instru = malloc(sizeof(Instruction));
+	if(instru == NULL) return;
+
+	instru->opcode.addressingMode = IMM;
+	instru->opcodeArg[0] = vTest;
+
+	Instruction_Resolve(instru,self);
+	assert_int_equal(*(instru->dataMem),vTest);
+	free(instru);
+}
+
+static void test_addressing_ZER(void **state){
+	CPU *self=(CPU*)*state;
+	Mapper *mapper = self->rmap;
+	uint8_t vTest = 0xF4;
+	Instruction * instru = malloc(sizeof(Instruction));
+	if(instru == NULL) return;
+
+	*(mapper->get(mapper->memoryMap, AS_CPU, 0x00F4)) = vTest;
+
+	instru->opcode.addressingMode = ZER;
+	instru->opcodeArg[0] = vTest;
+
+	Instruction_Resolve(instru,self);
+	assert_int_equal(*(instru->dataMem),vTest);
+	free(instru);
+}
+
+static void test_addressing_REL(void **state){
+	CPU *self=(CPU*)*state;
+	uint8_t vTest = 0x25;
+	Instruction * instru = malloc(sizeof(Instruction));
+	if(instru == NULL) return;
+
+	instru->opcode.addressingMode = REL;
+	instru->opcodeArg[0] = vTest;
+
+	Instruction_Resolve(instru,self);
+	assert_int_equal(*(instru->dataMem),vTest);
+	free(instru);
+}
+
+static void test_addressing_ABS(void **state){
+	CPU *self=(CPU*)*state;
+	Mapper *mapper = self->rmap;
+	uint8_t vTest = 0xF4;
+	Instruction * instru = malloc(sizeof(Instruction));
+	if(instru == NULL) return;
+
+	*(mapper->get(mapper->memoryMap, AS_CPU, 0x31F6)) = vTest;
+
+	instru->opcode.addressingMode = ABS;
+	instru->opcodeArg[0] = 0xF6;
+	instru->opcodeArg[1] = 0x31;
+
+	Instruction_Resolve(instru,self);
+	assert_int_equal(*(instru->dataMem),vTest);
+	free(instru);
+}
+
+static void test_addressing_ABX(void **state){
+	CPU *self=(CPU*)*state;
+	Mapper *mapper = self->rmap;
+	uint8_t vTest = 0xF4;
+	Instruction * instru = malloc(sizeof(Instruction));
+	if(instru == NULL) return;
+
+	*(mapper->get(mapper->memoryMap, AS_CPU, 0x32F5)) = vTest;
+
+	instru->opcode.addressingMode = ABX;
+	self->X = 0xFF;
+	instru->opcodeArg[0] = 0xF6;
+	instru->opcodeArg[1] = 0x31;
+
+	Instruction_Resolve(instru,self);
+	assert_int_equal(*(instru->dataMem),vTest);
+	assert_int_equal(instru->pageCrossed,1);
+	free(instru);
+}
+
+static void test_addressing_ABY(void **state){
+	CPU *self=(CPU*)*state;
+	Mapper *mapper = self->rmap;
+	uint8_t vTest = 0xF6;
+	Instruction * instru = malloc(sizeof(Instruction));
+	if(instru == NULL) return;
+
+	*(mapper->get(mapper->memoryMap, AS_CPU, 0x12A4)) = vTest;
+
+	instru->opcode.addressingMode = ABY;
+	self->Y = 0xFF;
+	instru->opcodeArg[0] = 0xA5;
+	instru->opcodeArg[1] = 0x11;
+
+	Instruction_Resolve(instru,self);
+	assert_int_equal(*(instru->dataMem),vTest);
+	assert_int_equal(instru->pageCrossed,1);
+	free(instru);
+}
+
+static void test_addressing_ABI(void **state){
+	CPU *self=(CPU*)*state;
+	Mapper *mapper = self->rmap;
+	uint8_t vTest = 0x25;
+	Instruction * instru = malloc(sizeof(Instruction));
+	if(instru == NULL) return;
+
+	*(mapper->get(mapper->memoryMap, AS_CPU, 0x215F)) = 0x76;
+	*(mapper->get(mapper->memoryMap, AS_CPU, 0x2160)) = 0x30;
+	*(mapper->get(mapper->memoryMap, AS_CPU, 0x3076)) = 0x25;
+
+	instru->opcode.addressingMode = ABI;
+	instru->opcodeArg[0] = 0x5F;
+	instru->opcodeArg[1] = 0x21;
+
+	Instruction_Resolve(instru,self);
+	assert_int_equal(*(instru->dataMem),vTest);
+	free(instru);
+}
+
+static void test_addressing_MIS(void **state){
+	CPU *self=(CPU*)*state;
+	Mapper *mapper = self->rmap;
+	uint8_t vTest = 0x25;
+	Instruction * instru = malloc(sizeof(Instruction));
+	if(instru == NULL) return;
+
+	instru->opcode.addressingMode = NUL;
+
+	Instruction_Resolve(instru,self);
+	assert_int_equal(Instruction_Resolve(instru,self),0);
+	assert_int_equal(Instruction_Resolve(NULL,NULL),0);
 }
 
 static void test_SET_SIGN(void **state) {
@@ -104,7 +352,7 @@ static void test_GET_SR(void **state) {
 static void test_PULL(void **state) {
 	CPU *self = (CPU*) *state;
 	self->SP = 0xFE;
-	uint8_t *ptr = self->rmap->get(self->rmap->memoryMap, AS_CPU, 0x0100 | 
+	uint8_t *ptr = self->rmap->get(self->rmap->memoryMap, AS_CPU, 0x0100 |
 															(self->SP + 1));
 	*ptr = 0xAA;
 	assert_int_equal(_PULL(self), 0xAA);
@@ -117,24 +365,24 @@ static void test_PUSH(void **state) {
 	uint8_t val = 0xAA;
 	_PUSH(self, &val);
 	assert_int_equal(self->SP, 0xFE);
-	uint8_t *ptr = self->rmap->get(self->rmap->memoryMap, AS_CPU, 0x0100 | 
+	uint8_t *ptr = self->rmap->get(self->rmap->memoryMap, AS_CPU, 0x0100 |
 															(self->SP + 1));
 	assert_int_equal(*ptr, 0xAA);
 }
 
 static void test_LOAD(void **state) {
 	CPU *self = (CPU*) *state;
-	uint8_t *ptr = self->rmap->get(self->rmap->memoryMap, AS_CPU, 0x1234); 
+	uint8_t *ptr = self->rmap->get(self->rmap->memoryMap, AS_CPU, 0x1234);
 	*ptr = 0xAA;
-	assert_int_equal(_LOAD(self, 0x1234), 0xAA); 
+	assert_int_equal(_LOAD(self, 0x1234), 0xAA);
 }
 
 static void test_STORE(void **state) {
 	CPU *self = (CPU*) *state;
 	uint8_t val = 0xAA;
 	_STORE(self, 0x1234, &val);
-	uint8_t *ptr = self->rmap->get(self->rmap->memoryMap, AS_CPU, 0x1234); 
-	assert_int_equal(*ptr, 0xAA); 
+	uint8_t *ptr = self->rmap->get(self->rmap->memoryMap, AS_CPU, 0x1234);
+	assert_int_equal(*ptr, 0xAA);
 }
 
 static void test_IF_CARRY(void **state) {
@@ -250,7 +498,7 @@ static void test_ADC(void **state) {
 	assert_int_equal(clk, 2);
 	assert_int_equal(self->A, 0x03);
 	assert_int_equal(self->P, 0x00);
-	
+
 	/* Test addressing mode clock */
 	inst.pageCrossed = 1;
 	inst.opcode.addressingMode = ZER;
@@ -325,7 +573,7 @@ static void test_ASL(void **state) {
 	assert_int_equal(clk, 2);
 	assert_int_equal(src, 0x3F << 1);
 	assert_int_equal(self->P, 0x00);
-	
+
 	/* Test addressing mode clock */
 	inst.pageCrossed = 1;
 	inst.opcode.addressingMode = ACC;
@@ -426,7 +674,7 @@ static void test_BIT(void **state) {
 	clk = _BIT(self, &inst);
 	assert_int_equal(clk, 3);
 	assert_int_equal(self->P, 0x00);
-	
+
 	/* Test addressing mode clock */
 	inst.pageCrossed = 1;
 	inst.opcode.addressingMode = ZER;
@@ -563,7 +811,7 @@ static void test_JMP(void **state) {
 	clk = _JMP(self, &inst);
 	assert_int_equal(clk, 3);
 	assert_int_equal(self->PC, 0xBBAA);
-	
+
 	/* Test addressing mode clock */
 	inst.pageCrossed = 1;
 	inst.opcode.addressingMode = ABS;
@@ -592,8 +840,6 @@ static void test_JSR(void **state) {
 	assert_int_equal(0xCD, _PULL(self));
 	assert_int_equal(0xAB, _PULL(self));
 }
-
-
 
 static int teardown_CPU(void **state) {
 	if (*state != NULL) {
@@ -644,9 +890,27 @@ int run_instruction(void) {
 		cmocka_unit_test(test_BVS),
 		cmocka_unit_test(test_JMP),
 		cmocka_unit_test(test_JSR),
+		};
+	const struct CMUnitTest test_addressing_Mode[] = {
+		cmocka_unit_test(test_addressing_IMP),
+		cmocka_unit_test(test_addressing_ACC),
+		cmocka_unit_test(test_addressing_ZEX),
+		cmocka_unit_test(test_addressing_ZEY),
+		cmocka_unit_test(test_addressing_INX),
+		cmocka_unit_test(test_addressing_ZEY),
+		cmocka_unit_test(test_addressing_INY),
+		cmocka_unit_test(test_addressing_IMM),
+		cmocka_unit_test(test_addressing_ZER),
+		cmocka_unit_test(test_addressing_REL),
+		cmocka_unit_test(test_addressing_ABS),
+		cmocka_unit_test(test_addressing_ABX),
+		cmocka_unit_test(test_addressing_ABY),
+		cmocka_unit_test(test_addressing_ABI),
+		cmocka_unit_test(test_addressing_MIS),
 	};
 	int out = 0;
 	out += cmocka_run_group_tests(test_instruction_macro, setup_CPU, teardown_CPU);
 	out += cmocka_run_group_tests(test_instruction, setup_CPU, teardown_CPU);
+	out += cmocka_run_group_tests(test_addressing_Mode, setup_CPU, teardown_CPU);
 	return out;
 }
