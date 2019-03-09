@@ -396,7 +396,11 @@ uint8_t _CLC(CPU *cpu, Instruction *arg){
 	return 2;
 }
 
-uint8_t _CLD(CPU *cpu, Instruction *arg){return 0;}
+uint8_t _CLD(CPU *cpu, Instruction *arg){
+	/*Decimal flag -> 0 */
+	cpu->P=(cpu->P)&(0xF7);
+	return 2;
+}
 uint8_t _CLI(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _CLV(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _CMP(CPU *cpu, Instruction *arg){return 0;}
