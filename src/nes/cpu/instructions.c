@@ -401,8 +401,19 @@ uint8_t _CLD(CPU *cpu, Instruction *arg){
 	cpu->P=(cpu->P)&(0xF7);
 	return 2;
 }
-uint8_t _CLI(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _CLV(CPU *cpu, Instruction *arg){return 0;}
+
+uint8_t _CLI(CPU *cpu, Instruction *arg){
+	/*_interrupt flag -> 0 */
+	cpu->P=(cpu->P)&(0xFB);
+	return 2;
+}
+
+uint8_t _CLV(CPU *cpu, Instruction *arg){
+	/* Overflow flag -> 0 */
+	cpu->P=(cpu->P)&(0xBF);
+	return 2;
+}
+
 uint8_t _CMP(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _CPX(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _CPY(CPU *cpu, Instruction *arg){return 0;}
