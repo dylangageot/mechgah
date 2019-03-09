@@ -52,7 +52,6 @@ static void test_instruction_fetch(void **state){
 	assert_int_equal(Instruction_Fetch(instru,self),1);
 	assert_int_equal(instru->opcodeArg[0],0x12);
 	assert_int_equal(instru->opcodeArg[1],0x13);
-
 	/* 0x03 -> opcode inexistant*/
 	self->PC = 0x80F0;
 	*(mapper->get(mapper->memoryMap, AS_CPU, 0x80F0)) = 0x03;
@@ -60,7 +59,6 @@ static void test_instruction_fetch(void **state){
 	assert_int_equal(Instruction_Fetch(instru,self),0);
 
 	assert_int_equal(Instruction_Fetch(NULL,NULL),0);
-
 
 	free(instru);
 }
@@ -835,6 +833,17 @@ static void test_JSR(void **state) {
 	assert_int_equal(0xAB, _PULL(self));
 }
 
+static void test_CLC(void **state){
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*) = _CLC;
+	inst.opcode = Opcode_Get(0x18); /* CLC */
+	uint8_t clk = inst.opcode.inst(self, &inst);
+	self->SP = 0xFF;
+	assert_int_equal(clk,2);
+	assert_int_equal(((self->P)&0x01),0);
+}
+
 static int teardown_CPU(void **state) {
 	if (*state != NULL) {
 		CPU *self = (CPU*) *state;
@@ -884,6 +893,7 @@ int run_instruction(void) {
 		cmocka_unit_test(test_BVS),
 		cmocka_unit_test(test_JMP),
 		cmocka_unit_test(test_JSR),
+		cmocka_unit_test(test_CLC),
 		};
 	const struct CMUnitTest test_addressing_Mode[] = {
 		cmocka_unit_test(test_addressing_IMP),

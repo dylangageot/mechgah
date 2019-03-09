@@ -390,7 +390,12 @@ uint8_t _BVS(CPU *cpu, Instruction *arg) {
 	return _BRANCH(cpu, arg, _IF_OVERFLOW(cpu));
 }
 
-uint8_t _CLC(CPU *cpu, Instruction *arg){return 0;}
+uint8_t _CLC(CPU *cpu, Instruction *arg){
+	/*Carry flag -> 0 */
+	cpu->P=(cpu->P)&(0xFE);
+	return 2;
+}
+
 uint8_t _CLD(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _CLI(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _CLV(CPU *cpu, Instruction *arg){return 0;}
