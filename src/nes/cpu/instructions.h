@@ -20,6 +20,7 @@ typedef struct Instruction Instruction;
 typedef struct {
 	uint8_t (*inst)(CPU*, Instruction*);
 	uint8_t addressingMode;
+	uint8_t cycle;
 } Opcode;
 
 /**
