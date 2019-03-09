@@ -6,9 +6,8 @@
 static int setup_CPU(void** state) {
     /* create a NROM Mapper*/
     Mapper* mapper =  (Mapper*)malloc(sizeof(Mapper));
-    if (mapper == NULL) {
+    if (mapper == NULL)
         return -1;
-    }
 
     mapper->memoryMap = MapNROM_Create(NROM_16KIB, NROM_VERTICAL);
 	mapper->destroyer = MapNROM_Destroy;
@@ -20,6 +19,10 @@ static int setup_CPU(void** state) {
     *state = (void *)CPU_Create(mapper);
     if (*state == NULL)
 		return -1;
+
+    /* initialize the CPU */
+    if (CPU_Init(*state))
+        return -1;
 
     return 0;
 }
@@ -160,8 +163,10 @@ static int teardown_CPU(void **state) {
         CPU_Destroy(self);
 
 		return 0;
-	} else
+	}
+    else {
 		return -1;
+    }
 }
 
 int run_UTinterrupt(void) {
