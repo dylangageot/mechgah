@@ -79,7 +79,7 @@ static Opcode opcode[256] = {
 void _SET_SIGN(CPU *cpu, uint8_t *src) {
 	if (*src & 0x80)
 		cpu->P |= 0x80;
-	else 
+	else
 		cpu->P &= ~0x80;
 }
 
@@ -172,7 +172,7 @@ uint8_t _BRANCH(CPU* cpu, Instruction *arg, uint8_t cond) {
     uint8_t clk = 2;
 	uint16_t newPC;
 	if (cond) {
-		newPC = _REL_ADDR(cpu, (int8_t*) arg->dataMem); 
+		newPC = _REL_ADDR(cpu, (int8_t*) arg->dataMem);
 		/* Check if the branch occurs to same page */
 		clk += ((cpu->PC & 0xFF00) != (newPC & 0xFF00) ? 2 : 1);
 		cpu->PC = newPC;
@@ -221,7 +221,7 @@ uint8_t Instruction_Resolve(Instruction *self, CPU *cpu) {
 		case IMP : /* Implied : Nothing to do*/
 			break;
 
-		case ACC : 
+		case ACC :
 			self->dataMem = &cpu->A;
 			break;
 
@@ -250,7 +250,7 @@ uint8_t Instruction_Resolve(Instruction *self, CPU *cpu) {
 			address = (hWeight << 8) + lWeight;
 			if ((address & 0xFF00) != ((address + cpu->Y) & 0xFF00))
 				self->pageCrossed = 1;
-			address = (hWeight << 8) + lWeight + cpu->Y;
+			address = (hWeight <<8 ) + lWeight + cpu->Y;
 			self->dataMem = mapper->get(mapper->memoryMap, AS_CPU, address);
 			break;
 
@@ -289,6 +289,7 @@ uint8_t Instruction_Resolve(Instruction *self, CPU *cpu) {
 			break;
 
 		case ABI :
+			address = (self->opcodeArg[1] << 8) + self->opcodeArg[0];
 			lWeight = *(mapper->get(mapper->memoryMap, AS_CPU, address));
 			hWeight = *(mapper->get(mapper->memoryMap, AS_CPU, address + 1));
 			address = (hWeight << 8) + lWeight;
@@ -308,7 +309,7 @@ uint8_t _ADC(CPU *cpu, Instruction *arg) {
 	/* Set bit flag */
 	_SET_ZERO(cpu, (uint8_t*) &temp);
 	_SET_SIGN(cpu, (uint8_t*) &temp);
-	_SET_OVERFLOW(cpu, !((cpu->A ^ *arg->dataMem) & 0x80) && 
+	_SET_OVERFLOW(cpu, !((cpu->A ^ *arg->dataMem) & 0x80) &&
 			((cpu->A ^ temp) & 0x80));
 	_SET_CARRY(cpu, temp > 0xFF);
 	/* Save in Accumulator */
@@ -335,7 +336,7 @@ uint8_t _ASL(CPU *cpu, Instruction *arg) {
 	return clk[arg->opcode.addressingMode];
 }
 
-uint8_t _BCC(CPU *cpu, Instruction *arg) { 
+uint8_t _BCC(CPU *cpu, Instruction *arg) {
 	return _BRANCH(cpu, arg, !_IF_CARRY(cpu));
 }
 
