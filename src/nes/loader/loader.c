@@ -83,7 +83,7 @@ Mapper * loadROM(char* filename){
 
   /* Checking if mapper is described */
   if(header->mapper > MAPPER_TOTAL){
-    fprintf(stderr,"ROM Mapper is not described (yet)");
+    fprintf(stderr,"ROM Mapper is not described (yet)\n");
     return (Mapper*)NULL;
   }
 
@@ -97,22 +97,14 @@ Mapper * loadROM(char* filename){
   mapper->memoryMap = memoryMap;
 
   /* Fetching the ROM and VROM adresses */
-  uint8_t * romAddr = mapper->get(mapper->memoryMap,AS_LDR,LDR_PRG);
-  uint8_t * vromAddr = mapper->get(mapper->memoryMap,AS_LDR,LDR_CHR);
+  void * romAddr = mapper->get(mapper->memoryMap,AS_LDR,LDR_PRG);
+  void * vromAddr = mapper->get(mapper->memoryMap,AS_LDR,LDR_CHR);
 
   /* Copying the programm into the Mapper structure*/
-  fseek(romFile,0,SEEK_SET);
-  fseek(romFile,16+(header->trainer)*64,SEEK_CUR);
-  fread(romAddr,header->romSize*16384,1,romFile);
-  fread(vromAddr,header->vromSize*8192,1,romFile);
-
-  /*
-  uint8_t * temp;
-  for(int i=0 ; i<32 ; i++){
-    temp = mapper->get(mapper->memoryMap,AS_CPU,i);
-    printf("%x\n",*temp);
-  }
-  */
+  fseek(romFile,16,SEEK_SET);
+  fread(romAddr,(header->romSize)*16384,1,romFile);
+  fseek(romFile,16+(header->romSize)*16384,SEEK_SET);
+  fread(vromAddr,(header->vromSize)*8192,1,romFile);
 
 	/* Returning the Mapper structure */
   fclose(romFile);
