@@ -63,7 +63,7 @@ uint8_t CPU_InterruptManager(CPU* self, uint8_t* context){
 
 		/* push P on stack */
 		ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, (0x0100+self->SP));
-		*ptr = self->P;
+		*ptr = (self->P & ~(0x01<<4)); /* clear B bit on stack */
 		self->SP --;
 
 		/* fetch PC LSByte @ 0xFFFA*/
