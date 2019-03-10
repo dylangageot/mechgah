@@ -9,6 +9,10 @@
 #ifndef CPU_H
 #define CPU_H
 
+#define NMI_JMP_ADD 0xFFFA
+#define IRQ_JMP_ADD 0xFFFE
+
+
 #include "../mapper/mapper.h"
 
 /**
