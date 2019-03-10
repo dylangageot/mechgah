@@ -42,14 +42,18 @@ uint8_t* CPU_Init(CPU* self) {
 uint8_t CPU_InterruptManager(CPU* self, uint8_t* context){
 
 	uint8_t cycleCount = 0;
+	uint16_t jump_address = 0; /* address of the interrupt routine */
 
 	if (self == NULL)
 		return cycleCount;
 
+	if (*context == 0)
+		return cycleCount;
+
 	/* INTERRUPT HANDLING */
 
-	/* if the N bit of context is set */
-	if (*context & 0x01) {
+	/* if any bit of context is set */
+	if (*context != 0) {
 
 		/* push PC MSByte on stack */
 		uint8_t* ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, (0x0100+self->SP));
@@ -63,45 +67,38 @@ uint8_t CPU_InterruptManager(CPU* self, uint8_t* context){
 
 		/* push P on stack */
 		ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, (0x0100+self->SP));
-		*ptr = (self->P & ~(0x01<<4)); /* clear B bit on stack */
+		*ptr = (self->P & ~(1UL << 4)); /* clear B bit on stack */
 		self->SP --;
 
-		/* fetch PC LSByte @ 0xFFFA*/
-		ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, 0xFFFA);
+		/* if the N bit of context is set */
+		if (*context & 1UL){
+			jump_address = NMI_JMP_ADD;
+			*context &= ~(1UL);
+		}
+
+		/* if the I bit of context is set */
+		else if ((*context >> 1) & 1UL){
+			jump_address = IRQ_JMP_ADD;
+			*context &= ~(1UL << 1);
+		}
+
+		/* fetch PC LSByte */
+		ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, jump_address);
 		self->PC = (uint16_t)(*ptr);
 
-		/* fetch PC MSByte @ 0xFFFB*/
-		ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, 0xFFFB);
+		/* fetch PC MSByte */
+		ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, jump_address+1);
 		self->PC |= (uint16_t)(*ptr) << 8;
 
 		/* set I flag to disable further IRQs */
-		self->P |= (0x01 << 2);
-
-		/* clear context N byte */
-		*context &= 0xFE;
+		self->P |= (1UL << 2);
 
 		/* add 7 cycles to timing */
 		cycleCount += 7;
 	}
-
-	/* if the I bit of context is set */
-	else if ((*context >> 1) & 0x01) {
-		/* same behavior as BRK but does not set B flag */
-
-		/* add 7 cycles to timing */
-		cycleCount += 7;
-	}
-
-
-	/*
-	 * Adressing mode handling
-	 * Check for Interrupt
-	 * DMA management
-	*/
 
 	return cycleCount;
 }
-
 
 void CPU_Destroy(CPU* self){
 
