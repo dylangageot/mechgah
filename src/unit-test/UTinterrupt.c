@@ -155,105 +155,17 @@ static void test_IRQ_I_FLAG_SET(void** state) {
     assert_int_equal(context, 0x02);
 }
 
-static void test_INTERRUPT_STACK_PC(void** state) {
+/* Conflict between NMI and IRQ */
+
+static void test_NMI_IRQ_CONFLICT(void** state) {
     CPU* self = (CPU*) *state;
 
     /* setup values for test */
-    uint8_t context = 0x01;
+    uint8_t context = 0x03;
     self->PC = 0xFEDC;
-    self->SP = 0xA3;
-
-    /* execute function */
-    CPU_InterruptManager(self, &context);
-
-    /* get PCL from stack */
-    uint8_t* ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, 0x01A2);
-    uint16_t on_stack_PC = (uint16_t)(*ptr);
-
-    /* get PCH from stack */
-    ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, 0x01A3);
-    on_stack_PC |= (uint16_t)(*ptr) << 8;
-
-    assert_int_equal(on_stack_PC, 0xFEDC);
-}
-
-static void test_INTERRUPT_STACK_P(void** state) {
-    CPU* self = (CPU*) *state;
-
-    /* setup values for test */
-    uint8_t context = 0x01;
-    self->P = 0x97;
-    self->SP = 0xA3;
-
-    /* execute function */
-    CPU_InterruptManager(self, &context);
-
-    /* get P from stack */
-    uint8_t* ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, 0x01A1);
-    uint8_t on_stack_P = *ptr;
-
-    assert_int_equal(on_stack_P, 0x87);
-}
-
-static void test_INTERRUPT_DECREMENT_SP(void** state) {
-    CPU* self = (CPU*) *state;
-
-    /* setup values for test */
-    uint8_t context = 0x01;
-    self->SP = 0xA3;
-
-    /* execute function */
-    CPU_InterruptManager(self, &context);
-
-    assert_int_equal(self->SP, 0xA0);
-
-}
-
-static void test_INTERRUPT_SET_I(void** state) {
-    CPU* self = (CPU*) *state;
-
-    /* setup values for test */
-    uint8_t context = 0x01;
-    self->P &= ~(0x01 << 2);
-
-    /* execute function */
-    CPU_InterruptManager(self, &context);
-
-    assert_int_equal((self->P >> 2) & 0x01, 1);
-
-}
-
-static void test_INETRRUPT_CYCLE_COUNT(void** state) {
-    CPU* self = (CPU*) *state;
-
-    /* setup value for test */
-    uint8_t context = 0x01;
-
-    /* execute function */
-    uint8_t cycleCount = CPU_InterruptManager(self, &context);
-
-    assert_int_equal(cycleCount, 7);
-}
-
-static void test_INTERRUPT_NULL_CPU(void** state) {
-    CPU* self = NULL;
-
-    /* setup value for test */
-    uint8_t context = 0x01;
-
-    /* execute function */
-    uint8_t cycleCount = CPU_InterruptManager(self, &context);
-
-    assert_int_equal(cycleCount, 0);
-}
-
-/* NMI only Unit Tests */
-static void test_NMI_FETCH_PC(void** state) {
-    CPU* self = (CPU*) *state;
-
-    /* setup values for test */
-    uint8_t context = 0x01;
-    self->PC = 0xFEDC;
+    /* NV_B DIZC */
+    /* 1111 1011*/
+    self->P = 0xFB;
     self->SP = 0xA3;
 
     /* set next PC LSByte */
@@ -265,155 +177,34 @@ static void test_NMI_FETCH_PC(void** state) {
     *ptr = 0x5D;
 
     /* execute function */
-    CPU_InterruptManager(self, &context);
+    uint8_t cycleCount = CPU_InterruptManager(self, &context);
 
+    /* get PCL from stack */
+    ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, 0x01A2);
+    uint16_t on_stack_PC = (uint16_t)(*ptr);
+
+    /* get PCH from stack */
+    ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, 0x01A3);
+    on_stack_PC |= (uint16_t)(*ptr) << 8;
+
+    /* get P from stack */
+    ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, 0x01A1);
+    uint8_t on_stack_P = *ptr;
+
+    /* PC on stack */
+    assert_int_equal(on_stack_PC, 0xFEDC);
+    /* PC fetch */
     assert_int_equal(self->PC, 0x5DC9);
-}
-
-static void test_NMI_CLEAR_N(void** state) {
-    CPU* self = (CPU*) *state;
-
-    /* setup value for test */
-    uint8_t context = 0x01;
-
-    /* execute function */
-    CPU_InterruptManager(self, &context);
-
-    assert_int_equal(context, 0);
-}
-
-/* IRQ only Unit Tests with I flag set */
-
-static void test_IRQ_PC_I_FLAG_SET(void** state) {
-    CPU* self = (CPU*) *state;
-
-    /* setup values for test */
-    uint8_t context = 0x02;
-    self->PC = 0xFEDC;
-    self->SP = 0xA3;
-    self->P = (0x01 << 2);
-
-    /* set next PC LSByte */
-    uint8_t* ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, IRQ_JMP_ADD);
-    *ptr = 0x5F;
-
-    /* set next PC MSByte */
-    ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, IRQ_JMP_ADD+1);
-    *ptr = 0x8E;
-
-    /* execute function */
-    CPU_InterruptManager(self, &context);
-
-    assert_int_equal(self->PC, 0xFEDC);
-}
-
-static void test_IRQ_SP_I_FLAG_SET(void** state) {
-    CPU* self = (CPU*) *state;
-
-    /* setup values for test */
-    uint8_t context = 0x02;
-    self->PC = 0xFEDC;
-    self->SP = 0xA3;
-    self->P = (0x01 << 2);
-
-    /* execute function */
-    CPU_InterruptManager(self, &context);
-
-    assert_int_equal(self->SP, 0xA3);
-}
-
-static void test_IRQ_CONTEXT_I_FLAG_SET(void** state) {
-    CPU* self = (CPU*) *state;
-
-    /* setup value for test */
-    uint8_t context = 0x02;
-    self->P = (0x01 << 2);
-
-    /* execute function */
-    CPU_InterruptManager(self, &context);
-
+    /* P on stack */
+    assert_int_equal(on_stack_P, 0xEB); /* on stack, B is clear */
+    /* set I flag */
+    assert_int_equal(self->P, 0xFF);
+    /* decrement SP */
+    assert_int_equal(self->SP, 0xA0);
+    /* cycleCount set to 7 */
+    assert_int_equal(cycleCount, 7);
+    /* clear N from context */
     assert_int_equal(context, 0x02);
-}
-
-
-/* IRQ only Unit Tests with I flag clear */
-
-static void test_IRQ_FETCH_PC_I_FLAG_CLEAR(void** state) {
-    CPU* self = (CPU*) *state;
-
-    /* setup values for test */
-    uint8_t context = 0x02;
-    self->PC = 0xFEDC;
-    self->SP = 0xA3;
-    self->P = ~(0x01 << 2);
-
-    /* set next PC LSByte */
-    uint8_t* ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, IRQ_JMP_ADD);
-    *ptr = 0x5F;
-
-    /* set next PC MSByte */
-    ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, IRQ_JMP_ADD+1);
-    *ptr = 0x8E;
-
-    /* execute function */
-    CPU_InterruptManager(self, &context);
-
-    assert_int_equal(self->PC, 0x8E5F);
-}
-
-static void test_IRQ_CLEAR_I_I_FLAG_CLEAR(void** state) {
-    CPU* self = (CPU*) *state;
-
-    /* setup value for test */
-    uint8_t context = 0x02;
-    self->P = ~(0x01 << 2);
-
-    /* execute function */
-    CPU_InterruptManager(self, &context);
-
-    assert_int_equal(context, 0);
-}
-
-/* Conflict between NMI and IRQ */
-
-static void test_INTERRUPT_CONFLICT_FETCH_PC(void** state) {
-    CPU* self = (CPU*) *state;
-
-    /* setup values for test */
-    uint8_t context = 0x03;
-    self->PC = 0xFEDC;
-    self->SP = 0xA3;
-
-    /* set next PC LSByte */
-    uint8_t* ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, NMI_JMP_ADD);
-    *ptr = 0x32;
-
-    /* set next PC MSByte */
-    ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, NMI_JMP_ADD+1);
-    *ptr = 0xBE;
-
-    ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, IRQ_JMP_ADD);
-    *ptr = 0xFF;
-
-    ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, IRQ_JMP_ADD+1);
-    *ptr = 0xFF;
-
-    /* execute function */
-    CPU_InterruptManager(self, &context);
-
-    assert_int_equal(self->PC, 0xBE32);
-}
-
-static void test_INTERRUPT_CONFLICT_CLEAR_N(void** state) {
-    CPU* self = (CPU*) *state;
-
-    /* setup value for test */
-    uint8_t context = 0xFF;
-
-    /* execute function */
-    CPU_InterruptManager(self, &context);
-
-    assert_int_equal(context, 0xFE);
 }
 
 /* No interrupt */
@@ -478,21 +269,7 @@ int run_UTinterrupt(void) {
         cmocka_unit_test(test_NMI),
         cmocka_unit_test(test_IRQ_I_FLAG_CLEAR),
         cmocka_unit_test(test_IRQ_I_FLAG_SET),
-        cmocka_unit_test(test_INTERRUPT_STACK_PC),
-        cmocka_unit_test(test_INTERRUPT_STACK_P),
-        cmocka_unit_test(test_INTERRUPT_DECREMENT_SP),
-        cmocka_unit_test(test_INTERRUPT_SET_I),
-        cmocka_unit_test(test_INETRRUPT_CYCLE_COUNT),
-        cmocka_unit_test(test_INTERRUPT_NULL_CPU),
-        cmocka_unit_test(test_NMI_FETCH_PC),
-        cmocka_unit_test(test_NMI_CLEAR_N),
-        cmocka_unit_test(test_IRQ_FETCH_PC_I_FLAG_CLEAR),
-        cmocka_unit_test(test_IRQ_CLEAR_I_I_FLAG_CLEAR),
-        cmocka_unit_test(test_IRQ_PC_I_FLAG_SET),
-        cmocka_unit_test(test_IRQ_SP_I_FLAG_SET),
-        cmocka_unit_test(test_IRQ_CONTEXT_I_FLAG_SET),
-        cmocka_unit_test(test_INTERRUPT_CONFLICT_FETCH_PC),
-        cmocka_unit_test(test_INTERRUPT_CONFLICT_CLEAR_N),
+        cmocka_unit_test(test_NMI_IRQ_CONFLICT),
         cmocka_unit_test(test_NO_INTERRUPT_CONTEXT),
         cmocka_unit_test(test_NO_INTERRUPT_PC),
         cmocka_unit_test(test_NO_INTERRUPT_SP)
