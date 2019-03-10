@@ -15,7 +15,7 @@
 #include <string.h>
 #include "../mapper/mapper.h"
 
-#define MAPPER_TOTAL 1
+#define MAPPER_TOTAL 26
 
 /**
  * \struct Header
