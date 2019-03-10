@@ -44,6 +44,9 @@ uint8_t CPU_InterruptManager(CPU* self, uint8_t* context){
 	uint8_t cycleCount = 0;
 	uint16_t jump_address = 0; /* address of the interrupt routine */
 
+	const uint8_t N = *context & 1UL;
+	const uint8_t I = ((*context >> 1) & 1UL) && !((self->P >> 2) & 1UL);
+
 	if (self == NULL)
 		return cycleCount;
 
@@ -53,7 +56,7 @@ uint8_t CPU_InterruptManager(CPU* self, uint8_t* context){
 	/* INTERRUPT HANDLING */
 
 	/* if any bit of context is set */
-	if (*context != 0) {
+	if (N || I) {
 
 		/* push PC MSByte on stack */
 		uint8_t* ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, (0x0100+self->SP));
@@ -71,13 +74,13 @@ uint8_t CPU_InterruptManager(CPU* self, uint8_t* context){
 		self->SP --;
 
 		/* if the N bit of context is set */
-		if (*context & 1UL){
+		if (N){
 			jump_address = NMI_JMP_ADD;
 			*context &= ~(1UL);
 		}
 
 		/* if the I bit of context is set */
-		else if ((*context >> 1) & 1UL){
+		else if (I){
 			jump_address = IRQ_JMP_ADD;
 			*context &= ~(1UL << 1);
 		}
