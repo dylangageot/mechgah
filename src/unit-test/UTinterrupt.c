@@ -209,44 +209,31 @@ static void test_NMI_IRQ_CONFLICT(void** state) {
 
 /* No interrupt */
 
-static void test_NO_INTERRUPT_CONTEXT(void** state) {
-    CPU* self = (CPU*) *state;
-
-    /* setup value for test */
-    uint8_t context = 0;
-
-    /* execute function */
-    CPU_InterruptManager(self, &context);
-
-    assert_int_equal(context, 0);
-}
-
-static void test_NO_INTERRUPT_PC(void** state) {
+static void test_NO_INTERRUPT(void** state) {
     CPU* self = (CPU*) *state;
 
     /* setup values for test */
     uint8_t context = 0;
     self->PC = 0xFEDC;
-
-    /* execute function */
-    CPU_InterruptManager(self, &context);
-
-    assert_int_equal(self->PC, 0xFEDC);
-}
-
-static void test_NO_INTERRUPT_SP(void** state) {
-    CPU* self = (CPU*) *state;
-
-    /* setup values for test */
-    uint8_t context = 0;
+    /* NV_B DIZC */
+    /* 1111 1111*/
+    self->P = 0xFF;
     self->SP = 0xA3;
 
     /* execute function */
-    CPU_InterruptManager(self, &context);
+    uint8_t cycleCount = CPU_InterruptManager(self, &context);
 
+    /* PC unchanged */
+    assert_int_equal(self->PC, 0xFEDC);
+    /* P unchanged */
+    assert_int_equal(self->P, 0xFF);
+    /* SP unchanged */
     assert_int_equal(self->SP, 0xA3);
+    /* cycleCount set to O */
+    assert_int_equal(cycleCount, 0);
+    /* context unchanged */
+    assert_int_equal(context, 0);
 }
-/* IRQ disable */
 
 static int teardown_CPU(void **state) {
 	if (*state != NULL) {
@@ -270,9 +257,7 @@ int run_UTinterrupt(void) {
         cmocka_unit_test(test_IRQ_I_FLAG_CLEAR),
         cmocka_unit_test(test_IRQ_I_FLAG_SET),
         cmocka_unit_test(test_NMI_IRQ_CONFLICT),
-        cmocka_unit_test(test_NO_INTERRUPT_CONTEXT),
-        cmocka_unit_test(test_NO_INTERRUPT_PC),
-        cmocka_unit_test(test_NO_INTERRUPT_SP)
+        cmocka_unit_test(test_NO_INTERRUPT)
     };
     int out = 0;
     out += cmocka_run_group_tests(test_interrupt, setup_CPU, teardown_CPU);
