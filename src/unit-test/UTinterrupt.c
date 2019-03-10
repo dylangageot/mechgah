@@ -129,6 +129,32 @@ static void test_IRQ_I_FLAG_CLEAR(void** state) {
     assert_int_equal(context, 0);
 }
 
+static void test_IRQ_I_FLAG_SET(void** state) {
+    CPU* self = (CPU*) *state;
+
+    /* setup values for test */
+    uint8_t context = 0x02;
+    self->PC = 0xFEDC;
+    /* NV_B DIZC */
+    /* 1111 1111*/
+    self->P = 0xFF;
+    self->SP = 0xA3;
+
+    /* execute function */
+    uint8_t cycleCount = CPU_InterruptManager(self, &context);
+
+    /* PC unchanged */
+    assert_int_equal(self->PC, 0xFEDC);
+    /* P unchanged */
+    assert_int_equal(self->P, 0xFF);
+    /* SP unchanged */
+    assert_int_equal(self->SP, 0xA3);
+    /* cycleCount set to O */
+    assert_int_equal(cycleCount, 0);
+    /* context unchanged */
+    assert_int_equal(context, 0x02);
+}
+
 static void test_INTERRUPT_STACK_PC(void** state) {
     CPU* self = (CPU*) *state;
 
@@ -451,6 +477,7 @@ int run_UTinterrupt(void) {
     const struct CMUnitTest test_interrupt[] = {
         cmocka_unit_test(test_NMI),
         cmocka_unit_test(test_IRQ_I_FLAG_CLEAR),
+        cmocka_unit_test(test_IRQ_I_FLAG_SET),
         cmocka_unit_test(test_INTERRUPT_STACK_PC),
         cmocka_unit_test(test_INTERRUPT_STACK_P),
         cmocka_unit_test(test_INTERRUPT_DECREMENT_SP),
