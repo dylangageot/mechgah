@@ -64,7 +64,7 @@ static void test_P_on_stack(void** state) {
     uint8_t* ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, 0x01A1);
     uint8_t on_stack_P = *ptr;
 
-    assert_int_equal(on_stack_P, 0x97);
+    assert_int_equal(on_stack_P, 0x87);
 }
 
 static void test_PC_fetch(void** state) {
