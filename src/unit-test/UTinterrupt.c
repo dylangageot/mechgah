@@ -29,6 +29,54 @@ static int setup_CPU(void** state) {
 
 /* Interrupts Unit Tests */
 
+static void test_NMI(void** state) {
+    CPU* self = (CPU*) *state;
+
+    /* setup values for test */
+    uint8_t context = 0x01;
+    self->PC = 0xFEDC;
+    self->P = 0xFB; /* NV_B DIZC */
+    self->SP = 0xA3;
+
+    /* set next PC LSByte */
+    uint8_t* ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, NMI_JMP_ADD);
+    *ptr = 0xC9;
+
+    /* set next PC MSByte */
+    ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, NMI_JMP_ADD+1);
+    *ptr = 0x5D;
+
+    /* execute function */
+    uint8_t cycleCount = CPU_InterruptManager(self, &context);
+
+    /* get PCL from stack */
+    ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, 0x01A2);
+    uint16_t on_stack_PC = (uint16_t)(*ptr);
+
+    /* get PCH from stack */
+    ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, 0x01A3);
+    on_stack_PC |= (uint16_t)(*ptr) << 8;
+
+    /* get P from stack */
+    ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, 0x01A1);
+    uint8_t on_stack_P = *ptr;
+
+    /* PC on stack */
+    assert_int_equal(on_stack_PC, 0xFEDC);
+    /* PC fetch */
+    assert_int_equal(self->PC, 0x5DC9);
+    /* P on stack */
+    assert_int_equal(on_stack_P, 0xEB); /* on stack, B is clear */
+    /* set I flag */
+    assert_int_equal(self->P, 0xFF);
+    /* decrement SP */
+    assert_int_equal(self->SP, 0xA0);
+    /* cycleCount set to 7 */
+    assert_int_equal(cycleCount, 7);
+    /* clear N from context */
+    assert_int_equal(context, 0);
+}
+
 static void test_INTERRUPT_STACK_PC(void** state) {
     CPU* self = (CPU*) *state;
 
@@ -349,6 +397,7 @@ static int teardown_CPU(void **state) {
 
 int run_UTinterrupt(void) {
     const struct CMUnitTest test_interrupt[] = {
+        cmocka_unit_test(test_NMI),
         cmocka_unit_test(test_INTERRUPT_STACK_PC),
         cmocka_unit_test(test_INTERRUPT_STACK_P),
         cmocka_unit_test(test_INTERRUPT_DECREMENT_SP),
