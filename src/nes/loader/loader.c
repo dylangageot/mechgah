@@ -7,6 +7,7 @@
  */
 
 #include "loader.h"
+#include "../mapper/nrom.h"
 
 /* Mapper function LUT */
 MapperFunctions functionsLUT[MAPPER_TOTAL] = {
