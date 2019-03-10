@@ -8,19 +8,9 @@
 
 #include "loader.h"
 
-/* Map<Mapper>_Create function LUT */
-void* createLUT[MAPPER_TOTAL] = {
-  MapNROM_Create,
-};
-
-/* Map<Mapper>_Get function LUT */
-uint8_t* getLUT[MAPPER_TOTAL] = {
-  MapNROM_Get,
-};
-
-/* Map<Mapper>_Destroy function LUT */
-void* destroyLUT[MAPPER_TOTAL] = {
-  MapNROM_Destroy,
+/* Mapper function LUT */
+MapperFunctions functionsLUT[MAPPER_TOTAL] = {
+  {MapNROM_Create,MapNROM_Get,MapNROM_Ack,MapNROM_Destroy}, /* NROM */
 };
 
 /* Fills the Header structure */
@@ -97,27 +87,33 @@ Mapper * loadROM(char* filename){
   }
 
   /* Creating the needed mapper */
-  createMapper = createLUT[header->mapper];
+  createMapper = functionsLUT[header->mapper].create;
   void * memoryMap = (*createMapper)(header);
 
   /* Filling the Mapper structure */
-  mapper->get = getLUT[header->mapper];
-  mapper->destroyer = destroyLUT[header->mapper];
+  mapper->get = functionsLUT[header->mapper].get;
+  mapper->destroyer = functionsLUT[header->mapper].destroyer;
   mapper->memoryMap = memoryMap;
 
-
   /* Fetching the ROM and VROM adresses */
-  /*
   uint8_t * romAddr = mapper->get(mapper->memoryMap,AS_LDR,LDR_PRG);
   uint8_t * vromAddr = mapper->get(mapper->memoryMap,AS_LDR,LDR_CHR);
-  */
 
   /* Copying the programm into the Mapper structure*/
+  fseek(romFile,0,SEEK_SET);
+  fseek(romFile,16+(header->trainer)*64,SEEK_CUR);
+  fread(romAddr,header->romSize*16384,1,romFile);
+  fread(vromAddr,header->vromSize*8192,1,romFile);
+
   /*
-  memcpy(romAddr,romFile+16+(header->trainer)*64,mapper->romSize);
-  memcpy(vromAddr,romFile+16+(header->trainer)*64+(header->romSize)*16000,mapper->vromSize);
+  uint8_t * temp;
+  for(int i=0 ; i<32 ; i++){
+    temp = mapper->get(mapper->memoryMap,AS_CPU,i);
+    printf("%x\n",*temp);
+  }
   */
 
 	/* Returning the Mapper structure */
+  fclose(romFile);
 	return mapper;
 }
