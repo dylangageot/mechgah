@@ -22,7 +22,10 @@ static int setup_CPU(void **state) {
 		return -1;
 	}
 	/* Init mapper struct with NROM */
-	self->rmap->memoryMap = MapNROM_Create(NROM_16KIB, NROM_VERTICAL);
+	Header config;
+	config.mirroring = NROM_HORIZONTAL;
+	config.romSize = NROM_16KIB;
+	self->rmap->memoryMap = MapNROM_Create(&config);
 	self->rmap->destroyer = MapNROM_Destroy;
 	self->rmap->ack = MapNROM_Ack;
 	self->rmap->get = MapNROM_Get;
@@ -306,6 +309,7 @@ static void test_addressing_MIS(void **state){
 	Instruction_Resolve(instru,self);
 	assert_int_equal(Instruction_Resolve(instru,self),0);
 	assert_int_equal(Instruction_Resolve(NULL,NULL),0);
+	free(instru);
 }
 
 static void test_SET_SIGN(void **state) {
