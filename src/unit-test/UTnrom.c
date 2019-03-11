@@ -2,14 +2,20 @@
 #include "../nes/mapper/nrom.h"
 
 static int setup_NROM_16(void **state) {
-	*state = (void *) MapNROM_Create(NROM_16KIB, NROM_HORIZONTAL);
+	Header config;
+	config.mirroring = NROM_HORIZONTAL;
+	config.romSize = NROM_16KIB;
+	*state = (void *) MapNROM_Create(&config);
 	if (*state == NULL)
 		return -1;
 	return 0;
 }
 
 static int setup_NROM_32(void **state) {
-	*state = (void *) MapNROM_Create(NROM_32KIB, NROM_HORIZONTAL);
+	Header config;
+	config.mirroring = NROM_HORIZONTAL;
+	config.romSize = NROM_32KIB;
+	*state = (void *) MapNROM_Create(&config);
 	if (*state == NULL)
 		return -1;
 	return 0;
