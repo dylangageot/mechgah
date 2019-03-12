@@ -846,40 +846,44 @@ static void test_CLC(void **state){
 	self->SP = 0xFF;
 	assert_int_equal(clk,2);
 	assert_int_equal(((self->P)&0x01),0);
+	assert_ptr_equal(ptr, inst.opcode.inst);
 }
 
 static void test_CLD(void **state){
 	CPU *self = (CPU*) *state;
 	Instruction inst;
-	uint8_t (*ptr)(CPU*, Instruction*) = _CLC;
+	uint8_t (*ptr)(CPU*, Instruction*) = _CLD;
 	inst.opcode = Opcode_Get(0xD8); /* CLD */
 	uint8_t clk = inst.opcode.inst(self, &inst);
 	self->SP = 0xFF;
 	assert_int_equal(clk,2);
 	assert_int_equal(((self->P)&0x08),0);
+	assert_ptr_equal(ptr, inst.opcode.inst);
 }
 
 
 static void test_CLI(void **state){
 	CPU *self = (CPU*) *state;
 	Instruction inst;
-	uint8_t (*ptr)(CPU*, Instruction*) = _CLC;
+	uint8_t (*ptr)(CPU*, Instruction*) = _CLI;
 	inst.opcode = Opcode_Get(0x58); /* CLI */
 	uint8_t clk = inst.opcode.inst(self, &inst);
 	self->SP = 0xFF;
 	assert_int_equal(clk,2);
 	assert_int_equal(((self->P)&0x04),0);
+	assert_ptr_equal(ptr, inst.opcode.inst);
 }
 
 static void test_CLV(void **state){
 	CPU *self = (CPU*) *state;
 	Instruction inst;
-	uint8_t (*ptr)(CPU*, Instruction*) = _CLC;
+	uint8_t (*ptr)(CPU*, Instruction*) = _CLV;
 	inst.opcode = Opcode_Get(0xB8); /* CLV */
 	uint8_t clk = inst.opcode.inst(self, &inst);
 	self->SP = 0xFF;
 	assert_int_equal(clk,2);
 	assert_int_equal(((self->P)&0x40),0);
+	assert_ptr_equal(ptr, inst.opcode.inst);
 }
 
 static int teardown_CPU(void **state) {
