@@ -393,25 +393,25 @@ uint8_t _BVS(CPU *cpu, Instruction *arg) {
 uint8_t _CLC(CPU *cpu, Instruction *arg){
 	/*Carry flag -> 0 */
 	cpu->P=(cpu->P)&(0xFE);
-	return 2;
+	return arg->opcode.cycle;
 }
 
 uint8_t _CLD(CPU *cpu, Instruction *arg){
 	/*Decimal flag -> 0 */
 	cpu->P=(cpu->P)&(0xF7);
-	return 2;
+	return arg->opcode.cycle;
 }
 
 uint8_t _CLI(CPU *cpu, Instruction *arg){
 	/*_interrupt flag -> 0 */
 	cpu->P=(cpu->P)&(0xFB);
-	return 2;
+	return arg->opcode.cycle;
 }
 
 uint8_t _CLV(CPU *cpu, Instruction *arg){
 	/* Overflow flag -> 0 */
 	cpu->P=(cpu->P)&(0xBF);
-	return 2;
+	return arg->opcode.cycle;
 }
 
 uint8_t _CMP(CPU *cpu, Instruction *arg){return 0;}
