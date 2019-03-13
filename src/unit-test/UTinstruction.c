@@ -890,9 +890,9 @@ static void test_CMP(void **state){
 	CPU *self = (CPU*) *state;
 	Instruction inst;
 	uint8_t (*ptr)(CPU*, Instruction*) = _CMP;
-	uint8_t src = 0x80, clk = 0;
+	uint8_t src = 0x0, clk = 0;
 	inst.pageCrossed = 0;
-	self->A = 0xFF;
+	self->A = 0x00;
 	self->P = 0x00;
 	inst.dataMem = &src;
 
@@ -930,17 +930,16 @@ static void test_CMP(void **state){
 	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk,6);
 	assert_ptr_equal(ptr, inst.opcode.inst);
-	src = 0x80;
+	src = 0x00;
 	inst.opcode = Opcode_Get(0xD1); /* CMP Indirect Y clk=5* */
 	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk,5);
 	assert_ptr_equal(ptr, inst.opcode.inst);
-	/* En nombre signé 0xFF-0x80=0x17F donc rend 0x7F et met carry à 1*/
-	assert_int_equal(*(inst.dataMem),0x7F);
-	assert_ptr_equal(ptr, inst.opcode.inst);
-	assert_int_equal(((self->P)&0x01),1);
-	assert_int_equal(((self->P)&0x02),0);
-	assert_int_equal(((self->P)&0x08),0);
+
+	/*Test des bit des flags*/
+	assert_int_equal(((self->P)&0x01),0x01);
+	assert_int_equal(((self->P)&0x02),0x02);
+	assert_int_equal(((self->P)&0x80),0x00);
 }
 
 static int teardown_CPU(void **state) {
