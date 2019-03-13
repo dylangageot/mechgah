@@ -392,25 +392,25 @@ uint8_t _BVS(CPU *cpu, Instruction *arg) {
 
 uint8_t _CLC(CPU *cpu, Instruction *arg){
 	/*Carry flag -> 0 */
-	_SET_CARRY(cpu,0);
+	cpu->P&=(0xFE);
 	return arg->opcode.cycle;
 }
 
 uint8_t _CLD(CPU *cpu, Instruction *arg){
 	/*Decimal flag -> 0 */
-	cpu->P=(cpu->P)&(0xF7);
+	cpu->P&=(0xF7);
 	return arg->opcode.cycle;
 }
 
 uint8_t _CLI(CPU *cpu, Instruction *arg){
 	/*_interrupt flag -> 0 */
-	cpu->P=(cpu->P)&(0xFB);
+	cpu->P&=(0xFB);
 	return arg->opcode.cycle;
 }
 
 uint8_t _CLV(CPU *cpu, Instruction *arg){
 	/* Overflow flag -> 0 */
-	_SET_OVERFLOW(cpu,0);
+	cpu->P&=(0xBF);
 	return arg->opcode.cycle;
 }
 
@@ -418,11 +418,10 @@ uint8_t _CMP(CPU *cpu, Instruction *arg){
 	/* CMP Compare memory and accumulator */
 	uint16_t temp = (uint16_t)*(arg->dataMem);
 	arg->opcode.cycle += arg->pageCrossed;
-	*(arg->dataMem) = cpu->A - *(arg->dataMem);
 	temp = cpu->A - temp;
 	_SET_CARRY(cpu, temp < 0x100);
-	_SET_SIGN(cpu,arg->dataMem);
-	_SET_ZERO(cpu,arg->dataMem);
+	_SET_SIGN(cpu,(uint8_t*)&temp);
+	_SET_ZERO(cpu,(uint8_t*)&temp);
 	return arg->opcode.cycle;
 }
 
