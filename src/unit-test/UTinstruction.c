@@ -861,7 +861,6 @@ static void test_CLD(void **state){
 	assert_ptr_equal(ptr, inst.opcode.inst);
 }
 
-
 static void test_CLI(void **state){
 	CPU *self = (CPU*) *state;
 	Instruction inst;
@@ -950,7 +949,6 @@ static void test_CPX(void **state){
 	self->X = 0x80;
 	self->P = 0x00;
 	inst.dataMem = &src;
-	inst.pageCrossed = 0;
 
 	inst.opcode = Opcode_Get(0xE0); /* _CPX Immediate clk=2 */
 	clk = inst.opcode.inst(self, &inst);
@@ -981,7 +979,6 @@ static void test_CPY(void **state){
 	self->Y = 0x60;
 	self->P = 0x00;
 	inst.dataMem = &src;
-	inst.pageCrossed = 0;
 
 	inst.opcode = Opcode_Get(0xC0); /* _CPY Immediate clk=2 */
 	clk = inst.opcode.inst(self, &inst);
@@ -1000,6 +997,58 @@ static void test_CPY(void **state){
 
 	assert_int_equal(((self->P)&0x01),0x01);
 	assert_int_equal(((self->P)&0x02),0x00);
+	assert_int_equal(((self->P)&0x80),0x00);
+
+}
+
+static void test_DEC(void **state){
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*) = _DEC;
+	uint8_t src = 0x01, clk = 0;
+	inst.dataMem = &src;
+
+	inst.opcode = Opcode_Get(0xC6); /* _DEC Zero page clk=5 */
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk,5);
+	assert_ptr_equal(ptr, inst.opcode.inst);
+
+	inst.opcode = Opcode_Get(0xD6); /* _DEC Zero-page X clk=6 */
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk,6);
+	assert_ptr_equal(ptr, inst.opcode.inst);
+
+	inst.opcode = Opcode_Get(0xCE); /* _DEC Absolute clk=6 */
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk,6);
+	assert_ptr_equal(ptr, inst.opcode.inst);
+
+	src = 0x00;
+	inst.opcode = Opcode_Get(0xDE); /* _DEC Absolute X clk=7 */
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk,7);
+	assert_ptr_equal(ptr, inst.opcode.inst);
+
+	assert_int_equal(src,0XFF);
+	assert_int_equal(((self->P)&0x02),0x00);
+	assert_int_equal(((self->P)&0x80),0x80);
+
+}
+
+static void test_DEX(void **state){
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*) = _DEX;
+	uint8_t clk = 0;
+	self->X = 0x01;
+
+	inst.opcode = Opcode_Get(0xCA); /* _DEX Implied clk=2 */
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk,2);
+	assert_ptr_equal(ptr, inst.opcode.inst);
+
+	assert_int_equal(self->X,0X00);
+	assert_int_equal(((self->P)&0x02),0x02);
 	assert_int_equal(((self->P)&0x80),0x00);
 
 }
@@ -1156,6 +1205,8 @@ int run_instruction(void) {
 		cmocka_unit_test(test_CMP),
 		cmocka_unit_test(test_CPX),
 		cmocka_unit_test(test_CPY),
+		cmocka_unit_test(test_DEC),
+		cmocka_unit_test(test_DEX),
 		cmocka_unit_test(test_LDA),
 		};
 	const struct CMUnitTest test_addressing_Mode[] = {
