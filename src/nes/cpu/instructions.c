@@ -495,8 +495,26 @@ uint8_t _INC(CPU *cpu, Instruction *arg){
 	*(arg->dataMem) = m;
 	return arg->opcode.cycle;
 }
-uint8_t _INX(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _INY(CPU *cpu, Instruction *arg){return 0;}
+
+uint8_t _INX(CPU *cpu, Instruction *arg){
+	/*INX increment index X by one */
+	uint8_t m = cpu->X;
+	m = (m +1)%256;
+	_SET_SIGN(cpu,&m);
+	_SET_ZERO(cpu,&m);
+	cpu->X = m;
+	return arg->opcode.cycle;
+}
+
+uint8_t _INY(CPU *cpu, Instruction *arg){
+	/*INY increment index Y by one */
+	uint8_t m = cpu->Y;
+	m = (m +1)%256;
+	_SET_SIGN(cpu,&m);
+	_SET_ZERO(cpu,&m);
+	cpu->Y = m;
+	return arg->opcode.cycle;
+}
 
 uint8_t _JMP(CPU *cpu, Instruction *arg) {
 	/* Set program counter from memory */
