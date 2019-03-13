@@ -428,25 +428,42 @@ uint8_t _CMP(CPU *cpu, Instruction *arg){
 uint8_t _CPX(CPU *cpu, Instruction *arg){
 	/*CPX Compare Memory and Index X  */
 	uint16_t temp = (uint16_t)*(arg->dataMem);
-	arg->opcode.cycle += arg->pageCrossed;
 	temp = cpu->X - temp;
 	_SET_CARRY(cpu, temp < 0x100);
 	_SET_SIGN(cpu,(uint8_t*)&temp);
 	_SET_ZERO(cpu,(uint8_t*)&temp);
 	return arg->opcode.cycle;
 }
+
 uint8_t _CPY(CPU *cpu, Instruction *arg){
 	/*CPY Compare Memory and Index Y  */
 	uint16_t temp = (uint16_t)*(arg->dataMem);
-	arg->opcode.cycle += arg->pageCrossed;
 	temp = cpu->Y - temp;
 	_SET_CARRY(cpu, temp < 0x100);
 	_SET_SIGN(cpu,(uint8_t*)&temp);
 	_SET_ZERO(cpu,(uint8_t*)&temp);
 	return arg->opcode.cycle;
 }
-uint8_t _DEC(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _DEX(CPU *cpu, Instruction *arg){return 0;}
+
+uint8_t _DEC(CPU *cpu, Instruction *arg){
+	/*DEC Decrement memory by one  */
+	uint8_t m = *(arg->dataMem);
+	m = (m -1)%256;
+	_SET_SIGN(cpu,&m);
+	_SET_ZERO(cpu,&m);
+	*(arg->dataMem) = m;
+	return arg->opcode.cycle;
+}
+
+uint8_t _DEX(CPU *cpu, Instruction *arg){
+	/*DEX Decrement index X by one */
+	uint8_t m = cpu->X;
+	m = (m -1)%256;
+	_SET_SIGN(cpu,&m);
+	_SET_ZERO(cpu,&m);
+	cpu->X = m;
+	return arg->opcode.cycle;
+}
 uint8_t _DEY(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _EOR(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _INC(CPU *cpu, Instruction *arg){return 0;}
