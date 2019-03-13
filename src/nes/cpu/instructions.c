@@ -425,7 +425,19 @@ uint8_t _CMP(CPU *cpu, Instruction *arg){
 	return arg->opcode.cycle;
 }
 
-uint8_t _CPX(CPU *cpu, Instruction *arg){return 0;}
+uint8_t _CPX(CPU *cpu, Instruction *arg){
+	/*CPX Compare Memory and Index X  */
+	uint16_t temp = (uint16_t)*(arg->dataMem);
+	arg->opcode.cycle += arg->pageCrossed;
+	printf("%d\n\n\n\n",temp );
+	temp = cpu->X - temp;
+	printf("%d\n\n\n\n",cpu->X );
+	printf("%d\n\n\n\n",temp );
+	_SET_CARRY(cpu, temp < 0x100);
+	_SET_SIGN(cpu,(uint8_t*)&temp);
+	_SET_ZERO(cpu,(uint8_t*)&temp);
+	return arg->opcode.cycle;
+}
 uint8_t _CPY(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _DEC(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _DEX(CPU *cpu, Instruction *arg){return 0;}

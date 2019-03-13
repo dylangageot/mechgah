@@ -942,6 +942,37 @@ static void test_CMP(void **state){
 	assert_int_equal(((self->P)&0x80),0x00);
 }
 
+static void test_CPX(void **state){
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*) = _CPX;
+	uint8_t src = 0x0, clk = 0;
+	self->X = 0x80;
+	self->P = 0x00;
+	inst.dataMem = &src;
+	inst.pageCrossed = 0;
+
+	inst.opcode = Opcode_Get(0xE0); /* _CPX Immediate clk=2 */
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk,2);
+	assert_ptr_equal(ptr, inst.opcode.inst);
+
+	inst.opcode = Opcode_Get(0xE4); /* _CPX Zero-page clk=3 */
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk,3);
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	src = 0x90;
+	inst.opcode = Opcode_Get(0xEC); /* _CPX Absolute clk=4 */
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk,4);
+	assert_ptr_equal(ptr, inst.opcode.inst);
+
+	assert_int_equal(((self->P)&0x01),0x00);
+	assert_int_equal(((self->P)&0x02),0x00);
+	assert_int_equal(((self->P)&0x80),0x80);
+
+}
+
 static void test_LDA(void **state){
 	CPU *self = (CPU*) *state;
 	Instruction inst;
@@ -1092,6 +1123,7 @@ int run_instruction(void) {
 		cmocka_unit_test(test_CLI),
 		cmocka_unit_test(test_CLV),
 		cmocka_unit_test(test_CMP),
+		cmocka_unit_test(test_CPX),
 		cmocka_unit_test(test_LDA),
 		};
 	const struct CMUnitTest test_addressing_Mode[] = {
