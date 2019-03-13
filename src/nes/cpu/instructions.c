@@ -464,9 +464,37 @@ uint8_t _DEX(CPU *cpu, Instruction *arg){
 	cpu->X = m;
 	return arg->opcode.cycle;
 }
-uint8_t _DEY(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _EOR(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _INC(CPU *cpu, Instruction *arg){return 0;}
+
+uint8_t _DEY(CPU *cpu, Instruction *arg){
+	/*DEY Decrement index Y by one */
+	uint8_t m = cpu->Y;
+	m = (m -1)%256;
+	_SET_SIGN(cpu,&m);
+	_SET_ZERO(cpu,&m);
+	cpu->Y = m;
+	return arg->opcode.cycle;
+}
+
+uint8_t _EOR(CPU *cpu, Instruction *arg){
+	/*EOR "Exclusive-Or" memory with accumulator */
+	arg->opcode.cycle += arg->pageCrossed;
+	uint8_t m = *(arg->dataMem);
+	m = (cpu->A)^m;
+	_SET_SIGN(cpu,&m);
+	_SET_ZERO(cpu,&m);
+	cpu->A = m;
+	return arg->opcode.cycle;
+}
+
+uint8_t _INC(CPU *cpu, Instruction *arg){
+	/* INC Increment memory by one */
+	uint8_t m = *(arg->dataMem);
+	m = (m + 1)%256;
+	_SET_SIGN(cpu,&m);
+	_SET_ZERO(cpu,&m);
+	*(arg->dataMem) = m;
+	return arg->opcode.cycle;
+}
 uint8_t _INX(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _INY(CPU *cpu, Instruction *arg){return 0;}
 

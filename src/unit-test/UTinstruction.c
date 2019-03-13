@@ -1032,7 +1032,6 @@ static void test_DEC(void **state){
 	assert_int_equal(src,0XFF);
 	assert_int_equal(((self->P)&0x02),0x00);
 	assert_int_equal(((self->P)&0x80),0x80);
-
 }
 
 static void test_DEX(void **state){
@@ -1047,10 +1046,114 @@ static void test_DEX(void **state){
 	assert_int_equal(clk,2);
 	assert_ptr_equal(ptr, inst.opcode.inst);
 
-	assert_int_equal(self->X,0X00);
+	assert_int_equal(self->X,0x00);
 	assert_int_equal(((self->P)&0x02),0x02);
 	assert_int_equal(((self->P)&0x80),0x00);
+}
 
+static void test_DEY(void **state){
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*) = _DEY;
+	uint8_t clk = 0;
+	self->Y = 0x00;
+
+	inst.opcode = Opcode_Get(0x88); /* _DEY Implied clk=2 */
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk,2);
+	assert_ptr_equal(ptr, inst.opcode.inst);
+
+	assert_int_equal(self->Y,0xFF);
+	assert_int_equal(((self->P)&0x02),0x00);
+	assert_int_equal(((self->P)&0x80),0x80);
+}
+
+static void test_EOR(void **state){
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*) = _EOR;
+	uint8_t src = 0x00, clk = 0;
+	inst.pageCrossed = 0;
+	self->A = 0x00;
+	self->P = 0x00;
+	inst.dataMem = &src;
+
+	inst.opcode = Opcode_Get(0x49); /* _EOR Immediate clk=2 */
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk,2);
+	assert_ptr_equal(ptr, inst.opcode.inst);
+
+	inst.opcode = Opcode_Get(0x45); /* _EOR Zero-page clk=3 */
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk,3);
+	assert_ptr_equal(ptr, inst.opcode.inst);
+
+	inst.opcode = Opcode_Get(0x55); /* _EOR Zero-page X clk=4 */
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk,4);
+	assert_ptr_equal(ptr, inst.opcode.inst);
+
+	inst.opcode = Opcode_Get(0x4D); /* _EOR Absolute clk=4 */
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk,4);
+	assert_ptr_equal(ptr, inst.opcode.inst);
+
+	inst.opcode = Opcode_Get(0x5D); /* _EOR Absolute X clk=4* */
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk,4);
+	assert_ptr_equal(ptr, inst.opcode.inst);
+
+	inst.opcode = Opcode_Get(0x59); /* _EOR Absolute Y clk=4* */
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk,4);
+	assert_ptr_equal(ptr, inst.opcode.inst);
+
+	inst.opcode = Opcode_Get(0x41); /* _EOR Indirect X clk=6 */
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk,6);
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	src = 0xFF;
+	inst.opcode = Opcode_Get(0x51); /* _EOR Indirect Y clk=5* */
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk,5);
+	assert_ptr_equal(ptr, inst.opcode.inst);
+
+	assert_int_equal(self->A,0xFF);
+	assert_int_equal(((self->P)&0x02),0x00);
+	assert_int_equal(((self->P)&0x80),0x80);
+}
+
+static void test_INC(void **state){
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*) = _INC;
+	uint8_t src = 0x01, clk = 0;
+	inst.dataMem = &src;
+
+	inst.opcode = Opcode_Get(0xE6); /* _INC Zero page clk=5 */
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk,5);
+	assert_ptr_equal(ptr, inst.opcode.inst);
+
+	inst.opcode = Opcode_Get(0xF6); /* _INC Zero-page X clk=6 */
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk,6);
+	assert_ptr_equal(ptr, inst.opcode.inst);
+
+	inst.opcode = Opcode_Get(0xEE); /* _INC Absolute clk=6 */
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk,6);
+	assert_ptr_equal(ptr, inst.opcode.inst);
+
+	src = 0xFF;
+	inst.opcode = Opcode_Get(0xFE); /* _INC Absolute X clk=7 */
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk,7);
+	assert_ptr_equal(ptr, inst.opcode.inst);
+
+	assert_int_equal(src,0X00);
+	assert_int_equal(((self->P)&0x02),0x02);
+	assert_int_equal(((self->P)&0x80),0x00);
 }
 
 static void test_LDA(void **state){
@@ -1207,6 +1310,9 @@ int run_instruction(void) {
 		cmocka_unit_test(test_CPY),
 		cmocka_unit_test(test_DEC),
 		cmocka_unit_test(test_DEX),
+		cmocka_unit_test(test_DEY),
+		cmocka_unit_test(test_EOR),
+		cmocka_unit_test(test_INC),
 		cmocka_unit_test(test_LDA),
 		};
 	const struct CMUnitTest test_addressing_Mode[] = {
