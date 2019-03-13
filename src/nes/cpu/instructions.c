@@ -455,7 +455,13 @@ uint8_t _JSR(CPU *cpu, Instruction *arg) {
 	return arg->opcode.cycle;
 }
 
-uint8_t _LDA(CPU *cpu, Instruction *arg){return 0;}
+uint8_t _LDA(CPU *cpu, Instruction *arg){
+	_SET_SIGN(cpu,arg->dataMem);
+  _SET_ZERO(cpu,arg->dataMem);
+  cpu->A = *(arg->dataMem);
+	return arg->opcode.cycle + arg->pageCrossed;
+}
+
 uint8_t _LDX(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _LDY(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _LSR(CPU *cpu, Instruction *arg){return 0;}
