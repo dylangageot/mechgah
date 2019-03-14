@@ -11,11 +11,12 @@ NESDIR		= src/nes
 UTESTDIR	= src/unit-test
 SRC  		= $(NESDIR)/mapper/nrom.c \
 			  $(NESDIR)/mapper/mapper.c \
+				$(NESDIR)/loader/loader.c \
 			  $(NESDIR)/cpu/instructions.c \
 			  $(NESDIR)/cpu/cpu.c \
 			  $(UTESTDIR)/UTnrom.c \
 			  $(UTESTDIR)/UTinstruction.c \
-
+				$(UTESTDIR)/UTloader.c \
 
 # use gcc
 CC			= gcc
