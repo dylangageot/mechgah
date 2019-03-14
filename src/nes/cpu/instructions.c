@@ -543,8 +543,21 @@ uint8_t _LDA(CPU *cpu, Instruction *arg){
 	return arg->opcode.cycle + arg->pageCrossed;
 }
 
-uint8_t _LDX(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _LDY(CPU *cpu, Instruction *arg){return 0;}
+uint8_t _LDX(CPU *cpu, Instruction *arg){
+	_SET_SIGN(cpu,arg->dataMem);
+  _SET_ZERO(cpu,arg->dataMem);
+  cpu->X = *(arg->dataMem);
+	return arg->opcode.cycle + arg->pageCrossed;
+}
+
+uint8_t _LDY(CPU *cpu, Instruction *arg){
+	_SET_SIGN(cpu,arg->dataMem);
+  _SET_ZERO(cpu,arg->dataMem);
+  cpu->Y = *(arg->dataMem);
+	return arg->opcode.cycle + arg->pageCrossed;
+}
+
+
 uint8_t _LSR(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _NOP(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _ORA(CPU *cpu, Instruction *arg){return 0;}
