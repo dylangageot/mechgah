@@ -53,8 +53,8 @@ typedef struct {
  * \brief Describe if the loaded ROM use 16 or 32kiB
  */
 enum NROMSize {
-	NROM_16KIB = 0,
-	NROM_32KIB,
+	NROM_32KIB = 0,
+	NROM_16KIB,
 	NROM_UNDEFINED
 };
 
