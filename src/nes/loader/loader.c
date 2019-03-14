@@ -40,11 +40,11 @@ MapperFunctions functionsLUT[MAPPER_TOTAL] = {
 };
 
 /* Fills the Header structure */
-void fillHeader(Header * header, char * h){
+void fillHeader(Header * header, uint8_t * h){
   header->romSize = h[4];
   header->vromSize = h[5];
   header->ramSize = h[8];
-  header->mapper = (h[7] & 0xF0) | (h[6] & 0xF0);
+  header->mapper = ( (h[7] & 0xF0) | ((h[6] & 0xF0)>>4));
   header->mirroring = (h[6] & 0x01);
   header->battery_backed_RAM = (h[6] & 0x02)>0;
   header->trainer = (h[6] & 0x04)>0;
@@ -72,26 +72,37 @@ Mapper * loadROM(char* filename){
   if(mapper == (Mapper*)NULL){
     fprintf(stderr, "Couldn't allocate Mapper structure memory "
                     "at %s, line %d\n", __FILE__, __LINE__);
+    free(mapper);
+    fclose(romFile);
     return (Mapper*)NULL;
   }
   Header * header = malloc(sizeof(Header));
 	if(header == (Header*)NULL){
     fprintf(stderr, "Couldn't allocate Header structure memory "
                     "at %s, line %d\n", __FILE__, __LINE__);
+    free(mapper);
+    free(header);
+    fclose(romFile);
     return (Mapper*)NULL;
   }
 
-  /* Storing the .nes header into a 16 Byte table */
-  char h[16];
+  /* Storing the .nes header into a 16 unsigned Byte table */
+  uint8_t h[16];
   if (fread(h,16,1,romFile) != 1){
 		fprintf(stderr, "Error while reading the file header "
                     "at %s, line %d\n", __FILE__, __LINE__);
-		return (Mapper*)NULL;
+    free(mapper);
+    free(header);
+    fclose(romFile);
+    return (Mapper*)NULL;
 	}
 
   /* Checking the file format */
   if(h[0]!='N' || h[1]!='E' || h[2]!='S' || h[3]!=26){
     fprintf(stderr, "Given ROM is not a .nes file\n");
+    free(mapper);
+    free(header);
+    fclose(romFile);
     return (Mapper*)NULL;
   }
 
@@ -99,6 +110,9 @@ Mapper * loadROM(char* filename){
   for(int i=10; i<16 ; i++){
     if(h[i]!=0){
       fprintf(stderr,"Given ROM is not upright or may be a rip\n");
+      free(mapper);
+      free(header);
+      fclose(romFile);
       return (Mapper*)NULL;
     }
   }
@@ -109,6 +123,9 @@ Mapper * loadROM(char* filename){
   /* Checking if mapper is described */
   if(header->mapper > MAPPER_TOTAL || functionsLUT[header->mapper].create == NULL){
     fprintf(stderr,"ROM Mapper is not described (yet)\n");
+    free(mapper);
+    free(header);
+    fclose(romFile);
     return (Mapper*)NULL;
   }
 
@@ -119,6 +136,7 @@ Mapper * loadROM(char* filename){
   /* Filling the Mapper structure */
   mapper->get = functionsLUT[header->mapper].get;
   mapper->destroyer = functionsLUT[header->mapper].destroyer;
+  mapper->ack = functionsLUT[header->mapper].ack;
   mapper->memoryMap = memoryMap;
 
   /* Fetching the ROM and VROM adresses */
@@ -132,6 +150,7 @@ Mapper * loadROM(char* filename){
   fread(vromAddr,(header->vromSize)*8192,1,romFile);
 
 	/* Returning the Mapper structure */
+  free(header);
   fclose(romFile);
 	return mapper;
 }
