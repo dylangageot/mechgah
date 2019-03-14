@@ -1286,6 +1286,138 @@ static void test_LDA(void **state){
 	assert_int_equal(clk, 6);
 }
 
+static void test_LDX(void **state){
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*) = _LDX;
+	uint8_t src = 0x00, clk = 0;
+	inst.dataMem = &src;
+	inst.pageCrossed = 0;
+
+	/* Verify opcode LUT */
+	inst.opcode = Opcode_Get(0xA2); /* LDX IMM */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	/* Test LDX general behavior */
+	/* Signed and Non-Zero */
+	self->P = 0;
+	src = 0xFF;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x80,0x80);
+	assert_int_equal(self->P & 0x02,0x00);
+	assert_int_equal(self->X,0xFF);
+	/* Unsigned and Non-Zero */
+	self->P = 0;
+	src = 0x04;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x80,0x00);
+	assert_int_equal(self->P & 0x02,0x00);
+	assert_int_equal(self->X,0x04);
+	/* Unsigned and Zero*/
+	self->P = 0;
+	src = 0x00;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x80,0x00);
+	assert_int_equal(self->P & 0x02,0x02);
+	assert_int_equal(self->X,0x00);
+
+	/* Test addressing mode clock */
+	inst.opcode = Opcode_Get(0xA6); /* LDX ZER */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 3);
+
+	inst.opcode = Opcode_Get(0xB6); /* LDX ZEY */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 4);
+
+	inst.opcode = Opcode_Get(0xAE); /* LDX ABS */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 4);
+
+	inst.pageCrossed = 0;
+	inst.opcode = Opcode_Get(0xBE); /* LDX ABY */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 4);
+
+	inst.pageCrossed = 1;
+	inst.opcode = Opcode_Get(0xBE); /* LDX ABY */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 5);
+}
+
+static void test_LDY(void **state){
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*) = _LDY;
+	uint8_t src = 0x00, clk = 0;
+	inst.dataMem = &src;
+	inst.pageCrossed = 0;
+
+	/* Verify opcode LUT */
+	inst.opcode = Opcode_Get(0xA0); /* LDX IMM */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	/* Test LDX general behavior */
+	/* Signed and Non-Zero */
+	self->P = 0;
+	src = 0xFF;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x80,0x80);
+	assert_int_equal(self->P & 0x02,0x00);
+	assert_int_equal(self->Y,0xFF);
+	/* Unsigned and Non-Zero */
+	self->P = 0;
+	src = 0x04;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x80,0x00);
+	assert_int_equal(self->P & 0x02,0x00);
+	assert_int_equal(self->Y,0x04);
+	/* Unsigned and Zero*/
+	self->P = 0;
+	src = 0x00;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x80,0x00);
+	assert_int_equal(self->P & 0x02,0x02);
+	assert_int_equal(self->Y,0x00);
+
+	/* Test addressing mode clock */
+	inst.opcode = Opcode_Get(0xA4); /* LDY ZER */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 3);
+
+	inst.opcode = Opcode_Get(0xB4); /* LDY ZEY */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 4);
+
+	inst.opcode = Opcode_Get(0xAC); /* LDY ABS */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 4);
+
+	inst.pageCrossed = 0;
+	inst.opcode = Opcode_Get(0xBC); /* LDY ABY */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 4);
+
+	inst.pageCrossed = 1;
+	inst.opcode = Opcode_Get(0xBC); /* LDY ABY */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 5);
+}
+
 static int teardown_CPU(void **state) {
 	if (*state != NULL) {
 		CPU *self = (CPU*) *state;
@@ -1350,6 +1482,8 @@ int run_instruction(void) {
 		cmocka_unit_test(test_INX),
 		cmocka_unit_test(test_INY),
 		cmocka_unit_test(test_LDA),
+		cmocka_unit_test(test_LDX),
+		cmocka_unit_test(test_LDY),
 		};
 	const struct CMUnitTest test_addressing_Mode[] = {
 		cmocka_unit_test(test_addressing_IMP),
