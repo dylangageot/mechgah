@@ -54,7 +54,7 @@ typedef struct{
  * \param header a pointer to the Header structure to be filled
  * \param h a pointer to the char array containing the raw data
  */
-void fillHeader(Header * header, char * h);
+void fillHeader(Header * header, uint8_t * h);
 
 /**
  * \brief Load ROM into Mapper structure
