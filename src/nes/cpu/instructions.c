@@ -557,9 +557,19 @@ uint8_t _LDY(CPU *cpu, Instruction *arg){
 	return arg->opcode.cycle + arg->pageCrossed;
 }
 
+uint8_t _LSR(CPU *cpu, Instruction *arg){
+	_SET_CARRY(cpu, (*(arg->dataMem) & 0x01));
+  *arg->dataMem >>= 1;
+  _SET_SIGN(cpu,arg->dataMem);
+  _SET_ZERO(cpu,arg->dataMem);
+	return arg->opcode.cycle;
+}
 
-uint8_t _LSR(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _NOP(CPU *cpu, Instruction *arg){return 0;}
+uint8_t _NOP(CPU *cpu, Instruction *arg){
+	// Nothing to do
+	return arg->opcode.cycle;
+}
+
 uint8_t _ORA(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _PHA(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _PHP(CPU *cpu, Instruction *arg){return 0;}

@@ -1395,7 +1395,7 @@ static void test_LDY(void **state){
 	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 3);
 
-	inst.opcode = Opcode_Get(0xB4); /* LDY ZEY */
+	inst.opcode = Opcode_Get(0xB4); /* LDY ZEX */
 	assert_ptr_equal(ptr, inst.opcode.inst);
 	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 4);
@@ -1406,16 +1406,91 @@ static void test_LDY(void **state){
 	assert_int_equal(clk, 4);
 
 	inst.pageCrossed = 0;
-	inst.opcode = Opcode_Get(0xBC); /* LDY ABY */
+	inst.opcode = Opcode_Get(0xBC); /* LDY ABX */
 	assert_ptr_equal(ptr, inst.opcode.inst);
 	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 4);
 
 	inst.pageCrossed = 1;
-	inst.opcode = Opcode_Get(0xBC); /* LDY ABY */
+	inst.opcode = Opcode_Get(0xBC); /* LDY ABX */
 	assert_ptr_equal(ptr, inst.opcode.inst);
 	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 5);
+}
+
+static void test_LSR(void **state){
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*) = _LSR;
+	uint8_t src = 0x00, clk = 0;
+	inst.dataMem = &src;
+	inst.pageCrossed = 0;
+
+	/* Verify opcode LUT */
+	inst.opcode = Opcode_Get(0x4A); /* LSR ACC */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	/* Test LDX general behavior */
+	/* Signed and Non-Zero */
+	self->P = 0;
+	src = 0xFF;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x80,0x00);
+	assert_int_equal(self->P & 0x02,0x00);
+	assert_int_equal(self->P & 0x01,0x01);
+	assert_int_equal(src,0x7F);
+	/* Unsigned and Non-Zero */
+	self->P = 0;
+	src = 0x04;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x80,0x00);
+	assert_int_equal(self->P & 0x02,0x00);
+	assert_int_equal(self->P & 0x01,0x00);
+	assert_int_equal(src,0x02);
+	/* Unsigned and Zero*/
+	self->P = 0;
+	src = 0x00;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x80,0x00);
+	assert_int_equal(self->P & 0x02,0x02);
+	assert_int_equal(self->P & 0x01,0x00);
+	assert_int_equal(src,0x00);
+
+	/* Test addressing mode clock */
+	inst.opcode = Opcode_Get(0x46); /* LSR ZER */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 5);
+
+	inst.opcode = Opcode_Get(0x56); /* LSR ZEX */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 6);
+
+	inst.opcode = Opcode_Get(0x4E); /* LSR ABS */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 6);
+
+	inst.opcode = Opcode_Get(0x5E); /* LSR ABX */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 7);
+}
+
+static void test_NOP(void **state){
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*) = _NOP;
+	uint8_t clk = 0;
+
+	/* Verify opcode LUT */
+	inst.opcode = Opcode_Get(0xEA); /* NOP IMP */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
 }
 
 static int teardown_CPU(void **state) {
@@ -1484,6 +1559,8 @@ int run_instruction(void) {
 		cmocka_unit_test(test_LDA),
 		cmocka_unit_test(test_LDX),
 		cmocka_unit_test(test_LDY),
+		cmocka_unit_test(test_LSR),
+		cmocka_unit_test(test_NOP),
 		};
 	const struct CMUnitTest test_addressing_Mode[] = {
 		cmocka_unit_test(test_addressing_IMP),
