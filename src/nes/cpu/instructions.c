@@ -80,6 +80,8 @@ Opcode Opcode_Get(uint8_t index) {
 	return opcode[index];
 }
 
+/* Macros used by instructions */
+
 void _SET_SIGN(CPU *cpu, uint8_t *src) {
 	if (*src & 0x80)
 		cpu->P |= 0x80;
@@ -182,6 +184,8 @@ uint8_t _BRANCH(CPU* cpu, Instruction *arg, uint8_t cond) {
     }
 	return arg->opcode.cycle;
 }
+
+/* Instructions management*/
 
 uint8_t Instruction_Fetch(Instruction *self, CPU *cpu) {
 	if ((self == NULL) || (cpu == NULL))
@@ -306,6 +310,8 @@ uint8_t Instruction_Resolve(Instruction *self, CPU *cpu) {
 	}
 	return 1;
 }
+
+/* Instructions */
 
 uint8_t _ADC(CPU *cpu, Instruction *arg) {
 	/* If page crossed in ABX, ABY and INY, add +1 to cycle */
@@ -575,6 +581,12 @@ uint8_t _PHA(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _PHP(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _PLA(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _PLP(CPU *cpu, Instruction *arg){return 0;}
+
+uint8_t _PHA(CPU *cpu, Instruction *arg) {
+	uint8_t src = cpu->A;
+	_PUSH(cpu, &src);
+	return arg->opcode.cycle;
+}
 uint8_t _ROL(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _ROR(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _RTI(CPU *cpu, Instruction *arg){return 0;}
