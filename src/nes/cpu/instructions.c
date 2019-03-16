@@ -586,6 +586,12 @@ uint8_t _PHA(CPU *cpu, Instruction *arg) {
 	_PUSH(cpu, &src);
 	return arg->opcode.cycle;
 }
+
+uint8_t _PHP(CPU *cpu, Instruction *arg) {
+	uint8_t src = _GET_SR(cpu);
+	_PUSH(cpu, &src);
+	return arg->opcode.cycle;
+}
 uint8_t _ROL(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _ROR(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _RTI(CPU *cpu, Instruction *arg){return 0;}
