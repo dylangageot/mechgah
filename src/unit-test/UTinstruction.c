@@ -1491,6 +1491,23 @@ static void test_NOP(void **state){
 	assert_ptr_equal(ptr, inst.opcode.inst);
 	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 2);
+
+static void test_PHA(void **state) {
+	CPU* self = (CPU*) *state;
+	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction) = _PHA;
+	uint8_t clock = 0;
+
+	/* Verify Opcode */
+	inst.opcode = Opcode_Get(0x48); /* PHA */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+
+	/* Test PHA behaviour */
+	self->A = 0x2A;
+	clock = inst.opcode.inst(self,&inst);
+
+	assert_int_equal(clock, 3);
+	assert_int_equal(_PULL(self), 0X2A);
 }
 
 static int teardown_CPU(void **state) {
@@ -1561,6 +1578,7 @@ int run_instruction(void) {
 		cmocka_unit_test(test_LDY),
 		cmocka_unit_test(test_LSR),
 		cmocka_unit_test(test_NOP),
+		cmocka_unit_test(test_PHA)
 		};
 	const struct CMUnitTest test_addressing_Mode[] = {
 		cmocka_unit_test(test_addressing_IMP),
