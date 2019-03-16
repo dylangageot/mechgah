@@ -29,11 +29,45 @@ static int setup_CPU(void** state) {
 
 /* Interrupts Unit Tests */
 
-static void test_NMI(void** state) {
+static void test_RESET(void** state){
     CPU* self = (CPU*) *state;
 
     /* setup values for test */
     uint8_t context = 0x01;
+    self->PC = 0xFEDC;
+    /* NV_B DIZC */
+    /* 1111 1011*/
+    self->P = 0xFB;
+    self->SP = 0xA3;
+
+    /* set next PC LSByte */
+    uint8_t* ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, RES_JMP_ADD);
+    *ptr = 0xC9;
+
+    /* set next PC MSByte */
+    ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, RES_JMP_ADD+1);
+    *ptr = 0x5D;
+
+    /* execute function */
+    uint8_t cycleCount = CPU_InterruptManager(self, &context);
+
+    /* PC fetch */
+    assert_int_equal(self->PC, 0x5DC9);
+    /* set I flag */
+    assert_int_equal(self->P, 0xFF);
+    /* decrement SP */
+    assert_int_equal(self->SP, 0xA0);
+    /* cycleCount set to 7 */
+    assert_int_equal(cycleCount, 7);
+    /* clear R from context */
+    assert_int_equal(context, 0);
+}
+
+static void test_NMI(void** state) {
+    CPU* self = (CPU*) *state;
+
+    /* setup values for test */
+    uint8_t context = 0x02;
     self->PC = 0xFEDC;
     /* NV_B DIZC */
     /* 1111 1011*/
@@ -83,7 +117,7 @@ static void test_IRQ_I_FLAG_CLEAR(void** state) {
     CPU* self = (CPU*) *state;
 
     /* setup values for test */
-    uint8_t context = 0x02;
+    uint8_t context = 0x04;
     self->PC = 0xFEDC;
     /* NV_B DIZC */
     /* 1111 1011*/
@@ -133,7 +167,7 @@ static void test_IRQ_I_FLAG_SET(void** state) {
     CPU* self = (CPU*) *state;
 
     /* setup values for test */
-    uint8_t context = 0x02;
+    uint8_t context = 0x04;
     self->PC = 0xFEDC;
     /* NV_B DIZC */
     /* 1111 1111*/
@@ -152,7 +186,7 @@ static void test_IRQ_I_FLAG_SET(void** state) {
     /* cycleCount set to O */
     assert_int_equal(cycleCount, 0);
     /* context unchanged */
-    assert_int_equal(context, 0x02);
+    assert_int_equal(context, 0x04);
 }
 
 /* Conflict between NMI and IRQ */
@@ -161,7 +195,7 @@ static void test_NMI_IRQ_CONFLICT(void** state) {
     CPU* self = (CPU*) *state;
 
     /* setup values for test */
-    uint8_t context = 0x03;
+    uint8_t context = 0x06;
     self->PC = 0xFEDC;
     /* NV_B DIZC */
     /* 1111 1011*/
@@ -204,7 +238,7 @@ static void test_NMI_IRQ_CONFLICT(void** state) {
     /* cycleCount set to 7 */
     assert_int_equal(cycleCount, 7);
     /* clear N from context */
-    assert_int_equal(context, 0x02);
+    assert_int_equal(context, 0x04);
 }
 
 /* No interrupt */
@@ -253,6 +287,7 @@ static int teardown_CPU(void **state) {
 
 int run_UTinterrupt(void) {
     const struct CMUnitTest test_interrupt[] = {
+        cmocka_unit_test(test_RESET),
         cmocka_unit_test(test_NMI),
         cmocka_unit_test(test_IRQ_I_FLAG_CLEAR),
         cmocka_unit_test(test_IRQ_I_FLAG_SET),

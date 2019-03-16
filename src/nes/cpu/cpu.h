@@ -10,6 +10,7 @@
 #define CPU_H
 
 #define NMI_JMP_ADD 0xFFFA
+#define RES_JMP_ADD 0xFFFC
 #define IRQ_JMP_ADD 0xFFFE
 
 
@@ -52,10 +53,10 @@ uint8_t* CPU_Init(CPU* self);
  *
  * \param self instance of CPU
  * \param context variable that contains interrupt flags.
- *		xxxx xRIN :
+ *		xxxx xINR :
+ *			- R : RESET signal detected
  *			- N : NMI detected at the end of the previous instruction
  *			- I : IRQ detected at the end of the previous instruction
- *			- R : RESET signal detected
  *			- x : non used bits
  * \return number of clock cycle used to execute the instruction
 */
