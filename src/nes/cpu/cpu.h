@@ -9,6 +9,11 @@
 #ifndef CPU_H
 #define CPU_H
 
+#define NMI_JMP_ADD 0xFFFA
+#define RES_JMP_ADD 0xFFFC
+#define IRQ_JMP_ADD 0xFFFE
+
+
 #include "../mapper/mapper.h"
 
 /**
@@ -18,7 +23,7 @@
 typedef struct {
 	uint8_t A, X, Y, SP, P;					/*! 8-bit registers		    */
 	uint16_t PC;							/*! 16-bit register		    */
-	Mapper *rmap;							/*! Mapper from NES struct	*/
+	Mapper* rmap;							/*! Mapper from NES struct	*/
 } CPU;
 
 /**
@@ -29,18 +34,44 @@ typedef struct {
  *
  * \return instance of CPU allocated
  */
-CPU* CPU_Create(Mapper *mapper);
+CPU* CPU_Create(Mapper* mapper);
+
+/**
+ * \fn CPU_Init
+ * \brief Initialize all CPU registers (A,X,Y,SP,P adn PC)
+ *
+ * \param self instance of CPU
+ *
+ * \return 0 if success, 1 otherwise
+ */
+
+uint8_t* CPU_Init(CPU* self);
+
+/**
+ * \fn CPU_InterruptManager
+ * \brief Handle the NMI, IRQ and BRK interrupts
+ *
+ * \param self instance of CPU
+ * \param context variable that contains interrupt flags.
+ *		xxxx xINR :
+ *			- R : RESET signal detected
+ *			- N : NMI detected at the end of the previous instruction
+ *			- I : IRQ detected at the end of the previous instruction
+ *			- x : non used bits
+ * \return number of clock cycle used to execute the instruction
+*/
+uint8_t CPU_InterruptManager(CPU* self, uint8_t* context);
 
 /**
  * \fn CPU_Execute
  * \brief Execute the next instruction
  *
  * \param self instance of CPU
- * \param context variable that contain IRQ
+ * \param context variable containing interrupt flags
  *
  * \return number of clock cycle used to execute the instruction
  */
-uint8_t CPU_Execute(CPU* self, uint8_t context);
+uint8_t CPU_Execute(CPU* self, uint8_t* context);
 
 
 /**
