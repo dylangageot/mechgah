@@ -9,7 +9,10 @@ static int setup_CPU(void** state) {
     if (mapper == NULL)
         return -1;
 
-    mapper->memoryMap = MapNROM_Create(NROM_16KIB, NROM_VERTICAL);
+    Header config;
+	config.mirroring = NROM_HORIZONTAL;
+	config.romSize = NROM_16KIB;
+	mapper->memoryMap = MapNROM_Create(&config);
 	mapper->destroyer = MapNROM_Destroy;
 	mapper->ack = MapNROM_Ack;
 	mapper->get = MapNROM_Get;

@@ -1491,6 +1491,7 @@ static void test_NOP(void **state){
 	assert_ptr_equal(ptr, inst.opcode.inst);
 	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 2);
+}
 
 static void test_PHA(void **state) {
 	CPU* self = (CPU*) *state;
