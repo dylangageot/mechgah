@@ -1895,6 +1895,68 @@ static int teardown_CPU(void **state) {
 		return -1;
 }
 
+static void test_TXA(void **state) {
+	CPU* self = (CPU*) *state;
+	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*)  = _TXA;
+	uint8_t clock = 0;
+
+	/* Verify Opcode */
+	inst.opcode = Opcode_Get(0x8A); /* TXA */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+
+	/* Test TXA behaviour */
+
+	/* POSITIVE VALUE */
+	self->X = 0x45;
+
+	clock = inst.opcode.inst(self,&inst);
+
+	assert_int_equal(clock, 2);
+	assert_int_equal(self->A, 0X45);
+
+	/* N flag clear */
+	uint8_t sr = _GET_SR(self);
+	assert_int_equal((sr >> 7) & 1UL, 0);
+
+	/* Z flag clear */
+	assert_int_equal((sr >> 1) & 1UL, 0);
+
+
+	/* NEGATIVE VALUE */
+	self->X = 0xF3;
+
+	clock = inst.opcode.inst(self,&inst);
+
+	assert_int_equal(clock, 2);
+	assert_int_equal(self->A, 0XF3);
+
+	/* N flag set */
+	sr = _GET_SR(self);
+	assert_int_equal((sr >> 7) & 1UL, 1);
+
+	/* Z flag clear */
+	assert_int_equal((sr >> 1) & 1UL, 0);
+
+
+	/* ZERO VALUE */
+	self->X = 0;
+
+	clock = inst.opcode.inst(self,&inst);
+
+	assert_int_equal(clock, 2);
+	assert_int_equal(self->A, 0x0);
+
+	/* N flag clear */
+	sr = _GET_SR(self);
+	assert_int_equal((sr >> 7) & 1UL, 0);
+
+	/* Z flag set */
+	assert_int_equal((sr >> 1) & 1UL, 1);
+
+}
+
+
 int run_instruction(void) {
 	const struct CMUnitTest test_instruction_macro[] = {
 		cmocka_unit_test(test_SET_SIGN),
@@ -1961,8 +2023,8 @@ int run_instruction(void) {
 		cmocka_unit_test(test_SEI),
 		cmocka_unit_test(test_TAX),
 		cmocka_unit_test(test_TAY),
-		cmocka_unit_test(test_TSX)//,
-		//cmocka_unit_test(test_TXA)//,
+		cmocka_unit_test(test_TSX),
+		cmocka_unit_test(test_TXA)//,
 		//cmocka_unit_test(test_TXS)//,
 		//cmocka_unit_test(test_TYA)
 		};
