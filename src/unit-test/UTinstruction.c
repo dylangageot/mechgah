@@ -1496,7 +1496,7 @@ static void test_NOP(void **state){
 static void test_PHA(void **state) {
 	CPU* self = (CPU*) *state;
 	Instruction inst;
-	uint8_t (*ptr)(CPU*, Instruction) = _PHA;
+	uint8_t (*ptr)(CPU*, Instruction*) = _PHA;
 	uint8_t clock = 0;
 
 	/* Verify Opcode */
