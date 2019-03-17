@@ -636,9 +636,16 @@ uint8_t _SEI(CPU *cpu, Instruction *arg) {
 uint8_t _STA(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _STX(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _STY(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _TAX(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _TAY(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _TSX(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _TXA(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _TXS(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _TYA(CPU *cpu, Instruction *arg){return 0;}
+
+uint8_t _TAX(CPU *cpu, Instruction *arg) {
+	uint8_t src = cpu->A;
+	_SET_SIGN(cpu, &src);
+	_SET_ZERO(cpu, &src);
+	cpu->X = src;
+	return arg->opcode.cycle;
+}
