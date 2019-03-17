@@ -1762,6 +1762,67 @@ static void test_TAX(void **state) {
 
 }
 
+static void test_TAY(void **state) {
+	CPU* self = (CPU*) *state;
+	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*)  = _TAY;
+	uint8_t clock = 0;
+
+	/* Verify Opcode */
+	inst.opcode = Opcode_Get(0xA8); /* TAY */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+
+	/* Test TAY behaviour */
+
+	/* POSITIVE VALUE */
+	self->A = 0x56;
+
+	clock = inst.opcode.inst(self,&inst);
+
+	assert_int_equal(clock, 2);
+	assert_int_equal(self->Y, 0X56);
+
+	/* N flag clear */
+	uint8_t sr = _GET_SR(self);
+	assert_int_equal((sr >> 7) & 1UL, 0);
+
+	/* Z flag clear */
+	assert_int_equal((sr >> 1) & 1UL, 0);
+
+
+	/* NEGATIVE VALUE */
+	self->A = 0xF3;
+
+	clock = inst.opcode.inst(self,&inst);
+
+	assert_int_equal(clock, 2);
+	assert_int_equal(self->Y, 0XF3);
+
+	/* N flag set */
+	sr = _GET_SR(self);
+	assert_int_equal((sr >> 7) & 1UL, 1);
+
+	/* Z flag clear */
+	assert_int_equal((sr >> 1) & 1UL, 0);
+
+
+	/* ZERO VALUE */
+	self->A = 0;
+
+	clock = inst.opcode.inst(self,&inst);
+
+	assert_int_equal(clock, 2);
+	assert_int_equal(self->Y, 0x0);
+
+	/* N flag clear */
+	sr = _GET_SR(self);
+	assert_int_equal((sr >> 7) & 1UL, 0);
+
+	/* Z flag set */
+	assert_int_equal((sr >> 1) & 1UL, 1);
+
+}
+
 static int teardown_CPU(void **state) {
 	if (*state != NULL) {
 		CPU *self = (CPU*) *state;
@@ -1837,8 +1898,8 @@ int run_instruction(void) {
 		cmocka_unit_test(test_RTI),
 		cmocka_unit_test(test_RTS),
 		cmocka_unit_test(test_SEI),
-		cmocka_unit_test(test_TAX)//,
-		//cmocka_unit_test(test_TAY)//,
+		cmocka_unit_test(test_TAX),
+		cmocka_unit_test(test_TAY)//,
 		//cmocka_unit_test(test_TSX)//,
 		//cmocka_unit_test(test_TXA)//,
 		//cmocka_unit_test(test_TXS)//,
