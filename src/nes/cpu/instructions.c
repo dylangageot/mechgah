@@ -605,7 +605,6 @@ uint8_t _PLP(CPU *cpu, Instruction *arg) {
 }
 uint8_t _ROL(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _ROR(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _RTS(CPU *cpu, Instruction *arg){return 0;}
 
 uint8_t _RTI(CPU *cpu, Instruction *arg) {
 	uint8_t temp = _PULL(cpu);
@@ -617,6 +616,14 @@ uint8_t _RTI(CPU *cpu, Instruction *arg) {
     cpu->PC = pc;
 	return arg->opcode.cycle;
 }
+uint8_t _RTS(CPU *cpu, Instruction *arg) {
+	uint16_t pc = _PULL(cpu);
+	pc |= ((_PULL(cpu) << 8) + 1);
+
+    cpu->PC = pc;
+	return arg->opcode.cycle;
+}
+
 uint8_t _SBC(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _SEC(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _SED(CPU *cpu, Instruction *arg){return 0;}
