@@ -1616,6 +1616,42 @@ static void test_PLP(void **state) {
 
 }
 
+static void test_RTI(void **state) {
+	CPU* self = (CPU*) *state;
+	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*)  = _RTI;
+	uint8_t clock = 0;
+
+	/* Verify Opcode */
+	inst.opcode = Opcode_Get(0x40); /* RTI */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+
+	/* Test RTI behaviour */
+	uint8_t test_value = 0xD7;
+	_SET_SR(self, &test_value);
+
+	self->PC = 0xF56D;
+
+	/* push SR and PC on stack */
+	uint8_t temp = (self->PC >> 8) & 0xFF;
+	_PUSH(self, &temp);
+	temp = self->PC & 0xFF;
+	_PUSH(self, &temp);
+	_PUSH(self, &self->P);
+
+	/* change values of SR and PC */
+	test_value = 0x6B;
+	_SET_SR(self, &test_value);
+
+	self->PC = 0x1234;
+
+	clock = inst.opcode.inst(self,&inst);
+
+	assert_int_equal(clock, 6);
+	assert_int_equal(_GET_SR(self), 0xD7);
+	assert_int_equal(self->PC, 0xF56D);
+}
+
 static int teardown_CPU(void **state) {
 	if (*state != NULL) {
 		CPU *self = (CPU*) *state;
@@ -1687,7 +1723,8 @@ int run_instruction(void) {
 		cmocka_unit_test(test_PHA),
 		cmocka_unit_test(test_PHP),
 		cmocka_unit_test(test_PLA),
-		cmocka_unit_test(test_PLP)
+		cmocka_unit_test(test_PLP),
+		cmocka_unit_test(test_RTI)
 		};
 	const struct CMUnitTest test_addressing_Mode[] = {
 		cmocka_unit_test(test_addressing_IMP),
