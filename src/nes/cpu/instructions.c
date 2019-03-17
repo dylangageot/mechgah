@@ -627,7 +627,12 @@ uint8_t _RTS(CPU *cpu, Instruction *arg) {
 uint8_t _SBC(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _SEC(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _SED(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _SEI(CPU *cpu, Instruction *arg){return 0;}
+
+uint8_t _SEI(CPU *cpu, Instruction *arg) {
+	_SET_INTERRUPT(cpu);
+	return arg->opcode.cycle;
+}
+
 uint8_t _STA(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _STX(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _STY(CPU *cpu, Instruction *arg){return 0;}

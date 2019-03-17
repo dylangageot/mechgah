@@ -1680,6 +1680,27 @@ static void test_RTS(void **state) {
 	assert_int_equal(self->PC, 0xA731);
 }
 
+static void test_SEI(void **state) {
+	CPU* self = (CPU*) *state;
+	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*)  = _SEI;
+	uint8_t clock = 0;
+
+	/* Verify Opcode */
+	inst.opcode = Opcode_Get(0x78); /* SEI */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+
+	/* Test SEI behaviour */
+
+	/* clear I flag */
+	self->P &= ~(1UL << 2);
+
+	clock = inst.opcode.inst(self,&inst);
+
+	assert_int_equal(clock, 2);
+	assert_int_equal(self->P & 0x04, 0x04);
+}
+
 static int teardown_CPU(void **state) {
 	if (*state != NULL) {
 		CPU *self = (CPU*) *state;
@@ -1753,7 +1774,8 @@ int run_instruction(void) {
 		cmocka_unit_test(test_PLA),
 		cmocka_unit_test(test_PLP),
 		cmocka_unit_test(test_RTI),
-		cmocka_unit_test(test_RTS)
+		cmocka_unit_test(test_RTS),
+		cmocka_unit_test(test_SEI)
 		};
 	const struct CMUnitTest test_addressing_Mode[] = {
 		cmocka_unit_test(test_addressing_IMP),
