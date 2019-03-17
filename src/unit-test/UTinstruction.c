@@ -1504,11 +1504,11 @@ static void test_PHA(void **state) {
 	assert_ptr_equal(ptr, inst.opcode.inst);
 
 	/* Test PHA behaviour */
-	self->A = 0x2A;
+	self->A = 0x8F;
 	clock = inst.opcode.inst(self,&inst);
 
 	assert_int_equal(clock, 3);
-	assert_int_equal(_PULL(self), 0X2A);
+	assert_int_equal(_PULL(self), 0X8F);
 }
 
 static void test_PHP(void **state) {
@@ -1527,6 +1527,71 @@ static void test_PHP(void **state) {
 
 	assert_int_equal(clock, 3);
 	assert_int_equal(_PULL(self), 0X2A);
+}
+
+static void test_PLA(void **state) {
+	CPU* self = (CPU*) *state;
+	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*)  = _PLA;
+	uint8_t clock = 0;
+
+	/* Verify Opcode */
+	inst.opcode = Opcode_Get(0x68); /* PLA */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+
+	/* Test PLA behaviour */
+
+	uint8_t test_value = 0xFF;
+	_SET_SR(self, &test_value);
+
+	/* POSITIVE VALUE */
+	test_value = 0x35;
+	_PUSH(self, &test_value);
+
+	clock = inst.opcode.inst(self,&inst);
+
+	assert_int_equal(clock, 4);
+	assert_int_equal(self->A, 0X35);
+
+	/* N flag clear */
+	uint8_t sr = _GET_SR(self);
+	assert_int_equal((sr >> 7) & 1UL, 0);
+
+	/* Z flag clear */
+	assert_int_equal((sr >> 1) & 1UL, 0);
+
+
+	/* NEGATIVE VALUE */
+	test_value = 0x8C;
+	_PUSH(self, &test_value);
+
+	clock = inst.opcode.inst(self,&inst);
+
+	assert_int_equal(clock, 4);
+	assert_int_equal(self->A, 0X8C);
+
+	/* N flag set */
+	sr = _GET_SR(self);
+	assert_int_equal((sr >> 7) & 1UL, 1);
+
+	/* Z flag clear */
+	assert_int_equal((sr >> 1) & 1UL, 0);
+
+	/* ZERO VALUE */
+	test_value = 0;
+	_PUSH(self, &test_value);
+
+	clock = inst.opcode.inst(self,&inst);
+
+	assert_int_equal(clock, 4);
+	assert_int_equal(self->A, 0);
+
+	/* N flag clear */
+	sr = _GET_SR(self);
+	assert_int_equal((sr >> 7) & 1UL, 0);
+
+	/* Z flag set */
+	assert_int_equal((sr >> 1) & 1UL, 1);
 }
 
 static int teardown_CPU(void **state) {
@@ -1598,7 +1663,8 @@ int run_instruction(void) {
 		cmocka_unit_test(test_LSR),
 		cmocka_unit_test(test_NOP),
 		cmocka_unit_test(test_PHA),
-		cmocka_unit_test(test_PHP)
+		cmocka_unit_test(test_PHP),
+		cmocka_unit_test(test_PLA)
 		};
 	const struct CMUnitTest test_addressing_Mode[] = {
 		cmocka_unit_test(test_addressing_IMP),
