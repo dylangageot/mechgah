@@ -577,7 +577,6 @@ uint8_t _NOP(CPU *cpu, Instruction *arg){
 }
 
 uint8_t _ORA(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _PLP(CPU *cpu, Instruction *arg){return 0;}
 
 uint8_t _PHA(CPU *cpu, Instruction *arg) {
 	uint8_t src = cpu->A;
@@ -596,6 +595,12 @@ uint8_t _PLA(CPU *cpu, Instruction *arg) {
 	cpu->A = src;
     _SET_SIGN(cpu, &src);
     _SET_ZERO(cpu, &src);
+	return arg->opcode.cycle;
+}
+
+uint8_t _PLP(CPU *cpu, Instruction *arg) {
+	uint8_t src = _PULL(cpu);
+    _SET_SR(cpu, &src);
 	return arg->opcode.cycle;
 }
 uint8_t _ROL(CPU *cpu, Instruction *arg){return 0;}

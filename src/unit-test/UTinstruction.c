@@ -1577,6 +1577,7 @@ static void test_PLA(void **state) {
 	/* Z flag clear */
 	assert_int_equal((sr >> 1) & 1UL, 0);
 
+
 	/* ZERO VALUE */
 	test_value = 0;
 	_PUSH(self, &test_value);
@@ -1592,6 +1593,27 @@ static void test_PLA(void **state) {
 
 	/* Z flag set */
 	assert_int_equal((sr >> 1) & 1UL, 1);
+}
+
+static void test_PLP(void **state) {
+	CPU* self = (CPU*) *state;
+	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*)  = _PLP;
+	uint8_t clock = 0;
+
+	/* Verify Opcode */
+	inst.opcode = Opcode_Get(0x28); /* PLP */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+
+	/* Test PLP behaviour */
+	uint8_t test_value = 0xD7;
+	_PUSH(self, &test_value);
+
+	clock = inst.opcode.inst(self,&inst);
+
+	assert_int_equal(clock, 4);
+	assert_int_equal(_GET_SR(self), 0xD7);
+
 }
 
 static int teardown_CPU(void **state) {
@@ -1664,7 +1686,8 @@ int run_instruction(void) {
 		cmocka_unit_test(test_NOP),
 		cmocka_unit_test(test_PHA),
 		cmocka_unit_test(test_PHP),
-		cmocka_unit_test(test_PLA)
+		cmocka_unit_test(test_PLA),
+		cmocka_unit_test(test_PLP)
 		};
 	const struct CMUnitTest test_addressing_Mode[] = {
 		cmocka_unit_test(test_addressing_IMP),
