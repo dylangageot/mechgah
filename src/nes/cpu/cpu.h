@@ -45,7 +45,7 @@ CPU* CPU_Create(Mapper* mapper);
  * \return 0 if success, 1 otherwise
  */
 
-uint8_t* CPU_Init(CPU* self);
+uint8_t CPU_Init(CPU* self);
 
 /**
  * \fn CPU_InterruptManager
