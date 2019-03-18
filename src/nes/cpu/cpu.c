@@ -21,7 +21,7 @@ CPU* CPU_Create(Mapper* mapper){
 	return self;
 }
 
-uint8_t* CPU_Init(CPU* self) {
+uint8_t CPU_Init(CPU* self) {
 
 	if (self == NULL)
 		return 1;
