@@ -641,7 +641,11 @@ uint8_t _SEI(CPU *cpu, Instruction *arg) {
 	return arg->opcode.cycle;
 }
 
-uint8_t _STA(CPU *cpu, Instruction *arg){return 0;}
+uint8_t _STA(CPU *cpu, Instruction *arg){
+	*(arg->dataMem) = cpu->A;
+	return arg->opcode.cycle;
+}
+
 uint8_t _STX(CPU *cpu, Instruction *arg){return 0;}
 uint8_t _STY(CPU *cpu, Instruction *arg){return 0;}
 
