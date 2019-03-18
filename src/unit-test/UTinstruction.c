@@ -1909,13 +1909,62 @@ static void test_SED(void **state){
 	self->P = 0x00;
 
 	/* Verify opcode LUT */
-	inst.opcode = Opcode_Get(0xF8); /* SEC IMP */
+	inst.opcode = Opcode_Get(0xF8); /* SED IMP */
 	assert_ptr_equal(ptr, inst.opcode.inst);
 	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 2);
 
 	/* Verify general behavior */
 	assert_int_equal(self->P & 0x08,0x08);
+}
+
+static void test_STA(void **state){
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*) = _STA;
+	self->A = 0x11;
+	uint8_t src = 0xFF, clk = 0;
+	inst.dataMem = &src;
+
+	/* Verify opcode LUT */
+	inst.opcode = Opcode_Get(0x85); /* STA ZER */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 3);
+
+	/* Verify general behavior */
+	assert_int_equal(*(inst.dataMem),self->A);
+
+	/* Test addressing mode clock */
+	inst.opcode = Opcode_Get(0x95); /* STA ZEX */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 4);
+
+	inst.opcode = Opcode_Get(0x8D); /* STA ABS */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 4);
+
+	inst.opcode = Opcode_Get(0x9D); /* LSR ABX */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 5);
+
+	inst.opcode = Opcode_Get(0x99); /* LSR ABY */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 5);
+
+	inst.opcode = Opcode_Get(0x81); /* LSR INX */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 6);
+
+	inst.opcode = Opcode_Get(0x91); /* LSR INY */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 6);
 }
 
 static int teardown_CPU(void **state) {
@@ -2143,7 +2192,8 @@ int run_instruction(void) {
 		cmocka_unit_test(test_TXS),
 		cmocka_unit_test(test_TYA),
 		cmocka_unit_test(test_SEC),
-		cmocka_unit_test(test_SED)
+		cmocka_unit_test(test_SED),
+		cmocka_unit_test(test_STA)
 		};
 	const struct CMUnitTest test_addressing_Mode[] = {
 		cmocka_unit_test(test_addressing_IMP),
