@@ -625,7 +625,12 @@ uint8_t _RTS(CPU *cpu, Instruction *arg) {
 }
 
 uint8_t _SBC(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _SEC(CPU *cpu, Instruction *arg){return 0;}
+
+uint8_t _SEC(CPU *cpu, Instruction *arg){
+	_SET_CARRY(cpu, 0x01);
+	return arg->opcode.cycle;
+}
+
 uint8_t _SED(CPU *cpu, Instruction *arg){return 0;}
 
 uint8_t _SEI(CPU *cpu, Instruction *arg) {
