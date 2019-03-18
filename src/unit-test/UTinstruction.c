@@ -1901,6 +1901,23 @@ static void test_SEC(void **state){
 	assert_int_equal(self->P & 0x01,0x01);
 }
 
+static void test_SED(void **state){
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*) = _SED;
+	uint8_t clk = 0;
+	self->P = 0x00;
+
+	/* Verify opcode LUT */
+	inst.opcode = Opcode_Get(0xF8); /* SEC IMP */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+
+	/* Verify general behavior */
+	assert_int_equal(self->P & 0x08,0x08);
+}
+
 static int teardown_CPU(void **state) {
 	if (*state != NULL) {
 		CPU *self = (CPU*) *state;
@@ -2125,7 +2142,8 @@ int run_instruction(void) {
 		cmocka_unit_test(test_TXA),
 		cmocka_unit_test(test_TXS),
 		cmocka_unit_test(test_TYA),
-		cmocka_unit_test(test_SEC)
+		cmocka_unit_test(test_SEC),
+		cmocka_unit_test(test_SED)
 		};
 	const struct CMUnitTest test_addressing_Mode[] = {
 		cmocka_unit_test(test_addressing_IMP),
