@@ -1967,6 +1967,35 @@ static void test_STA(void **state){
 	assert_int_equal(clk, 6);
 }
 
+static void test_STX(void **state){
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*) = _STX;
+	self->X = 0x11;
+	uint8_t src = 0xFF, clk = 0;
+	inst.dataMem = &src;
+
+	/* Verify opcode LUT */
+	inst.opcode = Opcode_Get(0x86); /* STX ZER */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 3);
+
+	/* Verify general behavior */
+	assert_int_equal(*(inst.dataMem),self->X);
+
+	/* Test addressing mode clock */
+	inst.opcode = Opcode_Get(0x96); /* STX ZEY */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 4);
+
+	inst.opcode = Opcode_Get(0x8E); /* STX ABS */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 4);
+}
+
 static int teardown_CPU(void **state) {
 	if (*state != NULL) {
 		CPU *self = (CPU*) *state;
@@ -2193,7 +2222,8 @@ int run_instruction(void) {
 		cmocka_unit_test(test_TYA),
 		cmocka_unit_test(test_SEC),
 		cmocka_unit_test(test_SED),
-		cmocka_unit_test(test_STA)
+		cmocka_unit_test(test_STA),
+		cmocka_unit_test(test_STX)
 		};
 	const struct CMUnitTest test_addressing_Mode[] = {
 		cmocka_unit_test(test_addressing_IMP),
