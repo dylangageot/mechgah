@@ -7,7 +7,6 @@
 
 #include "instructions.h"
 #include <stdlib.h>
-#include <stdio.h>
 
 /* Opcode LUT */
 static Opcode opcode[256] = {
@@ -194,33 +193,27 @@ uint8_t Instruction_Fetch(Instruction *self, CPU *cpu) {
 
 	/* Fetch data in memory space with PC value */
 	uint8_t *opc = cpu->rmap->get(cpu->rmap->memoryMap, AS_CPU, cpu->PC);
-	/* Save information before fetching */
-	self->rawOpcode = *opc;
-	self->lastPC = cpu->PC;
 	cpu->PC++;
 	self->opcode = opcode[*(opc++)];
 
 	/* Decode and update PC */
 	if (self->opcode.addressingMode <= 1) {
-		self->nbArg = 0;
+		return 1;
 	} else if ((self->opcode.addressingMode >= 2) &&
 			(self->opcode.addressingMode <= 8)) {
 		self->opcodeArg[0] = *opc;
 		cpu->PC++;
-		self->nbArg = 1;
+		return 1;
 	} else if ((self->opcode.addressingMode >= 9) &&
 			(self->opcode.addressingMode <= 12)) {
 		uint8_t i;
 		for (i = 0; i < 2; i++)
 			self->opcodeArg[i] = *(opc + i);
 		cpu->PC += 2;
-		self->nbArg = 2;
-	} else { 
-		self->nbArg = 0;
-		return 0;
-	}	
+		return 1;
+	}
 
-	return 1;
+	return 0;
 }
 
 uint8_t Instruction_Resolve(Instruction *self, CPU *cpu) {
@@ -318,31 +311,6 @@ uint8_t Instruction_Resolve(Instruction *self, CPU *cpu) {
 	return 1;
 }
 
-void Instruction_PrintLog(Instruction *self, CPU *cpu, uint8_t clockCycle) {
-	FILE* fLog = NULL;
-	int i;
-	/* Open log file for append line into */
-	fLog = fopen("cpu.log", "a+");
-	if (fLog == NULL) {
-		fprintf(stderr, "Error: can't create cpu.log file "
-				"at %s, line %d.\n", __FILE__, __LINE__);
-		return;
-	}
-
-	/* Print to cpu.log */
-	fprintf(fLog, "%4X %2X ", self->lastPC, self->rawOpcode);
-	for (i = 0; i < 3; i++) {
-		if (i < self->nbArg)
-			fprintf(fLog, "%02X ", self->opcodeArg[i]);
-		else
-			fprintf(fLog, "   ");
-	}
-	fprintf(fLog, "A:%02X X:%02X Y:%02X P:%02X SP:%02X CYC:%02X PC:%04X\n",
-			cpu->A, cpu->X, cpu->Y, cpu->P,cpu->SP, clockCycle, cpu->PC);
-
-	/* Close file */
-	fclose(fLog);
-}
 /* Instructions */
 
 uint8_t _ADC(CPU *cpu, Instruction *arg) {
@@ -682,7 +650,17 @@ uint8_t _RTS(CPU *cpu, Instruction *arg) {
 	return arg->opcode.cycle;
 }
 
-uint8_t _SBC(CPU *cpu, Instruction *arg){return 0;}
+uint8_t _SBC(CPU *cpu, Instruction *arg){
+	uint16_t temp = cpu->A - *arg->dataMem - (_IF_CARRY(cpu) ? 0 : 1);
+	printf("TEMP=%x\n", temp);
+  _SET_SIGN(cpu, (uint8_t*) &temp);
+  _SET_ZERO(cpu, (uint8_t*) &temp);
+  _SET_OVERFLOW(cpu, ((cpu->A ^ temp) & 0x80) &&
+							((cpu->A ^ *arg->dataMem) & 0x80));
+  _SET_CARRY(cpu, temp < 0x100);
+  cpu->A = (uint8_t)(temp & 0xff);
+	return arg->opcode.cycle + arg->pageCrossed;
+}
 
 uint8_t _SEC(CPU *cpu, Instruction *arg){
 	_SET_CARRY(cpu, 1);
