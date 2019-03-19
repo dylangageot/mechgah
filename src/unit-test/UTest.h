@@ -30,9 +30,9 @@ int run_instruction(void);
 int run_UTloader(void);
 
 /**
- * \fn run_UTinterrupt
+ * \fn run_UTcpu
  * \brief Unit test of interrupt manager
  *
  * \return 0 if passed, number of failed otherwise
  */
-int run_UTinterrupt(void);
+int run_UTcpu(void);

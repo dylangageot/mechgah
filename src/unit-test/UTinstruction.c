@@ -44,15 +44,18 @@ static void test_instruction_fetch(void **state){
 	self->PC = 0x80F0;
 	*(mapper->get(mapper->memoryMap, AS_CPU, 0x80F0)) = 0x98;
 	assert_int_equal(Instruction_Fetch(instru,self),1);
+	assert_int_equal(instru->nbArg, 0);
 	/* 0xB5 -> opcode d'une instruction utilisant comme m_d ZEX*/
 	self->PC = 0x80F0;
 	*(mapper->get(mapper->memoryMap, AS_CPU, 0x80F0)) = 0xB5;
 	assert_int_equal(Instruction_Fetch(instru,self),1);
+	assert_int_equal(instru->nbArg, 1);
 	assert_int_equal(instru->opcodeArg[0],0x12);
 	/* 0x98 -> opcode d'une instruction utilisant comme m_d ABX*/
 	self->PC = 0x80F0;
 	*(mapper->get(mapper->memoryMap, AS_CPU, 0x80F0)) = 0xD9;
 	assert_int_equal(Instruction_Fetch(instru,self),1);
+	assert_int_equal(instru->nbArg, 2);
 	assert_int_equal(instru->opcodeArg[0],0x12);
 	assert_int_equal(instru->opcodeArg[1],0x13);
 	/* 0x03 -> opcode inexistant*/
@@ -60,10 +63,38 @@ static void test_instruction_fetch(void **state){
 	*(mapper->get(mapper->memoryMap, AS_CPU, 0x80F0)) = 0x03;
 	assert_int_equal(Instruction_Fetch(NULL,NULL),0);
 	assert_int_equal(Instruction_Fetch(instru,self),0);
-
+	assert_int_equal(instru->nbArg, 0);
 	assert_int_equal(Instruction_Fetch(NULL,NULL),0);
 
 	free(instru);
+}
+
+static void test_Instruction_PrintLog(void **state) {
+	CPU *self = (CPU*) *state;
+	Mapper *mapper = self->rmap;
+	Instruction inst;
+	char expectedStr[] =
+		"8000 6D CD AB    A:11 X:22 Y:33 P:44 SP:55 CYC:66 PC:8003\n";
+	char readStr[256];
+	FILE *fLog = NULL;
+	uint8_t *memory = mapper->get(mapper->memoryMap, AS_CPU, 0x8000);
+	memory[0] = 0x6D;
+	memory[1] = 0xCD;
+	memory[2] = 0xAB;
+	self->PC = 0x8000;
+	self->A = 0x11;
+	self->X = 0x22;
+	self->Y = 0x33;
+	self->P = 0x44;
+	self->SP = 0x55;
+	assert_int_equal(Instruction_Fetch(&inst, self), 1);
+	remove("cpu.log");
+	Instruction_PrintLog(&inst, self, 0x66);
+	fLog = fopen("cpu.log", "r");
+	assert_ptr_not_equal(fLog, NULL);
+	fgets(readStr, 256, fLog);
+	assert_int_equal(strcmp(expectedStr,readStr), 0);
+	fclose(fLog);
 }
 
 static void test_addressing_IMP(void **state){
@@ -2128,6 +2159,7 @@ int run_instruction(void) {
 	};
 	const struct CMUnitTest test_fetch[] = {
 		cmocka_unit_test(test_instruction_fetch),
+		cmocka_unit_test(test_Instruction_PrintLog),
 	};
 	int out = 0;
 	out += cmocka_run_group_tests(test_instruction_macro, setup_CPU, teardown_CPU);

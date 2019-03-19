@@ -32,6 +32,10 @@ struct Instruction {
 	uint8_t opcodeArg[2];
 	uint8_t *dataMem;
 	uint8_t pageCrossed;
+	/* Logger useful-data */
+	uint16_t lastPC;
+	uint8_t rawOpcode;
+	uint8_t nbArg;
 };
 
 /**
@@ -76,6 +80,15 @@ uint8_t Instruction_Fetch(Instruction *self, CPU *cpu);
  * \return 0 if it failed, 1 otherwise
  */
 uint8_t Instruction_Resolve(Instruction *self, CPU *cpu);
+
+/**
+ * \brief Print instruction 
+ *
+ * \param self instance of CPU
+ * \param inst instance of Instruction
+ * \param clockCycle number of clock cycle needed
+ */
+void Instruction_PrintLog(Instruction *self, CPU *cpu, uint8_t clockCycle);
 
 /**
  * \fn Opcode_Get

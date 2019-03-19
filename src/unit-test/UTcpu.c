@@ -272,6 +272,12 @@ static void test_NO_INTERRUPT(void** state) {
     assert_int_equal(context, 0);
 }
 
+/* Execute Unit Test */
+static void test_CPU_Execute(void **state) {
+	
+}
+
+
 static int teardown_CPU(void **state) {
 	if (*state != NULL) {
 
@@ -288,7 +294,7 @@ static int teardown_CPU(void **state) {
     }
 }
 
-int run_UTinterrupt(void) {
+int run_UTcpu(void) {
     const struct CMUnitTest test_interrupt[] = {
         cmocka_unit_test(test_RESET),
         cmocka_unit_test(test_NMI),
