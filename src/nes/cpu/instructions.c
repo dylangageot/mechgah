@@ -620,7 +620,17 @@ uint8_t _ROL(CPU *cpu, Instruction *arg){
 	return arg->opcode.cycle;
 }
 
-uint8_t _ROR(CPU *cpu, Instruction *arg){return 0;}
+uint8_t _ROR(CPU *cpu, Instruction *arg){
+	uint8_t newCarry = *arg->dataMem & 0x01;
+	*arg->dataMem >>= 1;
+  if (_IF_CARRY(cpu)){
+		*arg->dataMem |= 0x80;
+	}
+  _SET_CARRY(cpu, newCarry == 0x01);
+  _SET_SIGN(cpu, arg->dataMem);
+  _SET_ZERO(cpu, arg->dataMem);
+	return arg->opcode.cycle;
+}
 
 uint8_t _RTI(CPU *cpu, Instruction *arg) {
 	uint8_t temp = _PULL(cpu);
