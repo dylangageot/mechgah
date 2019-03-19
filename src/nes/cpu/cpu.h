@@ -73,7 +73,6 @@ uint8_t CPU_InterruptManager(CPU* self, uint8_t* context);
  */
 uint8_t CPU_Execute(CPU* self, uint8_t* context);
 
-
 /**
  * \fn CPU_Destroy
  * \brief Free CPU's instance

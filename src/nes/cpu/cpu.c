@@ -116,6 +116,36 @@ uint8_t CPU_InterruptManager(CPU* self, uint8_t* context){
 	return cycleCount;
 }
 
+uint8_t CPU_Execute(CPU* self, uint8_t* context) {
+	if (self == NULL)
+		return 0;
+
+	uint8_t clockCycle = 0;
+	Instruction inst;
+
+	clockCycle = CPU_InterruptManager(self, context); 
+
+	/* Fetch instruction information from opcode and arg */
+	if (Instruction_Fetch(&inst, self) == 0)
+		return 0;
+
+	/* Resolve addressing mode from instruction information */
+	if (Instruction_Resolve(&inst, self) == 0)
+		return 0;
+
+	/* If no instruction is coded for this opcode, exit */
+	if (inst.opcode.inst == NULL)
+		return 0;
+
+	/* Execute instruction */
+	clockCycle = inst.opcode.inst(self, &inst);	
+
+	/* Log execution information */
+	Instruction_PrintLog(&inst, self, clockCycle); 
+
+	return clockCycle;
+}
+
 void CPU_Destroy(CPU* self){
 
 	if (self == NULL)
