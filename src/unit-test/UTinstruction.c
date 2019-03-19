@@ -2117,6 +2117,121 @@ static void test_ORA(void **state){
 	assert_int_equal(clk, 5);
 }
 
+static void test_ROL(void **state){
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*) = _ROL;
+	uint8_t src = 0x00, clk = 0;
+	inst.dataMem = &src;
+
+	/* Verify opcode LUT */
+	inst.opcode = Opcode_Get(0x2A); /* ROL ACC */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	/* Test ROL general behavior */
+	/* initial Carry is 0, bit 7 is 0, bit 6 is 0 */
+	self->P = 0x00;
+	src = 0x3F;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x01,0x00);
+	assert_int_equal(self->P & 0x80,0x00);
+	assert_int_equal(self->P & 0x02,0x00);
+	assert_int_equal(src,0x7E); /* 0011 1111 -> 0111 1110 */
+	/* initial Carry is 0, bit 7 is 0, bit 6 is 1 */
+	self->P = 0x00;
+	src = 0x7F;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x01,0x00);
+	assert_int_equal(self->P & 0x80,0x80);
+	assert_int_equal(self->P & 0x02,0x00);
+	assert_int_equal(src,0xFE); /* 0111 1111 -> 1111 1110 */
+	/* initial Carry is 0, bit 7 is 1, bit 6 is 0 */
+	self->P = 0x00;
+	src = 0xBF;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x01,0x01);
+	assert_int_equal(self->P & 0x80,0x00);
+	assert_int_equal(self->P & 0x02,0x00);
+	assert_int_equal(src,0x7E); /* 1011 1111 -> 0111 1110 */
+	/* initial Carry is 0, bit 7 is 1, bit 6 is 1 */
+	self->P = 0x00;
+	src = 0xFF;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x01,0x01);
+	assert_int_equal(self->P & 0x80,0x80);
+	assert_int_equal(self->P & 0x02,0x00);
+	assert_int_equal(src,0xFE); /* 1111 1111 -> 1111 1110 */
+	/* initial Carry is 1, bit 7 is 0, bit 6 is 0 */
+	self->P = 0x01;
+	src = 0x3F;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x01,0x00);
+	assert_int_equal(self->P & 0x80,0x00);
+	assert_int_equal(self->P & 0x02,0x00);
+	assert_int_equal(src,0x7F); /* 0011 1111 -> 0111 1111 */
+	/* initial Carry is 1, bit 7 is 0, bit 6 is 1 */
+	self->P = 0x01;
+	src = 0x7F;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x01,0x00);
+	assert_int_equal(self->P & 0x80,0x80);
+	assert_int_equal(self->P & 0x02,0x00);
+	assert_int_equal(src,0xFF); /* 0111 1111 -> 1111 1111 */
+	/* initial Carry is 1, bit 7 is 1, bit 6 is 0 */
+	self->P = 0x01;
+	src = 0xBF;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x01,0x01);
+	assert_int_equal(self->P & 0x80,0x00);
+	assert_int_equal(self->P & 0x02,0x00);
+	assert_int_equal(src,0x7F); /* 1011 1111 -> 0111 1111 */
+	/* initial Carry is 1, bit 7 is 1, bit 6 is 1 */
+	self->P = 0x01;
+	src = 0xFF;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x01,0x01);
+	assert_int_equal(self->P & 0x80,0x80);
+	assert_int_equal(self->P & 0x02,0x00);
+	assert_int_equal(src,0xFF); /* 1111 1111 -> 1111 1111 */
+	/* result becomes 0x00 */
+	self->P = 0x00;
+	src = 0x80;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x01,0x01);
+	assert_int_equal(self->P & 0x80,0x00);
+	assert_int_equal(self->P & 0x02,0x02);
+	assert_int_equal(src,0x00); /* 1000 000 -> 0000 0000 */
+
+	/* Test addressing mode clock */
+	inst.opcode = Opcode_Get(0x26); /* ROL ZER */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 5);
+
+	inst.opcode = Opcode_Get(0x36); /* ROL ZEX */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 6);
+
+	inst.opcode = Opcode_Get(0x2E); /* ROL ABS */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 6);
+
+	inst.opcode = Opcode_Get(0x3E); /* ROL ABX */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 7);
+}
+
 static int teardown_CPU(void **state) {
 	if (*state != NULL) {
 		CPU *self = (CPU*) *state;
@@ -2346,7 +2461,8 @@ int run_instruction(void) {
 		cmocka_unit_test(test_STA),
 		cmocka_unit_test(test_STX),
 		cmocka_unit_test(test_STY),
-		cmocka_unit_test(test_ORA)
+		cmocka_unit_test(test_ORA),
+		cmocka_unit_test(test_ROL)
 		};
 	const struct CMUnitTest test_addressing_Mode[] = {
 		cmocka_unit_test(test_addressing_IMP),
