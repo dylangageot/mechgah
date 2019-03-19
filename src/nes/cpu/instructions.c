@@ -576,7 +576,12 @@ uint8_t _NOP(CPU *cpu, Instruction *arg){
 	return arg->opcode.cycle;
 }
 
-uint8_t _ORA(CPU *cpu, Instruction *arg){return 0;}
+uint8_t _ORA(CPU *cpu, Instruction *arg){
+	cpu->A = cpu->A | *arg->dataMem;
+  _SET_SIGN(cpu,&cpu->A);
+  _SET_ZERO(cpu,&cpu->A);
+	return arg->opcode.cycle + arg->pageCrossed;
+}
 
 uint8_t _PHA(CPU *cpu, Instruction *arg) {
 	uint8_t src = cpu->A;

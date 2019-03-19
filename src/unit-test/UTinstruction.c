@@ -2025,6 +2025,98 @@ static void test_STY(void **state){
 	assert_int_equal(clk, 4);
 }
 
+static void test_ORA(void **state){
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*) = _ORA;
+	uint8_t src = 0x00, clk = 0;
+	inst.dataMem = &src;
+	inst.pageCrossed = 0;
+
+	/* Verify opcode LUT */
+	inst.opcode = Opcode_Get(0x09); /* ORA IMM */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	/* Test ORA general behavior */
+	/* Result is signed and non zero */
+	self->P = 0;
+	self->A = 0x69;
+	src = 0x96;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x80,0x80);
+	assert_int_equal(self->P & 0x02,0x00);
+	assert_int_equal(self->A,0xFF); /* 0x69 | 0x96 = 0xFF */
+	/* Result is unsigned and non zero */
+	self->P = 0;
+	self->A = 0x1A;
+	src = 0x4F;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x80,0x00);
+	assert_int_equal(self->P & 0x02,0x00);
+	assert_int_equal(self->A,0x5F); /* 0x1A | 0x4F = 0x5F */
+	/* Result is zero */
+	self->P = 0;
+	self->A = 0x00;
+	src = 0x00;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x80,0x00);
+	assert_int_equal(self->P & 0x02,0x02);
+	assert_int_equal(self->A,0x00); /* 0x00 | 0x00 = 0x00 */
+
+	/* Test addressing mode clock */
+	inst.opcode = Opcode_Get(0x05); /* ORA ZER */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 3);
+
+	inst.opcode = Opcode_Get(0x15); /* ORA ZEX */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 4);
+
+	inst.opcode = Opcode_Get(0x0D); /* ORA ABS */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 4);
+
+	inst.pageCrossed = 0;
+	inst.opcode = Opcode_Get(0x1D); /* ORA ABX */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 4);
+
+	inst.pageCrossed = 1;
+	inst.opcode = Opcode_Get(0x1D); /* ORA ABX */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 5);
+
+	inst.pageCrossed = 0;
+	inst.opcode = Opcode_Get(0x19); /* ORA ABY */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 4);
+
+	inst.pageCrossed = 1;
+	inst.opcode = Opcode_Get(0x19); /* ORA ABY */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 5);
+
+	inst.pageCrossed = 0;
+	inst.opcode = Opcode_Get(0x01); /* ORA INX */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 6);
+
+	inst.opcode = Opcode_Get(0x11); /* ORA INY */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 5);
+}
+
 static int teardown_CPU(void **state) {
 	if (*state != NULL) {
 		CPU *self = (CPU*) *state;
@@ -2253,7 +2345,8 @@ int run_instruction(void) {
 		cmocka_unit_test(test_SED),
 		cmocka_unit_test(test_STA),
 		cmocka_unit_test(test_STX),
-		cmocka_unit_test(test_STY)
+		cmocka_unit_test(test_STY),
+		cmocka_unit_test(test_ORA)
 		};
 	const struct CMUnitTest test_addressing_Mode[] = {
 		cmocka_unit_test(test_addressing_IMP),
