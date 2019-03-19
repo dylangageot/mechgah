@@ -5,6 +5,6 @@ int main(void) {
 	out += run_UTnrom();
 	out += run_instruction();
 	out += run_UTloader();
-	out += run_UTinterrupt();
+	out += run_UTcpu();
 	return out;
 }

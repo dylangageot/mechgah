@@ -17,7 +17,7 @@ SRC  		= $(NESDIR)/mapper/nrom.c \
 			  $(UTESTDIR)/UTnrom.c \
 			  $(UTESTDIR)/UTinstruction.c \
 			  $(UTESTDIR)/UTloader.c \
-			  $(UTESTDIR)/UTinterrupt.c \
+			  $(UTESTDIR)/UTcpu.c \
 
 # use gcc
 CC			= gcc
