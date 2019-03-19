@@ -1915,6 +1915,433 @@ static void test_TSX(void **state) {
 
 }
 
+static void test_SEC(void **state){
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*) = _SEC;
+	uint8_t clk = 0;
+	self->P = 0x00;
+
+	/* Verify opcode LUT */
+	inst.opcode = Opcode_Get(0x38); /* SEC IMP */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+
+	/* Verify general behavior */
+	assert_int_equal(self->P & 0x01,0x01);
+}
+
+static void test_SED(void **state){
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*) = _SED;
+	uint8_t clk = 0;
+	self->P = 0x00;
+
+	/* Verify opcode LUT */
+	inst.opcode = Opcode_Get(0xF8); /* SED IMP */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+
+	/* Verify general behavior */
+	assert_int_equal(self->P & 0x08,0x08);
+}
+
+static void test_STA(void **state){
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*) = _STA;
+	self->A = 0x11;
+	uint8_t src = 0xFF, clk = 0;
+	inst.dataMem = &src;
+
+	/* Verify opcode LUT */
+	inst.opcode = Opcode_Get(0x85); /* STA ZER */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 3);
+
+	/* Verify general behavior */
+	assert_int_equal(*(inst.dataMem),self->A);
+
+	/* Test addressing mode clock */
+	inst.opcode = Opcode_Get(0x95); /* STA ZEX */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 4);
+
+	inst.opcode = Opcode_Get(0x8D); /* STA ABS */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 4);
+
+	inst.opcode = Opcode_Get(0x9D); /* LSR ABX */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 5);
+
+	inst.opcode = Opcode_Get(0x99); /* LSR ABY */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 5);
+
+	inst.opcode = Opcode_Get(0x81); /* LSR INX */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 6);
+
+	inst.opcode = Opcode_Get(0x91); /* LSR INY */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 6);
+}
+
+static void test_STX(void **state){
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*) = _STX;
+	self->X = 0x11;
+	uint8_t src = 0xFF, clk = 0;
+	inst.dataMem = &src;
+
+	/* Verify opcode LUT */
+	inst.opcode = Opcode_Get(0x86); /* STX ZER */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 3);
+
+	/* Verify general behavior */
+	assert_int_equal(*(inst.dataMem),self->X);
+
+	/* Test addressing mode clock */
+	inst.opcode = Opcode_Get(0x96); /* STX ZEY */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 4);
+
+	inst.opcode = Opcode_Get(0x8E); /* STX ABS */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 4);
+}
+
+static void test_STY(void **state){
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*) = _STY;
+	self->Y = 0x11;
+	uint8_t src = 0xFF, clk = 0;
+	inst.dataMem = &src;
+
+	/* Verify opcode LUT */
+	inst.opcode = Opcode_Get(0x84); /* STY ZER */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 3);
+
+	/* Verify general behavior */
+	assert_int_equal(*(inst.dataMem),self->Y);
+
+	/* Test addressing mode clock */
+	inst.opcode = Opcode_Get(0x94); /* STY ZEX */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 4);
+
+	inst.opcode = Opcode_Get(0x8C); /* STY ABS */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 4);
+}
+
+static void test_ORA(void **state){
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*) = _ORA;
+	uint8_t src = 0x00, clk = 0;
+	inst.dataMem = &src;
+	inst.pageCrossed = 0;
+
+	/* Verify opcode LUT */
+	inst.opcode = Opcode_Get(0x09); /* ORA IMM */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	/* Test ORA general behavior */
+	/* Result is signed and non zero */
+	self->P = 0;
+	self->A = 0x69;
+	src = 0x96;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x80,0x80);
+	assert_int_equal(self->P & 0x02,0x00);
+	assert_int_equal(self->A,0xFF); /* 0x69 | 0x96 = 0xFF */
+	/* Result is unsigned and non zero */
+	self->P = 0;
+	self->A = 0x1A;
+	src = 0x4F;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x80,0x00);
+	assert_int_equal(self->P & 0x02,0x00);
+	assert_int_equal(self->A,0x5F); /* 0x1A | 0x4F = 0x5F */
+	/* Result is zero */
+	self->P = 0;
+	self->A = 0x00;
+	src = 0x00;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x80,0x00);
+	assert_int_equal(self->P & 0x02,0x02);
+	assert_int_equal(self->A,0x00); /* 0x00 | 0x00 = 0x00 */
+
+	/* Test addressing mode clock */
+	inst.opcode = Opcode_Get(0x05); /* ORA ZER */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 3);
+
+	inst.opcode = Opcode_Get(0x15); /* ORA ZEX */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 4);
+
+	inst.opcode = Opcode_Get(0x0D); /* ORA ABS */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 4);
+
+	inst.pageCrossed = 0;
+	inst.opcode = Opcode_Get(0x1D); /* ORA ABX */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 4);
+
+	inst.pageCrossed = 1;
+	inst.opcode = Opcode_Get(0x1D); /* ORA ABX */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 5);
+
+	inst.pageCrossed = 0;
+	inst.opcode = Opcode_Get(0x19); /* ORA ABY */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 4);
+
+	inst.pageCrossed = 1;
+	inst.opcode = Opcode_Get(0x19); /* ORA ABY */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 5);
+
+	inst.pageCrossed = 0;
+	inst.opcode = Opcode_Get(0x01); /* ORA INX */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 6);
+
+	inst.opcode = Opcode_Get(0x11); /* ORA INY */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 5);
+}
+
+static void test_ROL(void **state){
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*) = _ROL;
+	uint8_t src = 0x00, clk = 0;
+	inst.dataMem = &src;
+
+	/* Verify opcode LUT */
+	inst.opcode = Opcode_Get(0x2A); /* ROL ACC */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	/* Test ROL general behavior */
+	/* initial Carry is 0, bit 7 is 0, bit 6 is 0 */
+	self->P = 0x00;
+	src = 0x3F;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x01,0x00);
+	assert_int_equal(self->P & 0x80,0x00);
+	assert_int_equal(self->P & 0x02,0x00);
+	assert_int_equal(src,0x7E); /* 0011 1111 -> 0111 1110 */
+	/* initial Carry is 0, bit 7 is 0, bit 6 is 1 */
+	self->P = 0x00;
+	src = 0x7F;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x01,0x00);
+	assert_int_equal(self->P & 0x80,0x80);
+	assert_int_equal(self->P & 0x02,0x00);
+	assert_int_equal(src,0xFE); /* 0111 1111 -> 1111 1110 */
+	/* initial Carry is 0, bit 7 is 1, bit 6 is 0 */
+	self->P = 0x00;
+	src = 0xBF;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x01,0x01);
+	assert_int_equal(self->P & 0x80,0x00);
+	assert_int_equal(self->P & 0x02,0x00);
+	assert_int_equal(src,0x7E); /* 1011 1111 -> 0111 1110 */
+	/* initial Carry is 0, bit 7 is 1, bit 6 is 1 */
+	self->P = 0x00;
+	src = 0xFF;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x01,0x01);
+	assert_int_equal(self->P & 0x80,0x80);
+	assert_int_equal(self->P & 0x02,0x00);
+	assert_int_equal(src,0xFE); /* 1111 1111 -> 1111 1110 */
+	/* initial Carry is 1, bit 7 is 0, bit 6 is 0 */
+	self->P = 0x01;
+	src = 0x3F;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x01,0x00);
+	assert_int_equal(self->P & 0x80,0x00);
+	assert_int_equal(self->P & 0x02,0x00);
+	assert_int_equal(src,0x7F); /* 0011 1111 -> 0111 1111 */
+	/* initial Carry is 1, bit 7 is 0, bit 6 is 1 */
+	self->P = 0x01;
+	src = 0x7F;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x01,0x00);
+	assert_int_equal(self->P & 0x80,0x80);
+	assert_int_equal(self->P & 0x02,0x00);
+	assert_int_equal(src,0xFF); /* 0111 1111 -> 1111 1111 */
+	/* initial Carry is 1, bit 7 is 1, bit 6 is 0 */
+	self->P = 0x01;
+	src = 0xBF;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x01,0x01);
+	assert_int_equal(self->P & 0x80,0x00);
+	assert_int_equal(self->P & 0x02,0x00);
+	assert_int_equal(src,0x7F); /* 1011 1111 -> 0111 1111 */
+	/* initial Carry is 1, bit 7 is 1, bit 6 is 1 */
+	self->P = 0x01;
+	src = 0xFF;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x01,0x01);
+	assert_int_equal(self->P & 0x80,0x80);
+	assert_int_equal(self->P & 0x02,0x00);
+	assert_int_equal(src,0xFF); /* 1111 1111 -> 1111 1111 */
+	/* result becomes 0x00 */
+	self->P = 0x00;
+	src = 0x80;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x01,0x01);
+	assert_int_equal(self->P & 0x80,0x00);
+	assert_int_equal(self->P & 0x02,0x02);
+	assert_int_equal(src,0x00); /* 1000 0000 -> 0000 0000 */
+
+	/* Test addressing mode clock */
+	inst.opcode = Opcode_Get(0x26); /* ROL ZER */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 5);
+
+	inst.opcode = Opcode_Get(0x36); /* ROL ZEX */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 6);
+
+	inst.opcode = Opcode_Get(0x2E); /* ROL ABS */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 6);
+
+	inst.opcode = Opcode_Get(0x3E); /* ROL ABX */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 7);
+}
+
+static void test_ROR(void **state){
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*) = _ROR;
+	uint8_t src = 0x00, clk = 0;
+	inst.dataMem = &src;
+
+	/* Verify opcode LUT */
+	inst.opcode = Opcode_Get(0x6A); /* ROR ACC */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	/* Test ROL general behavior */
+	/* initial Carry is 0, bit 0 is 0 */
+	self->P = 0x00;
+	src = 0xFE;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x01,0x00);
+	assert_int_equal(self->P & 0x80,0x00);
+	assert_int_equal(self->P & 0x02,0x00);
+	assert_int_equal(src,0x7F); /* 1111 1110 -> 0111 1111 */
+	/* initial Carry is 0, bit 0 is 1 */
+	self->P = 0x00;
+	src = 0xFF;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x01,0x01);
+	assert_int_equal(self->P & 0x80,0x00);
+	assert_int_equal(self->P & 0x02,0x00);
+	assert_int_equal(src,0x7F); /* 1111 1110 -> 0111 1111 */
+	/* initial Carry is 1, bit 0 is 0 */
+	self->P = 0x01;
+	src = 0xFE;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x01,0x00);
+	assert_int_equal(self->P & 0x80,0x80);
+	assert_int_equal(self->P & 0x02,0x00);
+	assert_int_equal(src,0xFF); /* 1111 1110 -> 1111 1111 */
+	/* initial Carry is 1, bit 0 is 1 */
+	self->P = 0x01;
+	src = 0xFF;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x01,0x01);
+	assert_int_equal(self->P & 0x80,0x80);
+	assert_int_equal(self->P & 0x02,0x00);
+	assert_int_equal(src,0xFF); /* 1111 1110 -> 1111 1111 */
+	/* result becomes 0x00 */
+	self->P = 0x00;
+	src = 0x01;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x01,0x01);
+	assert_int_equal(self->P & 0x80,0x00);
+	assert_int_equal(self->P & 0x02,0x02);
+	assert_int_equal(src,0x00); /* 0000 0001 -> 0000 0000 */
+
+	/* Test addressing mode clock */
+	inst.opcode = Opcode_Get(0x66); /* ROR ZER */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 5);
+
+	inst.opcode = Opcode_Get(0x76); /* ROR ZEX */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 6);
+
+	inst.opcode = Opcode_Get(0x6E); /* ROR ABS */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 6);
+
+	inst.opcode = Opcode_Get(0x7E); /* ROR ABX */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 7);
+}
+
 static int teardown_CPU(void **state) {
 	if (*state != NULL) {
 		CPU *self = (CPU*) *state;
@@ -2138,7 +2565,15 @@ int run_instruction(void) {
 		cmocka_unit_test(test_TSX),
 		cmocka_unit_test(test_TXA),
 		cmocka_unit_test(test_TXS),
-		cmocka_unit_test(test_TYA)
+		cmocka_unit_test(test_TYA),
+		cmocka_unit_test(test_SEC),
+		cmocka_unit_test(test_SED),
+		cmocka_unit_test(test_STA),
+		cmocka_unit_test(test_STX),
+		cmocka_unit_test(test_STY),
+		cmocka_unit_test(test_ORA),
+		cmocka_unit_test(test_ROL),
+		cmocka_unit_test(test_ROR)
 		};
 	const struct CMUnitTest test_addressing_Mode[] = {
 		cmocka_unit_test(test_addressing_IMP),

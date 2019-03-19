@@ -608,7 +608,12 @@ uint8_t _NOP(CPU *cpu, Instruction *arg){
 	return arg->opcode.cycle;
 }
 
-uint8_t _ORA(CPU *cpu, Instruction *arg){return 0;}
+uint8_t _ORA(CPU *cpu, Instruction *arg){
+	cpu->A = cpu->A | *arg->dataMem;
+  _SET_SIGN(cpu,&cpu->A);
+  _SET_ZERO(cpu,&cpu->A);
+	return arg->opcode.cycle + arg->pageCrossed;
+}
 
 uint8_t _PHA(CPU *cpu, Instruction *arg) {
 	uint8_t src = cpu->A;
@@ -635,8 +640,29 @@ uint8_t _PLP(CPU *cpu, Instruction *arg) {
     _SET_SR(cpu, &src);
 	return arg->opcode.cycle;
 }
-uint8_t _ROL(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _ROR(CPU *cpu, Instruction *arg){return 0;}
+uint8_t _ROL(CPU *cpu, Instruction *arg){
+	uint8_t newCarry = *arg->dataMem & 0x80;
+	*arg->dataMem <<= 1;
+  if (_IF_CARRY(cpu)){
+		*arg->dataMem |= 0x1;
+	}
+  _SET_CARRY(cpu, newCarry == 0x80);
+  _SET_SIGN(cpu, arg->dataMem);
+  _SET_ZERO(cpu, arg->dataMem);
+	return arg->opcode.cycle;
+}
+
+uint8_t _ROR(CPU *cpu, Instruction *arg){
+	uint8_t newCarry = *arg->dataMem & 0x01;
+	*arg->dataMem >>= 1;
+  if (_IF_CARRY(cpu)){
+		*arg->dataMem |= 0x80;
+	}
+  _SET_CARRY(cpu, newCarry == 0x01);
+  _SET_SIGN(cpu, arg->dataMem);
+  _SET_ZERO(cpu, arg->dataMem);
+	return arg->opcode.cycle;
+}
 
 uint8_t _RTI(CPU *cpu, Instruction *arg) {
 	uint8_t temp = _PULL(cpu);
@@ -657,17 +683,36 @@ uint8_t _RTS(CPU *cpu, Instruction *arg) {
 }
 
 uint8_t _SBC(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _SEC(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _SED(CPU *cpu, Instruction *arg){return 0;}
+
+uint8_t _SEC(CPU *cpu, Instruction *arg){
+	_SET_CARRY(cpu, 1);
+	return arg->opcode.cycle;
+}
+
+uint8_t _SED(CPU *cpu, Instruction *arg){
+	cpu->P |= (0x08);
+	return arg->opcode.cycle;
+}
 
 uint8_t _SEI(CPU *cpu, Instruction *arg) {
 	_SET_INTERRUPT(cpu);
 	return arg->opcode.cycle;
 }
 
-uint8_t _STA(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _STX(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _STY(CPU *cpu, Instruction *arg){return 0;}
+uint8_t _STA(CPU *cpu, Instruction *arg){
+	*(arg->dataMem) = cpu->A;
+	return arg->opcode.cycle;
+}
+
+uint8_t _STX(CPU *cpu, Instruction *arg){
+	*(arg->dataMem) = cpu->X;
+	return arg->opcode.cycle;
+}
+
+uint8_t _STY(CPU *cpu, Instruction *arg){
+	*(arg->dataMem) = cpu->Y;
+	return arg->opcode.cycle;
+}
 
 uint8_t _TAX(CPU *cpu, Instruction *arg) {
 	uint8_t src = cpu->A;
