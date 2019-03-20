@@ -319,6 +319,8 @@ uint8_t Instruction_Resolve(Instruction *self, CPU *cpu) {
 	return 1;
 }
 
+<<<<<<<<< Temporary merge branch 1
+=========
 void Instruction_PrintLog(Instruction *self, CPU *cpu, uint32_t clockCycle) {
 	FILE* fLog = NULL;
 	int i;
@@ -344,6 +346,7 @@ void Instruction_PrintLog(Instruction *self, CPU *cpu, uint32_t clockCycle) {
 	/* Close file */
 	fclose(fLog);
 }
+>>>>>>>>> Temporary merge branch 2
 /* Instructions */
 
 uint8_t _ADC(CPU *cpu, Instruction *arg) {
