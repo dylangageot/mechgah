@@ -278,7 +278,7 @@ static void test_CPU_Execute(void **state) {
 	Mapper *mapper = self->rmap;
 	uint8_t *memory = mapper->get(mapper->memoryMap, AS_CPU, 0x8000);
 	uint8_t context = 0;
-	uint32_t clockCycle = 0;
+	uint32_t clk = 0;
 	
 	/* Init register */
 	self->PC = 0x8000;
@@ -298,12 +298,12 @@ static void test_CPU_Execute(void **state) {
 	memory[0] = 0xAA;
 
 	/* Expect 4 clock cycle to be used for ADC_ABS */
-	assert_int_equal(CPU_Execute(self, &context, &clockCycle), 4);
+	assert_int_equal(CPU_Execute(self, &context, &clk), 4);
 	/* Verify instruction execution */
 	assert_int_equal(self->PC, 0x8003);
 	assert_int_equal(self->A, 0xAB);
-	/* Expect 3 clock cycle to be used for JMP_ABS */
-	assert_int_equal(CPU_Execute(self, &context, &clockCycle), 4);
+	/* Expect 7 clock cycle to be used after JMP_ABS */
+	assert_int_equal(CPU_Execute(self, &context, &clk), 7);
 	assert_int_equal(self->PC, 0x9000);
 	assert_int_equal(self->A, 0xAB);
 }

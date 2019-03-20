@@ -822,8 +822,8 @@ static void test_JMP(void **state) {
 	CPU *self = (CPU*) *state;
 	Instruction inst;
 	uint8_t (*ptr)(CPU*, Instruction*) = _JMP;
-	uint8_t src[2] = {0xAA, 0xBB}, clk = 0;
-	inst.dataMem = src;
+	uint8_t clk = 0;
+	inst.dataAddr = 0xBBAA;
 	inst.pageCrossed = 1; /* Supposed to have no effect */
 
 	/* Verify Opcode LUT */
@@ -848,8 +848,8 @@ static void test_JSR(void **state) {
 	CPU *self = (CPU*) *state;
 	Instruction inst;
 	uint8_t (*ptr)(CPU*, Instruction*) = _JSR;
-	uint8_t src[2] = {0xAA, 0xBB}, clk = 0;
-	inst.dataMem = src;
+	uint8_t clk = 0;
+	inst.dataAddr = 0xBBAA;
 
 	/* Verify Opcode LUT */
 	inst.opcode = Opcode_Get(0x20); /* JSR */
