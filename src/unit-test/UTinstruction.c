@@ -807,7 +807,7 @@ static void test_BRK(void **state) {
 	assert_int_equal(0x10, _PULL(self));
 	assert_int_equal(0xCD, _PULL(self));
 	assert_int_equal(0xAB, _PULL(self));
-	assert_int_equal(0x14, self->P);
+	assert_int_equal(0x04, self->P);
 }
 
 static void test_BVC(void **state) {
@@ -1557,7 +1557,7 @@ static void test_PHP(void **state) {
 	clock = inst.opcode.inst(self,&inst);
 
 	assert_int_equal(clock, 3);
-	assert_int_equal(_PULL(self), 0X2A);
+	assert_int_equal(_PULL(self), 0X3A);
 }
 
 static void test_PLA(void **state) {
@@ -1643,7 +1643,7 @@ static void test_PLP(void **state) {
 	clock = inst.opcode.inst(self,&inst);
 
 	assert_int_equal(clock, 4);
-	assert_int_equal(_GET_SR(self), 0xD7);
+	assert_int_equal(_GET_SR(self), 0xF7);
 
 }
 

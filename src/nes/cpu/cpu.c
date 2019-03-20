@@ -89,6 +89,7 @@ uint8_t CPU_InterruptManager(CPU* self, uint8_t* context){
 	if (R){
 		jump_address = RES_JMP_ADD;
 		*context &= ~(1UL);
+		self->P |= 0x20;
 	}
 	/* if the N bit of context is set */
 	else if (N){
