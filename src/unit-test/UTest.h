@@ -20,3 +20,19 @@ int run_UTnrom(void);
  * \return 0 if passed, number of failed otherwise
  */
 int run_instruction(void);
+
+/**
+ * \fn run_UTloader
+ * \brief Unit test of loader
+ *
+ * \return 0 if passed, number of failed otherwise
+ */
+int run_UTloader(void);
+
+/**
+ * \fn run_UTcpu
+ * \brief Unit test of interrupt manager
+ *
+ * \return 0 if passed, number of failed otherwise
+ */
+int run_UTcpu(void);

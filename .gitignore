@@ -7,4 +7,6 @@
 *.info
 ~*
 *~
-
+*.log
+UTest
+main

@@ -7,6 +7,7 @@
 
 #include "instructions.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 /* Opcode LUT */
 static Opcode opcode[256] = {
@@ -14,23 +15,28 @@ static Opcode opcode[256] = {
 	{NULL, NUL, 0}, {_ORA, ZER, 3}, {_ASL, ZER, 5}, {NULL, NUL, 0}, /* 0x04 */
 	{_PHP, IMP, 3}, {_ORA, IMM, 2}, {_ASL, ACC, 2}, {NULL, NUL, 0}, /* 0x08 */
 	{NULL, NUL, 0}, {_ORA, ABS, 4}, {_ASL, ABS, 6}, {NULL, NUL, 0}, /* 0x0C */
-	{_BPL, IMP, 2}, {_ORA, INY, 5}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x10 */
+	{_BPL, REL, 2}, {_ORA, INY, 5}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x10 */
 	{NULL, NUL, 0}, {_ORA, ZEX, 4}, {_ASL, ZEX, 6}, {NULL, NUL, 0}, /* 0x14 */
 	{_CLC, IMP, 2}, {_ORA, ABY, 4}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x18 */
 	{NULL, NUL, 0}, {_ORA, ABX, 4}, {_ASL, ABX, 7}, {NULL, NUL, 0}, /* 0x1C */
-	{_JSR, IMP, 6}, {_AND, INX, 6}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x20 */
+	{_JSR, ABS, 6}, {_AND, INX, 6}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x20 */
 	{_BIT, ZER, 3}, {_AND, ZER, 3}, {_ROL, ZER, 5}, {NULL, NUL, 0}, /* 0x24 */
 	{_PLP, IMP, 4}, {_AND, IMM, 2}, {_ROL, ACC, 2}, {NULL, NUL, 0}, /* 0x28 */
 	{_BIT, ABS, 4}, {_AND, ABS, 4}, {_ROL, ABS, 6}, {NULL, NUL, 0}, /* 0x2C */
+<<<<<<< HEAD
 	{_BMI, IMP, 2}, {_AND, INY, 5}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x30 */
 	{NULL, NUL, 0}, {_AND, ZEX, 4}, {_ROL, ZEX, 6}, {NULL, NUL, 0}, /* 0x34 */
+=======
+	{_BMI, REL, 2}, {_AND, INY, 5}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x30 */
+	{NULL, NUL, 0}, {_AND, ZEX, 3}, {_ROL, ZEX, 6}, {NULL, NUL, 0}, /* 0x34 */
+>>>>>>> faf145a169f49d3b0e8a4f763cb761a3d85d1be2
 	{_SEC, IMP, 2}, {_AND, ABY, 4}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x38 */
 	{NULL, NUL, 0}, {_AND, ABX, 4}, {_ROL, ABX, 7}, {NULL, NUL, 0}, /* 0x3C */
 	{_RTI, IMP, 6}, {_EOR, INX, 6}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x40 */
 	{NULL, NUL, 0}, {_EOR, ZER, 3}, {_LSR, ZER, 5}, {NULL, NUL, 0}, /* 0x44 */
 	{_PHA, IMP, 3}, {_EOR, IMM, 2}, {_LSR, ACC, 2}, {NULL, NUL, 0}, /* 0x48 */
 	{_JMP, ABS, 3}, {_EOR, ABS, 4}, {_LSR, ABS, 6}, {NULL, NUL, 0}, /* 0x4C */
-	{_BVC, IMP, 2}, {_EOR, INY, 5}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x50 */
+	{_BVC, REL, 2}, {_EOR, INY, 5}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x50 */
 	{NULL, NUL, 0}, {_EOR, ZEX, 4}, {_LSR, ZEX, 6}, {NULL, NUL, 0}, /* 0x54 */
 	{_CLI, IMP, 2}, {_EOR, ABY, 4}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x58 */
 	{NULL, NUL, 0}, {_EOR, ABX, 4}, {_LSR, ABX, 7}, {NULL, NUL, 0}, /* 0x5C */
@@ -38,7 +44,7 @@ static Opcode opcode[256] = {
 	{NULL, NUL, 0}, {_ADC, ZER, 3}, {_ROR, ZER, 5}, {NULL, NUL, 0}, /* 0x64 */
 	{_PLA, IMP, 4}, {_ADC, IMM, 2}, {_ROR, ACC, 2}, {NULL, NUL, 0}, /* 0x68 */
 	{_JMP, ABI, 5}, {_ADC, ABS, 4}, {_ROR, ABS, 6}, {NULL, NUL, 0}, /* 0x6C */
-	{_BVS, IMP, 2}, {_ADC, INY, 5}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x70 */
+	{_BVS, REL, 2}, {_ADC, INY, 5}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x70 */
 	{NULL, NUL, 0}, {_ADC, ZEX, 4}, {_ROR, ZEX, 6}, {NULL, NUL, 0}, /* 0x74 */
 	{_SEI, IMP, 2}, {_ADC, ABY, 4}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x78 */
 	{NULL, NUL, 0}, {_ADC, ABX, 4}, {_ROR, ABX, 7}, {NULL, NUL, 0}, /* 0x7C */
@@ -46,7 +52,7 @@ static Opcode opcode[256] = {
 	{_STY, ZER, 3}, {_STA, ZER, 3}, {_STX, ZER, 3}, {NULL, NUL, 0}, /* 0x84 */
 	{_DEY, IMP, 2}, {NULL, NUL, 0}, {_TXA, IMP, 2}, {NULL, NUL, 0}, /* 0x88 */
 	{_STY, ABS, 4}, {_STA, ABS, 4}, {_STX, ABS, 4}, {NULL, NUL, 0}, /* 0x8C */
-	{_BCC, IMP, 2}, {_STA, INY, 6}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x90 */
+	{_BCC, REL, 2}, {_STA, INY, 6}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x90 */
 	{_STY, ZEX, 4}, {_STA, ZEX, 4}, {_STX, ZEY, 4}, {NULL, NUL, 0}, /* 0x94 */
 	{_TYA, IMP, 2}, {_STA, ABY, 5}, {_TXS, IMP, 2}, {NULL, NUL, 0}, /* 0x98 */
 	{NULL, NUL, 0}, {_STA, ABX, 5}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x9C */
@@ -54,7 +60,7 @@ static Opcode opcode[256] = {
 	{_LDY, ZER, 3}, {_LDA, ZER, 3}, {_LDX, ZER, 3}, {NULL, NUL, 0}, /* 0xA4 */
 	{_TAY, IMP, 2}, {_LDA, IMM, 2}, {_TAX, IMP, 2}, {NULL, NUL, 0}, /* 0xA8 */
 	{_LDY, ABS, 4}, {_LDA, ABS, 4}, {_LDX, ABS, 4}, {NULL, NUL, 0}, /* 0xAC */
-	{_BCS, IMP, 2}, {_LDA, INY, 5}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0xB0 */
+	{_BCS, REL, 2}, {_LDA, INY, 5}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0xB0 */
 	{_LDY, ZEX, 4}, {_LDA, ZEX, 4}, {_LDX, ZEY, 4}, {NULL, NUL, 0}, /* 0xB4 */
 	{_CLV, IMP, 2}, {_LDA, ABY, 4}, {_TSX, IMP, 2}, {NULL, NUL, 0}, /* 0xB8 */
 	{_LDY, ABX, 4}, {_LDA, ABX, 4}, {_LDX, ABY, 4}, {NULL, NUL, 0}, /* 0xBC */
@@ -62,7 +68,7 @@ static Opcode opcode[256] = {
 	{_CPY, ZER, 3}, {_CMP, ZER, 3}, {_DEC, ZER, 5}, {NULL, NUL, 0}, /* 0xC4 */
 	{_INY, IMP, 2}, {_CMP, IMM, 2}, {_DEX, IMP, 2}, {NULL, NUL, 0}, /* 0xC8 */
 	{_CPY, ABS, 4}, {_CMP, ABS, 4}, {_DEC, ABS, 6}, {NULL, NUL, 0}, /* 0xCC */
-	{_BNE, IMP, 2}, {_CMP, INY, 5}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0xD0 */
+	{_BNE, REL, 2}, {_CMP, INY, 5}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0xD0 */
 	{NULL, NUL, 0}, {_CMP, ZEX, 4}, {_DEC, ZEX, 6}, {NULL, NUL, 0}, /* 0xD4 */
 	{_CLD, IMP, 2}, {_CMP, ABY, 4}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0xD8 */
 	{NULL, NUL, 0}, {_CMP, ABX, 4}, {_DEC, ABX, 7}, {NULL, NUL, 0}, /* 0xDC */
@@ -70,7 +76,7 @@ static Opcode opcode[256] = {
 	{_CPX, ZER, 3}, {_SBC, ZER, 3}, {_INC, ZER, 5}, {NULL, NUL, 0}, /* 0xE4 */
 	{_INX, IMP, 2}, {_SBC, IMM, 2}, {_NOP, IMP, 2}, {NULL, NUL, 0}, /* 0xE8 */
 	{_CPX, ABS, 4}, {_SBC, ABS, 4}, {_INC, ABS, 6}, {NULL, NUL, 0}, /* 0xEC */
-	{_BEQ, IMP, 2}, {_SBC, INY, 5}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0xF0 */
+	{_BEQ, REL, 2}, {_SBC, INY, 5}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0xF0 */
 	{NULL, NUL, 0}, {_SBC, ZEX, 4}, {_INC, ZEX, 6}, {NULL, NUL, 0}, /* 0xF4 */
 	{_SED, IMP, 2}, {_SBC, ABY, 4}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0xF8 */
 	{NULL, NUL, 0}, {_SBC, ABX, 4}, {_INC, ABX, 7}, {NULL, NUL, 0}	/* 0xFC */
@@ -79,6 +85,8 @@ static Opcode opcode[256] = {
 Opcode Opcode_Get(uint8_t index) {
 	return opcode[index];
 }
+
+/* Macros used by instructions */
 
 void _SET_SIGN(CPU *cpu, uint8_t *src) {
 	if (*src & 0x80)
@@ -183,33 +191,41 @@ uint8_t _BRANCH(CPU* cpu, Instruction *arg, uint8_t cond) {
 	return arg->opcode.cycle;
 }
 
+/* Instructions management*/
+
 uint8_t Instruction_Fetch(Instruction *self, CPU *cpu) {
 	if ((self == NULL) || (cpu == NULL))
 		return 0;
 
 	/* Fetch data in memory space with PC value */
 	uint8_t *opc = cpu->rmap->get(cpu->rmap->memoryMap, AS_CPU, cpu->PC);
+	/* Save information before fetching */
+	self->rawOpcode = *opc;
+	self->lastPC = cpu->PC;
 	cpu->PC++;
 	self->opcode = opcode[*(opc++)];
 
 	/* Decode and update PC */
 	if (self->opcode.addressingMode <= 1) {
-		return 1;
+		self->nbArg = 0;
 	} else if ((self->opcode.addressingMode >= 2) &&
 			(self->opcode.addressingMode <= 8)) {
 		self->opcodeArg[0] = *opc;
 		cpu->PC++;
-		return 1;
+		self->nbArg = 1;
 	} else if ((self->opcode.addressingMode >= 9) &&
 			(self->opcode.addressingMode <= 12)) {
 		uint8_t i;
 		for (i = 0; i < 2; i++)
 			self->opcodeArg[i] = *(opc + i);
 		cpu->PC += 2;
-		return 1;
-	}
+		self->nbArg = 2;
+	} else { 
+		self->nbArg = 0;
+		return 0;
+	}	
 
-	return 0;
+	return 1;
 }
 
 uint8_t Instruction_Resolve(Instruction *self, CPU *cpu) {
@@ -304,8 +320,37 @@ uint8_t Instruction_Resolve(Instruction *self, CPU *cpu) {
 			return 0;
 			break;
 	}
+	self->dataAddr = address;
 	return 1;
 }
+
+void Instruction_PrintLog(Instruction *self, CPU *cpu, uint32_t clockCycle) {
+	FILE* fLog = NULL;
+	int i;
+	/* Open log file for append line into */
+	fLog = fopen("cpu.log", "a+");
+	if (fLog == NULL) {
+		fprintf(stderr, "Error: can't create cpu.log file "
+				"at %s, line %d.\n", __FILE__, __LINE__);
+		return;
+	}
+
+	/* Print to cpu.log */
+	fprintf(fLog, "%04X %02X ", self->lastPC, self->rawOpcode);
+	for (i = 0; i < 3; i++) {
+		if (i < self->nbArg)
+			fprintf(fLog, "%02X ", self->opcodeArg[i]);
+		else
+			fprintf(fLog, "   ");
+	}
+	fprintf(fLog, "A:%02X X:%02X Y:%02X P:%02X SP:%02X CYC:%-d\n",
+			cpu->A, cpu->X, cpu->Y, cpu->P,cpu->SP, clockCycle);
+
+	/* Close file */
+	fclose(fLog);
+}
+
+/* Instructions */
 
 uint8_t _ADC(CPU *cpu, Instruction *arg) {
 	/* If page crossed in ABX, ABY and INY, add +1 to cycle */
@@ -527,8 +572,7 @@ uint8_t _INY(CPU *cpu, Instruction *arg){
 
 uint8_t _JMP(CPU *cpu, Instruction *arg) {
 	/* Set program counter from memory */
-	uint16_t newPC = (*(arg->dataMem+1) << 8) + *arg->dataMem;
-	cpu->PC = newPC;
+	cpu->PC = arg->dataAddr;
 	return arg->opcode.cycle;
 }
 
@@ -540,8 +584,7 @@ uint8_t _JSR(CPU *cpu, Instruction *arg) {
 	temp = cpu->PC & 0xFF;
 	_PUSH(cpu, &temp);
 	/* Set program counter from memory */
-	uint16_t newPC = (*(arg->dataMem+1) << 8) + *arg->dataMem;
-	cpu->PC = newPC;
+	cpu->PC = arg->dataAddr;
 	return arg->opcode.cycle;
 }
 
@@ -552,29 +595,190 @@ uint8_t _LDA(CPU *cpu, Instruction *arg){
 	return arg->opcode.cycle + arg->pageCrossed;
 }
 
-uint8_t _LDX(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _LDY(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _LSR(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _NOP(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _ORA(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _PHA(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _PHP(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _PLA(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _PLP(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _ROL(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _ROR(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _RTI(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _RTS(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _SBC(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _SEC(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _SED(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _SEI(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _STA(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _STX(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _STY(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _TAX(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _TAY(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _TSX(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _TXA(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _TXS(CPU *cpu, Instruction *arg){return 0;}
-uint8_t _TYA(CPU *cpu, Instruction *arg){return 0;}
+uint8_t _LDX(CPU *cpu, Instruction *arg){
+	_SET_SIGN(cpu,arg->dataMem);
+  _SET_ZERO(cpu,arg->dataMem);
+  cpu->X = *(arg->dataMem);
+	return arg->opcode.cycle + arg->pageCrossed;
+}
+
+uint8_t _LDY(CPU *cpu, Instruction *arg){
+	_SET_SIGN(cpu,arg->dataMem);
+  _SET_ZERO(cpu,arg->dataMem);
+  cpu->Y = *(arg->dataMem);
+	return arg->opcode.cycle + arg->pageCrossed;
+}
+
+uint8_t _LSR(CPU *cpu, Instruction *arg){
+	_SET_CARRY(cpu, (*(arg->dataMem) & 0x01));
+  *arg->dataMem >>= 1;
+  _SET_SIGN(cpu,arg->dataMem);
+  _SET_ZERO(cpu,arg->dataMem);
+	return arg->opcode.cycle;
+}
+
+uint8_t _NOP(CPU *cpu, Instruction *arg){
+	// Nothing to do
+	return arg->opcode.cycle;
+}
+
+uint8_t _ORA(CPU *cpu, Instruction *arg){
+	cpu->A = cpu->A | *arg->dataMem;
+  _SET_SIGN(cpu,&cpu->A);
+  _SET_ZERO(cpu,&cpu->A);
+	return arg->opcode.cycle + arg->pageCrossed;
+}
+
+uint8_t _PHA(CPU *cpu, Instruction *arg) {
+	uint8_t src = cpu->A;
+	_PUSH(cpu, &src);
+	return arg->opcode.cycle;
+}
+
+uint8_t _PHP(CPU *cpu, Instruction *arg) {
+	uint8_t src = _GET_SR(cpu);
+	_PUSH(cpu, &src);
+	return arg->opcode.cycle;
+}
+
+uint8_t _PLA(CPU *cpu, Instruction *arg) {
+	uint8_t src = _PULL(cpu);
+	cpu->A = src;
+    _SET_SIGN(cpu, &src);
+    _SET_ZERO(cpu, &src);
+	return arg->opcode.cycle;
+}
+
+uint8_t _PLP(CPU *cpu, Instruction *arg) {
+	uint8_t src = _PULL(cpu);
+    _SET_SR(cpu, &src);
+	return arg->opcode.cycle;
+}
+uint8_t _ROL(CPU *cpu, Instruction *arg){
+	uint8_t newCarry = *arg->dataMem & 0x80;
+	*arg->dataMem <<= 1;
+  if (_IF_CARRY(cpu)){
+		*arg->dataMem |= 0x1;
+	}
+  _SET_CARRY(cpu, newCarry == 0x80);
+  _SET_SIGN(cpu, arg->dataMem);
+  _SET_ZERO(cpu, arg->dataMem);
+	return arg->opcode.cycle;
+}
+
+uint8_t _ROR(CPU *cpu, Instruction *arg){
+	uint8_t newCarry = *arg->dataMem & 0x01;
+	*arg->dataMem >>= 1;
+  if (_IF_CARRY(cpu)){
+		*arg->dataMem |= 0x80;
+	}
+  _SET_CARRY(cpu, newCarry == 0x01);
+  _SET_SIGN(cpu, arg->dataMem);
+  _SET_ZERO(cpu, arg->dataMem);
+	return arg->opcode.cycle;
+}
+
+uint8_t _RTI(CPU *cpu, Instruction *arg) {
+	uint8_t temp = _PULL(cpu);
+    _SET_SR(cpu, &temp);
+
+	uint16_t pc = _PULL(cpu);
+	pc |= (_PULL(cpu) << 8);
+
+    cpu->PC = pc;
+	return arg->opcode.cycle;
+}
+uint8_t _RTS(CPU *cpu, Instruction *arg) {
+	uint16_t pc = _PULL(cpu);
+	pc |= ((_PULL(cpu) << 8) + 1);
+
+    cpu->PC = pc;
+	return arg->opcode.cycle;
+}
+
+uint8_t _SBC(CPU *cpu, Instruction *arg){
+	uint16_t temp = cpu->A - *arg->dataMem - (_IF_CARRY(cpu) ? 0 : 1);
+	printf("TEMP=%x\n", temp);
+  _SET_SIGN(cpu, (uint8_t*) &temp);
+  _SET_ZERO(cpu, (uint8_t*) &temp);
+  _SET_OVERFLOW(cpu, ((cpu->A ^ temp) & 0x80) &&
+							((cpu->A ^ *arg->dataMem) & 0x80));
+  _SET_CARRY(cpu, temp < 0x100);
+  cpu->A = (uint8_t)(temp & 0xff);
+	return arg->opcode.cycle + arg->pageCrossed;
+}
+
+uint8_t _SEC(CPU *cpu, Instruction *arg){
+	_SET_CARRY(cpu, 1);
+	return arg->opcode.cycle;
+}
+
+uint8_t _SED(CPU *cpu, Instruction *arg){
+	cpu->P |= (0x08);
+	return arg->opcode.cycle;
+}
+
+uint8_t _SEI(CPU *cpu, Instruction *arg) {
+	_SET_INTERRUPT(cpu);
+	return arg->opcode.cycle;
+}
+
+uint8_t _STA(CPU *cpu, Instruction *arg){
+	*(arg->dataMem) = cpu->A;
+	return arg->opcode.cycle;
+}
+
+uint8_t _STX(CPU *cpu, Instruction *arg){
+	*(arg->dataMem) = cpu->X;
+	return arg->opcode.cycle;
+}
+
+uint8_t _STY(CPU *cpu, Instruction *arg){
+	*(arg->dataMem) = cpu->Y;
+	return arg->opcode.cycle;
+}
+
+uint8_t _TAX(CPU *cpu, Instruction *arg) {
+	uint8_t src = cpu->A;
+	_SET_SIGN(cpu, &src);
+	_SET_ZERO(cpu, &src);
+	cpu->X = src;
+	return arg->opcode.cycle;
+}
+
+uint8_t _TAY(CPU *cpu, Instruction *arg) {
+	uint8_t src = cpu->A;
+    _SET_SIGN(cpu, &src);
+    _SET_ZERO(cpu, &src);
+    cpu->Y = src;
+	return arg->opcode.cycle;
+}
+
+uint8_t _TSX(CPU *cpu, Instruction *arg) {
+	uint8_t src = cpu->SP;
+    _SET_SIGN(cpu, &src);
+    _SET_ZERO(cpu, &src);
+    cpu->X = src;
+	return arg->opcode.cycle;
+}
+
+uint8_t _TXA(CPU *cpu, Instruction *arg) {
+	uint8_t src = cpu->X;
+    _SET_SIGN(cpu, &src);
+    _SET_ZERO(cpu, &src);
+    cpu->A = src;
+	return arg->opcode.cycle;
+}
+
+uint8_t _TXS(CPU *cpu, Instruction *arg) {
+	cpu->SP = cpu->X;
+	return arg->opcode.cycle;
+}
+
+uint8_t _TYA(CPU *cpu, Instruction *arg) {
+	uint8_t src = cpu->Y;
+    _SET_SIGN(cpu, &src);
+    _SET_ZERO(cpu, &src);
+    cpu->A = src;
+	return arg->opcode.cycle;
+}
