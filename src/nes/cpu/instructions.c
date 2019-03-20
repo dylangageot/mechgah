@@ -414,8 +414,8 @@ uint8_t _BRK(CPU *cpu, Instruction *arg) {
 	_PUSH(cpu, &temp);
 	temp = cpu->PC & 0xFF;
 	_PUSH(cpu, &temp);
-	_SET_BREAK(cpu);
-	_PUSH(cpu, &cpu->P);
+	temp = cpu->P | 0x10;
+	_PUSH(cpu, &temp);
 	_SET_INTERRUPT(cpu);
 	/* Set program counter from memory */
 	cpu->PC = _LOAD(cpu, 0xFFFE) | (_LOAD(cpu, 0xFFFF) << 8);
@@ -622,7 +622,7 @@ uint8_t _PHA(CPU *cpu, Instruction *arg) {
 }
 
 uint8_t _PHP(CPU *cpu, Instruction *arg) {
-	uint8_t src = _GET_SR(cpu);
+	uint8_t src = _GET_SR(cpu) | 0x30;
 	_PUSH(cpu, &src);
 	return arg->opcode.cycle;
 }
@@ -636,7 +636,7 @@ uint8_t _PLA(CPU *cpu, Instruction *arg) {
 }
 
 uint8_t _PLP(CPU *cpu, Instruction *arg) {
-	uint8_t src = _PULL(cpu);
+	uint8_t src = _PULL(cpu) | 0x20;
     _SET_SR(cpu, &src);
 	return arg->opcode.cycle;
 }

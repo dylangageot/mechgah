@@ -14,7 +14,6 @@ int main(int argc, char **argv) {
 	uint8_t context = 1;
 	/* If loading nestest.nes, replace reset vector to automate test */
 	*(nes->mapper->get(nes->mapper->memoryMap, AS_CPU, 0xFFFC)) = 0x00;
-	nes->cpu->P |= 0x20;
 
 	for (i = 0; i < 256; i++) {
 		CPU_Execute(nes->cpu, &context, &nes->clockCount);
