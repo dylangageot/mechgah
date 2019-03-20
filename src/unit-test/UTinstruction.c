@@ -631,6 +631,63 @@ static void test_ADC(void **state) {
 	assert_int_equal(clk, 5);
 }
 
+static void test_AND(void **state) {
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*) = _AND;
+	uint8_t src = 0xFF, clk = 0;
+	inst.dataMem = &src;
+	inst.pageCrossed = 0;
+	self->A = 0x00;
+	self->P = 0x00;
+
+	inst.opcode = Opcode_Get(0x29); /* _AND Immediate clk=2 */
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk,2);
+	assert_ptr_equal(ptr, inst.opcode.inst);
+
+	inst.opcode = Opcode_Get(0x25); /* _AND Zero Page  clk=3 */
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk,3);
+	assert_ptr_equal(ptr, inst.opcode.inst);
+
+	inst.opcode = Opcode_Get(0x35); /* _AND Zero Page,X  clk=4 */
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk,4); //Erreur sur le nombre de cycle d'horloge
+	assert_ptr_equal(ptr, inst.opcode.inst);
+
+	inst.opcode = Opcode_Get(0x2D); /* _AND Absolute clk=4 */
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk,4);
+	assert_ptr_equal(ptr, inst.opcode.inst);
+
+	inst.opcode = Opcode_Get(0x3D); /* _AND Absolute,X  clk=4 */
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk,4);
+	assert_ptr_equal(ptr, inst.opcode.inst);
+
+	inst.opcode = Opcode_Get(0x39); /* _AND Absolute,Y  clk=4 */
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk,4);
+	assert_ptr_equal(ptr, inst.opcode.inst);
+
+	inst.opcode = Opcode_Get(0x21); /* _AND Indirect,X  clk=6 */
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk,6);
+	assert_ptr_equal(ptr, inst.opcode.inst);
+
+	self->A = 0x81;
+
+	inst.opcode = Opcode_Get(0x31); /* _AND Indirect,Y  clk=5 */
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk,5);
+	assert_ptr_equal(ptr, inst.opcode.inst);
+
+	assert_int_equal(self->A,0x81);
+	assert_int_equal(self->P&0x02,0x00);
+	assert_int_equal(self->P&0x80,0x80);
+}
+
 static void test_ASL(void **state) {
 	CPU *self = (CPU*) *state;
 	Instruction inst;
@@ -2630,6 +2687,7 @@ int run_instruction(void) {
 	};
 	const struct CMUnitTest test_instruction[] = {
 		cmocka_unit_test(test_ADC),
+		cmocka_unit_test(test_AND),
 		cmocka_unit_test(test_ASL),
 		cmocka_unit_test(test_BCC),
 		cmocka_unit_test(test_BCS),
