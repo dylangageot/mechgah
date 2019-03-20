@@ -23,7 +23,7 @@ static Opcode opcode[256] = {
 	{_PLP, IMP, 4}, {_AND, IMM, 2}, {_ROL, ACC, 2}, {NULL, NUL, 0}, /* 0x28 */
 	{_BIT, ABS, 4}, {_AND, ABS, 4}, {_ROL, ABS, 6}, {NULL, NUL, 0}, /* 0x2C */
 	{_BMI, IMP, 2}, {_AND, INY, 5}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x30 */
-	{NULL, NUL, 0}, {_AND, ZEX, 3}, {_ROL, ZEX, 6}, {NULL, NUL, 0}, /* 0x34 */
+	{NULL, NUL, 0}, {_AND, ZEX, 4}, {_ROL, ZEX, 6}, {NULL, NUL, 0}, /* 0x34 */
 	{_SEC, IMP, 2}, {_AND, ABY, 4}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x38 */
 	{NULL, NUL, 0}, {_AND, ABX, 4}, {_ROL, ABX, 7}, {NULL, NUL, 0}, /* 0x3C */
 	{_RTI, IMP, 6}, {_EOR, INX, 6}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x40 */
@@ -323,7 +323,16 @@ uint8_t _ADC(CPU *cpu, Instruction *arg) {
 	return arg->opcode.cycle;
 }
 
-uint8_t _AND(CPU *cpu, Instruction *arg){return 0;}
+uint8_t _AND(CPU *cpu, Instruction *arg){
+	/* "AND" memory with accumulator*/
+	arg->opcode.cycle += arg->pageCrossed;
+	uint8_t m = *(arg->dataMem);
+	m = (cpu->A)&m;
+	_SET_SIGN(cpu,&m);
+	_SET_ZERO(cpu,&m);
+	cpu->A = m;
+	return arg->opcode.cycle;
+}
 
 uint8_t _ASL(CPU *cpu, Instruction *arg) {
 	/* Execute */
