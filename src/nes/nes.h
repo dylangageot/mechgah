@@ -21,7 +21,7 @@
 typedef struct {
 	CPU *cpu;
 	/* PPU ppu; */
-	Mapper mapper;
+	Mapper *mapper;
 	uint32_t clockCount;
 } NES;
 
@@ -53,7 +53,9 @@ NES* NES_Create(char *filename);
 /**
  * \fn NES_Destroy
  * \brief Free the memory used by the emulator
+ *
+ * \param self instance of NES
  */
-void NES_Destroy(void);
+void NES_Destroy(NES *self);
 
 #endif /* NES_H */
