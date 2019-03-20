@@ -15,15 +15,15 @@ static Opcode opcode[256] = {
 	{NULL, NUL, 0}, {_ORA, ZER, 3}, {_ASL, ZER, 5}, {NULL, NUL, 0}, /* 0x04 */
 	{_PHP, IMP, 3}, {_ORA, IMM, 2}, {_ASL, ACC, 2}, {NULL, NUL, 0}, /* 0x08 */
 	{NULL, NUL, 0}, {_ORA, ABS, 4}, {_ASL, ABS, 6}, {NULL, NUL, 0}, /* 0x0C */
-	{_BPL, IMP, 2}, {_ORA, INY, 5}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x10 */
+	{_BPL, REL, 2}, {_ORA, INY, 5}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x10 */
 	{NULL, NUL, 0}, {_ORA, ZEX, 4}, {_ASL, ZEX, 6}, {NULL, NUL, 0}, /* 0x14 */
 	{_CLC, IMP, 2}, {_ORA, ABY, 4}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x18 */
 	{NULL, NUL, 0}, {_ORA, ABX, 4}, {_ASL, ABX, 7}, {NULL, NUL, 0}, /* 0x1C */
-	{_JSR, IMP, 6}, {_AND, INX, 6}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x20 */
+	{_JSR, ABS, 6}, {_AND, INX, 6}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x20 */
 	{_BIT, ZER, 3}, {_AND, ZER, 3}, {_ROL, ZER, 5}, {NULL, NUL, 0}, /* 0x24 */
 	{_PLP, IMP, 4}, {_AND, IMM, 2}, {_ROL, ACC, 2}, {NULL, NUL, 0}, /* 0x28 */
 	{_BIT, ABS, 4}, {_AND, ABS, 4}, {_ROL, ABS, 6}, {NULL, NUL, 0}, /* 0x2C */
-	{_BMI, IMP, 2}, {_AND, INY, 5}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x30 */
+	{_BMI, REL, 2}, {_AND, INY, 5}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x30 */
 	{NULL, NUL, 0}, {_AND, ZEX, 3}, {_ROL, ZEX, 6}, {NULL, NUL, 0}, /* 0x34 */
 	{_SEC, IMP, 2}, {_AND, ABY, 4}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x38 */
 	{NULL, NUL, 0}, {_AND, ABX, 4}, {_ROL, ABX, 7}, {NULL, NUL, 0}, /* 0x3C */
@@ -31,7 +31,7 @@ static Opcode opcode[256] = {
 	{NULL, NUL, 0}, {_EOR, ZER, 3}, {_LSR, ZER, 5}, {NULL, NUL, 0}, /* 0x44 */
 	{_PHA, IMP, 3}, {_EOR, IMM, 2}, {_LSR, ACC, 2}, {NULL, NUL, 0}, /* 0x48 */
 	{_JMP, ABS, 3}, {_EOR, ABS, 4}, {_LSR, ABS, 6}, {NULL, NUL, 0}, /* 0x4C */
-	{_BVC, IMP, 2}, {_EOR, INY, 5}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x50 */
+	{_BVC, REL, 2}, {_EOR, INY, 5}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x50 */
 	{NULL, NUL, 0}, {_EOR, ZEX, 4}, {_LSR, ZEX, 6}, {NULL, NUL, 0}, /* 0x54 */
 	{_CLI, IMP, 2}, {_EOR, ABY, 4}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x58 */
 	{NULL, NUL, 0}, {_EOR, ABX, 4}, {_LSR, ABX, 7}, {NULL, NUL, 0}, /* 0x5C */
@@ -39,7 +39,7 @@ static Opcode opcode[256] = {
 	{NULL, NUL, 0}, {_ADC, ZER, 3}, {_ROR, ZER, 5}, {NULL, NUL, 0}, /* 0x64 */
 	{_PLA, IMP, 4}, {_ADC, IMM, 2}, {_ROR, ACC, 2}, {NULL, NUL, 0}, /* 0x68 */
 	{_JMP, ABI, 5}, {_ADC, ABS, 4}, {_ROR, ABS, 6}, {NULL, NUL, 0}, /* 0x6C */
-	{_BVS, IMP, 2}, {_ADC, INY, 5}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x70 */
+	{_BVS, REL, 2}, {_ADC, INY, 5}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x70 */
 	{NULL, NUL, 0}, {_ADC, ZEX, 4}, {_ROR, ZEX, 6}, {NULL, NUL, 0}, /* 0x74 */
 	{_SEI, IMP, 2}, {_ADC, ABY, 4}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x78 */
 	{NULL, NUL, 0}, {_ADC, ABX, 4}, {_ROR, ABX, 7}, {NULL, NUL, 0}, /* 0x7C */
@@ -47,7 +47,7 @@ static Opcode opcode[256] = {
 	{_STY, ZER, 3}, {_STA, ZER, 3}, {_STX, ZER, 3}, {NULL, NUL, 0}, /* 0x84 */
 	{_DEY, IMP, 2}, {NULL, NUL, 0}, {_TXA, IMP, 2}, {NULL, NUL, 0}, /* 0x88 */
 	{_STY, ABS, 4}, {_STA, ABS, 4}, {_STX, ABS, 4}, {NULL, NUL, 0}, /* 0x8C */
-	{_BCC, IMP, 2}, {_STA, INY, 6}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x90 */
+	{_BCC, REL, 2}, {_STA, INY, 6}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x90 */
 	{_STY, ZEX, 4}, {_STA, ZEX, 4}, {_STX, ZEY, 4}, {NULL, NUL, 0}, /* 0x94 */
 	{_TYA, IMP, 2}, {_STA, ABY, 5}, {_TXS, IMP, 2}, {NULL, NUL, 0}, /* 0x98 */
 	{NULL, NUL, 0}, {_STA, ABX, 5}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0x9C */
@@ -55,7 +55,7 @@ static Opcode opcode[256] = {
 	{_LDY, ZER, 3}, {_LDA, ZER, 3}, {_LDX, ZER, 3}, {NULL, NUL, 0}, /* 0xA4 */
 	{_TAY, IMP, 2}, {_LDA, IMM, 2}, {_TAX, IMP, 2}, {NULL, NUL, 0}, /* 0xA8 */
 	{_LDY, ABS, 4}, {_LDA, ABS, 4}, {_LDX, ABS, 4}, {NULL, NUL, 0}, /* 0xAC */
-	{_BCS, IMP, 2}, {_LDA, INY, 5}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0xB0 */
+	{_BCS, REL, 2}, {_LDA, INY, 5}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0xB0 */
 	{_LDY, ZEX, 4}, {_LDA, ZEX, 4}, {_LDX, ZEY, 4}, {NULL, NUL, 0}, /* 0xB4 */
 	{_CLV, IMP, 2}, {_LDA, ABY, 4}, {_TSX, IMP, 2}, {NULL, NUL, 0}, /* 0xB8 */
 	{_LDY, ABX, 4}, {_LDA, ABX, 4}, {_LDX, ABY, 4}, {NULL, NUL, 0}, /* 0xBC */
@@ -63,7 +63,7 @@ static Opcode opcode[256] = {
 	{_CPY, ZER, 3}, {_CMP, ZER, 3}, {_DEC, ZER, 5}, {NULL, NUL, 0}, /* 0xC4 */
 	{_INY, IMP, 2}, {_CMP, IMM, 2}, {_DEX, IMP, 2}, {NULL, NUL, 0}, /* 0xC8 */
 	{_CPY, ABS, 4}, {_CMP, ABS, 4}, {_DEC, ABS, 6}, {NULL, NUL, 0}, /* 0xCC */
-	{_BNE, IMP, 2}, {_CMP, INY, 5}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0xD0 */
+	{_BNE, REL, 2}, {_CMP, INY, 5}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0xD0 */
 	{NULL, NUL, 0}, {_CMP, ZEX, 4}, {_DEC, ZEX, 6}, {NULL, NUL, 0}, /* 0xD4 */
 	{_CLD, IMP, 2}, {_CMP, ABY, 4}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0xD8 */
 	{NULL, NUL, 0}, {_CMP, ABX, 4}, {_DEC, ABX, 7}, {NULL, NUL, 0}, /* 0xDC */
@@ -71,7 +71,7 @@ static Opcode opcode[256] = {
 	{_CPX, ZER, 3}, {_SBC, ZER, 3}, {_INC, ZER, 5}, {NULL, NUL, 0}, /* 0xE4 */
 	{_INX, IMP, 2}, {_SBC, IMM, 2}, {_NOP, IMP, 2}, {NULL, NUL, 0}, /* 0xE8 */
 	{_CPX, ABS, 4}, {_SBC, ABS, 4}, {_INC, ABS, 6}, {NULL, NUL, 0}, /* 0xEC */
-	{_BEQ, IMP, 2}, {_SBC, INY, 5}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0xF0 */
+	{_BEQ, REL, 2}, {_SBC, INY, 5}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0xF0 */
 	{NULL, NUL, 0}, {_SBC, ZEX, 4}, {_INC, ZEX, 6}, {NULL, NUL, 0}, /* 0xF4 */
 	{_SED, IMP, 2}, {_SBC, ABY, 4}, {NULL, NUL, 0}, {NULL, NUL, 0}, /* 0xF8 */
 	{NULL, NUL, 0}, {_SBC, ABX, 4}, {_INC, ABX, 7}, {NULL, NUL, 0}	/* 0xFC */
@@ -315,10 +315,11 @@ uint8_t Instruction_Resolve(Instruction *self, CPU *cpu) {
 			return 0;
 			break;
 	}
+	self->dataAddr = address;
 	return 1;
 }
 
-void Instruction_PrintLog(Instruction *self, CPU *cpu, uint8_t clockCycle) {
+void Instruction_PrintLog(Instruction *self, CPU *cpu, uint32_t clockCycle) {
 	FILE* fLog = NULL;
 	int i;
 	/* Open log file for append line into */
@@ -330,15 +331,15 @@ void Instruction_PrintLog(Instruction *self, CPU *cpu, uint8_t clockCycle) {
 	}
 
 	/* Print to cpu.log */
-	fprintf(fLog, "%4X %2X ", self->lastPC, self->rawOpcode);
+	fprintf(fLog, "%04X %02X ", self->lastPC, self->rawOpcode);
 	for (i = 0; i < 3; i++) {
 		if (i < self->nbArg)
 			fprintf(fLog, "%02X ", self->opcodeArg[i]);
 		else
 			fprintf(fLog, "   ");
 	}
-	fprintf(fLog, "A:%02X X:%02X Y:%02X P:%02X SP:%02X CYC:%02X PC:%04X\n",
-			cpu->A, cpu->X, cpu->Y, cpu->P,cpu->SP, clockCycle, cpu->PC);
+	fprintf(fLog, "A:%02X X:%02X Y:%02X P:%02X SP:%02X CYC:%-d\n",
+			cpu->A, cpu->X, cpu->Y, cpu->P,cpu->SP, clockCycle);
 
 	/* Close file */
 	fclose(fLog);
@@ -556,8 +557,7 @@ uint8_t _INY(CPU *cpu, Instruction *arg){
 
 uint8_t _JMP(CPU *cpu, Instruction *arg) {
 	/* Set program counter from memory */
-	uint16_t newPC = (*(arg->dataMem+1) << 8) + *arg->dataMem;
-	cpu->PC = newPC;
+	cpu->PC = arg->dataAddr;
 	return arg->opcode.cycle;
 }
 
@@ -569,8 +569,7 @@ uint8_t _JSR(CPU *cpu, Instruction *arg) {
 	temp = cpu->PC & 0xFF;
 	_PUSH(cpu, &temp);
 	/* Set program counter from memory */
-	uint16_t newPC = (*(arg->dataMem+1) << 8) + *arg->dataMem;
-	cpu->PC = newPC;
+	cpu->PC = arg->dataAddr;
 	return arg->opcode.cycle;
 }
 

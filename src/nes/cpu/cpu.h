@@ -68,10 +68,11 @@ uint8_t CPU_InterruptManager(CPU* self, uint8_t* context);
  *
  * \param self instance of CPU
  * \param context variable containing interrupt flags
+ * \param clockCycle pointer to clock cycle variable
  *
  * \return number of clock cycle used to execute the instruction
  */
-uint8_t CPU_Execute(CPU* self, uint8_t* context);
+uint32_t CPU_Execute(CPU* self, uint8_t* context, uint32_t *clockCycle);
 
 /**
  * \fn CPU_Destroy

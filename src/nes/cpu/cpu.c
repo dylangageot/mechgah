@@ -30,11 +30,13 @@ uint8_t CPU_Init(CPU* self) {
 	self->A = 0;
 	self->X = 0;
 	self->Y = 0;
-	self->SP = 0xFF;
+	self->SP = 0x00;
 	self->P = 0;
 
-	/* 16-bit program counter register */
-	self->PC = 0;
+	/* 16-bit program counter */
+	self->PC = 0x0000;
+	/* Remove debug log */
+	remove("cpu.log");
 
 	return 0;
 }
@@ -116,18 +118,20 @@ uint8_t CPU_InterruptManager(CPU* self, uint8_t* context){
 	return cycleCount;
 }
 
-uint8_t CPU_Execute(CPU* self, uint8_t* context) {
+uint32_t CPU_Execute(CPU* self, uint8_t* context, uint32_t *clockCycle) {
 	if (self == NULL)
 		return 0;
 
-	uint8_t clockCycle = 0;
 	Instruction inst;
 
-	clockCycle = CPU_InterruptManager(self, context); 
+	*clockCycle += CPU_InterruptManager(self, context); 
 
 	/* Fetch instruction information from opcode and arg */
 	if (Instruction_Fetch(&inst, self) == 0)
 		return 0;
+
+	/* Log execution information */
+	Instruction_PrintLog(&inst, self, *clockCycle); 
 
 	/* Resolve addressing mode from instruction information */
 	if (Instruction_Resolve(&inst, self) == 0)
@@ -138,12 +142,9 @@ uint8_t CPU_Execute(CPU* self, uint8_t* context) {
 		return 0;
 
 	/* Execute instruction */
-	clockCycle = inst.opcode.inst(self, &inst);	
+	*clockCycle += inst.opcode.inst(self, &inst);	
 
-	/* Log execution information */
-	Instruction_PrintLog(&inst, self, clockCycle); 
-
-	return clockCycle;
+	return *clockCycle;
 }
 
 void CPU_Destroy(CPU* self){
