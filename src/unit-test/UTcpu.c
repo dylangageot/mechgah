@@ -274,7 +274,38 @@ static void test_NO_INTERRUPT(void** state) {
 
 /* Execute Unit Test */
 static void test_CPU_Execute(void **state) {
+	CPU *self = (CPU*) *state;
+	Mapper *mapper = self->rmap;
+	uint8_t *memory = mapper->get(mapper->memoryMap, AS_CPU, 0x8000);
+	uint8_t context = 0;
+	uint32_t clockCycle = 0;
 	
+	/* Init register */
+	self->PC = 0x8000;
+	self->A = 1;
+	self->P = 0;
+
+	/* ADC $1AAA */
+	memory[0] = 0x6D;
+	memory[1] = 0xAA;
+	memory[2] = 0x1A;
+	/* JMP $1BAA */
+	memory[3] = 0x4C;
+	memory[4] = 0x00;
+	memory[5] = 0x90;
+	/* Set $1AAA = 0xAA */
+	memory = mapper->get(mapper->memoryMap, AS_CPU, 0x1AAA);
+	memory[0] = 0xAA;
+
+	/* Expect 4 clock cycle to be used for ADC_ABS */
+	assert_int_equal(CPU_Execute(self, &context, &clockCycle), 4);
+	/* Verify instruction execution */
+	assert_int_equal(self->PC, 0x8003);
+	assert_int_equal(self->A, 0xAB);
+	/* Expect 3 clock cycle to be used for JMP_ABS */
+	assert_int_equal(CPU_Execute(self, &context, &clockCycle), 4);
+	assert_int_equal(self->PC, 0x9000);
+	assert_int_equal(self->A, 0xAB);
 }
 
 
@@ -303,7 +334,11 @@ int run_UTcpu(void) {
         cmocka_unit_test(test_NMI_IRQ_CONFLICT),
         cmocka_unit_test(test_NO_INTERRUPT)
     };
+	const struct CMUnitTest test_cpu[] = {
+		cmocka_unit_test(test_CPU_Execute),
+	};
     int out = 0;
     out += cmocka_run_group_tests(test_interrupt, setup_CPU, teardown_CPU);
+    out += cmocka_run_group_tests(test_cpu, setup_CPU, teardown_CPU);
     return out;
 }
