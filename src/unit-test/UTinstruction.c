@@ -69,13 +69,12 @@ static void test_instruction_fetch(void **state){
 	free(instru);
 }
 
-/*
 static void test_Instruction_PrintLog(void **state) {
 	CPU *self = (CPU*) *state;
 	Mapper *mapper = self->rmap;
 	Instruction inst;
 	char expectedStr[] =
-		"8000 6D CD AB    A:11 X:22 Y:33 P:44 SP:55 CYC:66 PC:8003\n";
+		"8000 6D CD AB    A:11 X:22 Y:33 P:44 SP:55 CYC:555\n";
 	char readStr[256];
 	FILE *fLog = NULL;
 	uint8_t *memory = mapper->get(mapper->memoryMap, AS_CPU, 0x8000);
@@ -90,14 +89,13 @@ static void test_Instruction_PrintLog(void **state) {
 	self->SP = 0x55;
 	assert_int_equal(Instruction_Fetch(&inst, self), 1);
 	remove("cpu.log");
-	Instruction_PrintLog(&inst, self, 0x66);
+	Instruction_PrintLog(&inst, self, 555);
 	fLog = fopen("cpu.log", "r");
 	assert_ptr_not_equal(fLog, NULL);
 	fgets(readStr, 256, fLog);
 	assert_int_equal(strcmp(expectedStr,readStr), 0);
 	fclose(fLog);
 }
-*/
 
 static void test_addressing_IMP(void **state){
 	CPU *self =(CPU*)*state;
@@ -2705,8 +2703,8 @@ int run_instruction(void) {
 		cmocka_unit_test(test_addressing_MIS),
 	};
 	const struct CMUnitTest test_fetch[] = {
-		//cmocka_unit_test(test_instruction_fetch),
-		//cmocka_unit_test(test_Instruction_PrintLog),
+		cmocka_unit_test(test_instruction_fetch),
+		cmocka_unit_test(test_Instruction_PrintLog),
 	};
 	int out = 0;
 	out += cmocka_run_group_tests(test_instruction_macro, setup_CPU, teardown_CPU);
