@@ -30,6 +30,65 @@ static int setup_CPU(void** state) {
     return 0;
 }
 
+static int setup_CPU_ultimate(void **state) {
+	/* Load data from .nes */
+	Mapper *mapper = loadROM("src/unit-test/roms/nestest.nes");
+	if (mapper == NULL)
+		return -1;
+	/* Create instance of CPU */
+	CPU *cpu = CPU_Create(mapper);
+	if (cpu == NULL) {
+		mapper->destroyer(mapper->memoryMap);
+		free(mapper);
+		return -1;
+	}
+	/* Init CPU */
+	CPU_Init(cpu);
+	*state = (void*) cpu;
+	return 0;
+}
+
+static int teardown_CPU_ultimate(void **state) {
+	CPU *cpu = (CPU*) *state;
+	if (cpu->rmap != NULL) {
+		/* Free mapper data */
+		cpu->rmap->destroyer(cpu->rmap->memoryMap);
+		free(cpu->rmap);
+	}
+	CPU_Destroy(cpu);
+	return 0;
+}
+
+static void test_CPU_ultimate(void **state) {
+	CPU *self = (CPU*) *state;
+	FILE *fCPU = NULL, *fGoal = NULL;
+	char strCPU[512], strGoal[512];
+	int i;
+	uint32_t clockCount = 0;
+	uint8_t context = 1;
+
+	/* Replace reset vector 0xC000 to launch automate test */
+	*(self->rmap->get(self->rmap->memoryMap, AS_CPU, 0xFFFC)) = 0x00;
+
+	/* Execute CPU for 5003 instructions (instruction before illegal opcode) */
+	for (i = 0; i < 5003; i++) {
+		assert_int_not_equal(CPU_Execute(self, &context, &clockCount), 0);
+	}
+
+	/* Diff between log files to ensure that CPU is working as expected */
+	assert_ptr_not_equal(fCPU = fopen("cpu.log", "r"), NULL);
+	assert_ptr_not_equal(fGoal = fopen("goal.log", "r"), NULL);
+	for (i = 0; i < 5003; i++) {
+		fgets(strCPU, 512, fCPU);	
+		fgets(strGoal, 512, fGoal);	
+		assert_int_equal(strcmp(strCPU,strGoal), 0);
+	}
+
+	fclose(fCPU);
+	fclose(fGoal);
+}
+
+
 /* Interrupts Unit Tests */
 
 static void test_RESET(void** state){
@@ -337,8 +396,12 @@ int run_UTcpu(void) {
 	const struct CMUnitTest test_cpu[] = {
 		cmocka_unit_test(test_CPU_Execute),
 	};
+	const struct CMUnitTest test_cpu_ultimate[] = {
+		cmocka_unit_test(test_CPU_ultimate),
+	};
     int out = 0;
     out += cmocka_run_group_tests(test_interrupt, setup_CPU, teardown_CPU);
     out += cmocka_run_group_tests(test_cpu, setup_CPU, teardown_CPU);
+    out += cmocka_run_group_tests(test_cpu_ultimate, setup_CPU_ultimate, teardown_CPU_ultimate);
     return out;
 }
