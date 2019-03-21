@@ -77,7 +77,8 @@ static void test_CPU_ultimate(void **state) {
 
 	/* Diff between log files to ensure that CPU is working as expected */
 	assert_ptr_not_equal(fCPU = fopen("cpu.log", "r"), NULL);
-	assert_ptr_not_equal(fGoal = fopen("goal.log", "r"), NULL);
+	assert_ptr_not_equal(fGoal = fopen("src/unit-test/roms/nestest.log", "r"), 
+						 NULL);
 	for (i = 0; i < 5003; i++) {
 		fgets(strCPU, 512, fCPU);	
 		fgets(strGoal, 512, fGoal);	
