@@ -1576,9 +1576,13 @@ static void test_NOP(void **state){
 
 	/* Verify opcode LUT */
 	inst.opcode = Opcode_Get(0xEA); /* NOP IMP */
+	inst.pageCrossed = 0;
 	assert_ptr_equal(ptr, inst.opcode.inst);
 	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 2);
+	inst.pageCrossed = 1;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 3);
 }
 
 static void test_PHA(void **state) {
@@ -1700,7 +1704,7 @@ static void test_PLP(void **state) {
 	clock = inst.opcode.inst(self,&inst);
 
 	assert_int_equal(clock, 4);
-	assert_int_equal(_GET_SR(self), 0xF7);
+	assert_int_equal(_GET_SR(self), 0xE7);
 
 }
 
@@ -1736,7 +1740,7 @@ static void test_RTI(void **state) {
 	clock = inst.opcode.inst(self,&inst);
 
 	assert_int_equal(clock, 6);
-	assert_int_equal(_GET_SR(self), 0xD7);
+	assert_int_equal(_GET_SR(self), 0xE7);
 	assert_int_equal(self->PC, 0xF56D);
 }
 
@@ -1765,7 +1769,7 @@ static void test_RTS(void **state) {
 	clock = inst.opcode.inst(self,&inst);
 
 	assert_int_equal(clock, 6);
-	assert_int_equal(self->PC, 0xA731);
+	assert_int_equal(self->PC, 0xA732);
 }
 
 static void test_SEI(void **state) {
