@@ -2416,43 +2416,69 @@ static void test_SBC(void **state) {
 	inst.opcode = Opcode_Get(0xE9); /* SBC IMM */
 	assert_ptr_equal(ptr, inst.opcode.inst);
 
+/*
+SIGN A-B et B>A
+ZERO 5-5 with initial carry
+OVERFLOW
+CARRY
+*/
+
 	/* Test SBC general behavior */
+	/* Unsigned result, without initial carry */
+	self->P = 0x00;
+	self->A = 0x02;
+	src = 0x01;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x80, 0x00); /* Sign = 0 */
+	assert_int_equal(self->P & 0x02, 0x02); /* Zero = 1 */
+	assert_int_equal(self->P & 0x40, 0x00); /* Ovf = 0 */
+	assert_int_equal(self->P & 0x01, 0x01); /* Carry out = 1 */
+	assert_int_equal(self->A, 0x00); /* 0x02 - 0x01 - 0x01 = 0x00 */
+	/* Unsigned result, with initial carry */
+	self->P = 0x01;
+	self->A = 0x02;
+	src = 0x01;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x80, 0x00); /* Sign = 0 */
+	assert_int_equal(self->P & 0x02, 0x00); /* Zero = 0 */
+	assert_int_equal(self->P & 0x40, 0x00); /* Ovf = 0 */
+	assert_int_equal(self->P & 0x01, 0x01); /* Carry out = 1 */
+	assert_int_equal(self->A, 0x01); /* 0x02 - 0x01 = 0x01 */
 	/* Signed result, without initial carry */
-	// self->P = 0;
-	// self->A = 0x01;
-	// src = 0x02;
-	// clk = inst.opcode.inst(self, &inst);
-	// printf("A=%x\n",self->A);
-	// assert_int_equal(clk, 2);
-	// assert_int_equal(self->P & 0x80, 0x80); /* Sign */
-	// assert_int_equal(self->P & 0x02, 0x00); /* Zero */
-	// assert_int_equal(self->P & 0x40, 0x00); /* Ovf */
-	// assert_int_equal(self->P & 0x01, 0x00); /* Carry out */
-	// assert_int_equal(self->A, 0xFF); /* 0x01 - 0x02 = 0xFF (and sign = 1) */
-	// /* Signed result, with initial carry */
-	// self->P = 0x01;
-	// self->A = 0x01;
-	// src = 0x02;
-	// clk = inst.opcode.inst(self, &inst);
-	// printf("A=%x\n",self->A);
-	// assert_int_equal(clk, 2);
-	// assert_int_equal(self->P & 0x80, 0x80); /* Sign */
-	// assert_int_equal(self->P & 0x02, 0x00); /* Zero */
-	// assert_int_equal(self->P & 0x40, 0x00); /* Ovf */
-	// assert_int_equal(self->P & 0x01, 0x00); /* Carry out */
-	// assert_int_equal(self->A, 0xFF); /* 0x01 - 0x02 = 0xFF (and sign = 1) */
-	// /* result is zero, which carries out */
-	// self->P = 0;
-	// self->A = 0x0F;
-	// src = 0x0F;
-	// clk = inst.opcode.inst(self, &inst);
-	// printf("A=%x\n",self->A);
-	// assert_int_equal(clk, 2);
-	// assert_int_equal(self->P & 0x80, 0x00); /* Sign */
-	// assert_int_equal(self->P & 0x02, 0x02); /* Zero */
-	// assert_int_equal(self->P & 0x40, 0x00); /* Ovf */
-	// assert_int_equal(self->P & 0x01, 0x01); /* Carry out */
-	// assert_int_equal(self->A, 0x00); /* 0x0F - 0x0F = 0x00 */
+	self->P = 0x00;
+	self->A = 0x01;
+	src = 0x02;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x80, 0x80); /* Sign = 1 */
+	assert_int_equal(self->P & 0x02, 0x00); /* Zero = 0 */
+	assert_int_equal(self->P & 0x40, 0x00); /* Ovf = 0 */
+	assert_int_equal(self->P & 0x01, 0x00); /* Carry out = 0 */
+	assert_int_equal(self->A, 0xFE); /* 0x01 - 0x02 - 0x01 = 0xFE */
+	/* Signed result, with initial carry */
+	self->P = 0x01;
+	self->A = 0x01;
+	src = 0x02;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x80, 0x80); /* Sign = 1 */
+	assert_int_equal(self->P & 0x02, 0x00); /* Zero = 0 */
+	assert_int_equal(self->P & 0x40, 0x00); /* Ovf = 0 */
+	assert_int_equal(self->P & 0x01, 0x00); /* Carry out = 0 */
+	assert_int_equal(self->A, 0xFF); /* 0x01 - 0x02 = 0xFF */
+	/* Result has overflowed */
+	self->P = 0x01;
+	self->A = 0x80;
+	src = 0x01;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x80, 0x00); /* Sign = 0 */
+	assert_int_equal(self->P & 0x02, 0x00); /* Zero = 0 */
+	assert_int_equal(self->P & 0x40, 0x40); /* Ovf = 1 */
+	assert_int_equal(self->P & 0x01, 0x01); /* Carry out = 1 */
+	assert_int_equal(self->A, 0x7F); /* 0x80 - 0x01 = 0x7F (and not -129) */
 
 	/* Test addressing mode clock */
 	inst.opcode = Opcode_Get(0xE5); /* SBC ZER */

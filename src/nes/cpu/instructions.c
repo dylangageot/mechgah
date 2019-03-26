@@ -215,10 +215,10 @@ uint8_t Instruction_Fetch(Instruction *self, CPU *cpu) {
 			self->opcodeArg[i] = *(opc + i);
 		cpu->PC += 2;
 		self->nbArg = 2;
-	} else { 
+	} else {
 		self->nbArg = 0;
 		return 0;
-	}	
+	}
 
 	return 1;
 }
@@ -253,7 +253,7 @@ uint8_t Instruction_Resolve(Instruction *self, CPU *cpu) {
 		case INX :
 			address = (self->opcodeArg[0] + cpu->X) & 0xFF;
 			lWeight = *(mapper->get(mapper->memoryMap, AS_CPU, address));
-			hWeight = *(mapper->get(mapper->memoryMap, AS_CPU, 
+			hWeight = *(mapper->get(mapper->memoryMap, AS_CPU,
 					(address + 1) & 0xFF));
 			address = (hWeight << 8) + lWeight;
 			self->dataMem = mapper->get(mapper->memoryMap, AS_CPU, address);
@@ -262,7 +262,7 @@ uint8_t Instruction_Resolve(Instruction *self, CPU *cpu) {
 		case INY :
 			address = self->opcodeArg[0] & 0xFF;
 			lWeight = *(mapper->get(mapper->memoryMap, AS_CPU, address));
-			hWeight = *(mapper->get(mapper->memoryMap, AS_CPU, 
+			hWeight = *(mapper->get(mapper->memoryMap, AS_CPU,
 						(address + 1) & 0xFF));
 			address = (hWeight << 8) + lWeight;
 			if ((address & 0xFF00) != ((address + cpu->Y) & 0xFF00))
@@ -308,7 +308,7 @@ uint8_t Instruction_Resolve(Instruction *self, CPU *cpu) {
 		case ABI :
 			address = (self->opcodeArg[1] << 8) + self->opcodeArg[0];
 			lWeight = *(mapper->get(mapper->memoryMap, AS_CPU, address));
-			hWeight = *(mapper->get(mapper->memoryMap, AS_CPU, 
+			hWeight = *(mapper->get(mapper->memoryMap, AS_CPU,
 						(address & 0xFF00) | ((address + 1) & 0xFF)));
 			address = (hWeight << 8) + lWeight;
 			self->dataMem = mapper->get(mapper->memoryMap, AS_CPU, address);
