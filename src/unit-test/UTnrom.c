@@ -60,6 +60,42 @@ static void test_MapNROM_Get(void **state) {
 		assert_ptr_equal((void*) ptr, (void*) (self->cpu.rom + (i % mod)));
 	}
 
+	/* Test PPU Pattern Table memory space */
+	for (i = 0x0000; i < 0x2000; i++) {
+		ptr = MapNROM_Get(self, AS_PPU, i);
+		assert_ptr_equal((void*) ptr, (void*) (self->ppu.chr + (i & 0x1FFF)));
+	}
+
+	self->mirroring = NROM_HORIZONTAL;
+	/* Test PPU Nametable memory space */
+	for (i = 0x2000; i < 0x2800; i++) {
+		ptr = MapNROM_Get(self, AS_PPU, i);
+		assert_ptr_equal((void*) ptr, (void*) (self->ppu.nametable + (i & 0x03FF)));
+	}
+	for (i = 0x2800; i < 0x3000; i++) {
+		ptr = MapNROM_Get(self, AS_PPU, i);
+		assert_ptr_equal((void*) ptr, (void*) (self->ppu.nametable + 0x400 + (i & 0x03FF)));
+	}
+
+	self->mirroring = NROM_VERTICAL;
+	/* Test PPU Nametable memory space */
+	for (i = 0x2000; i < 0x2400; i++) {
+		ptr = MapNROM_Get(self, AS_PPU, i);
+		assert_ptr_equal((void*) ptr, (void*) (self->ppu.nametable + (i & 0x03FF)));
+	}
+	for (i = 0x2400; i < 0x2800; i++) {
+		ptr = MapNROM_Get(self, AS_PPU, i);
+		assert_ptr_equal((void*) ptr, (void*) (self->ppu.nametable + 0x400 + (i & 0x03FF)));
+	}
+	for (i = 0x2800; i < 0x2C00; i++) {
+		ptr = MapNROM_Get(self, AS_PPU, i);
+		assert_ptr_equal((void*) ptr, (void*) (self->ppu.nametable + (i & 0x03FF)));
+	}
+	for (i = 0x2C00; i < 0x3000; i++) {
+		ptr = MapNROM_Get(self, AS_PPU, i);
+		assert_ptr_equal((void*) ptr, (void*) (self->ppu.nametable + 0x400 + (i & 0x03FF)));
+	}
+
 	/* Test LDR ROM access */
 	ptr = MapNROM_Get(self, AS_LDR, LDR_PRG);
 	assert_ptr_equal((void*) ptr, (void*) self->cpu.rom);

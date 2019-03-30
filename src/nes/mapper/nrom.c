@@ -130,6 +130,36 @@ uint8_t* MapNROM_Get(void* mapperData, uint8_t space, uint16_t address) {
 			}
 		}
 
+	} else if (space == AS_PPU) {
+
+		MapNROM_PPU *ppu = &map->ppu;
+		address &= 0x3FFF;
+		/* Which memory is addressed? */
+		/* 0x0000 -> 0x1FFF : Pattern Table */
+		if (_ADDRESS_INF(address, 0x1FFF)) {
+			return ppu->chr + (address & 0x1FFF);
+		/* 0x2000 -> 0x3EFF : Nametable and Attribute Table */
+		} else if (_ADDRESS_IN(address, 0x2000, 0x3EFF)) {
+			/* Nametable Mirroring */
+			switch (map->mirroring % 2) {
+				case NROM_HORIZONTAL:
+					if (address & 0x0800)
+						return ppu->nametable + 0x400 + (address & 0x03FF);
+					else
+						return ppu->nametable + (address & 0x03FF);
+				case NROM_VERTICAL:
+					if (address & 0x0400)
+						return ppu->nametable + 0x400 + (address & 0x03FF);
+					else
+						return ppu->nametable + (address & 0x03FF);
+				default:
+					break;
+			}
+		/* 0x3F00 -> 0x3FFF : Palette */
+		} else if (_ADDRESS_IN(address, 0x3F00, 0x3FFF)) {
+			return ppu->palette + (address & 0x00FF);
+		}
+
 	} else if (space == AS_LDR) {
 
 		switch (address) {
@@ -142,7 +172,6 @@ uint8_t* MapNROM_Get(void* mapperData, uint8_t space, uint16_t address) {
 		}
 
 	}
-	/* else if (space == AS_PPU) {*/
 
 	return NULL;
 }
