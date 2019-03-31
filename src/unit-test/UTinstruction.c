@@ -20,13 +20,13 @@ static int setup_CPU(void **state) {
 	Header config;
 	config.mirroring = NROM_HORIZONTAL;
 	config.romSize = NROM_16KIB;
-	self->rmap = MapNROM_Create(&config);
+	self->mapper = MapNROM_Create(&config);
 	return 0;
 }
 
 static void test_instruction_fetch(void **state){
 	CPU *self =(CPU*)*state;
-	Mapper *mapper = self->rmap;
+	Mapper *mapper = self->mapper;
 	Instruction * instru = malloc(sizeof(Instruction));
 	if(instru == NULL) return;
 
@@ -63,7 +63,7 @@ static void test_instruction_fetch(void **state){
 
 static void test_Instruction_PrintLog(void **state) {
 	CPU *self = (CPU*) *state;
-	Mapper *mapper = self->rmap;
+	Mapper *mapper = self->mapper;
 	Instruction inst;
 	char expectedStr[] =
 		"8000 6D CD AB    A:11 X:22 Y:33 P:44 SP:55 CYC:555\n";
@@ -117,7 +117,7 @@ static void test_addressing_ACC(void **state){
 
 static void test_addressing_ZEX(void **state){
 	CPU *self=(CPU*)*state;
-	Mapper *mapper = self->rmap;
+	Mapper *mapper = self->mapper;
 	uint8_t vTest = 0x25;
 	Instruction * instru = malloc(sizeof(Instruction));
 	if(instru == NULL) return;
@@ -137,7 +137,7 @@ static void test_addressing_ZEX(void **state){
 
 static void test_addressing_ZEY(void **state){
 	CPU *self=(CPU*)*state;
-	Mapper *mapper = self->rmap;
+	Mapper *mapper = self->mapper;
 	uint8_t vTest = 25;
 	Instruction * instru = malloc(sizeof(Instruction));
 	if(instru == NULL) return;
@@ -156,7 +156,7 @@ static void test_addressing_ZEY(void **state){
 
 static void test_addressing_INX(void **state){
 	CPU *self=(CPU*)*state;
-	Mapper *mapper = self->rmap;
+	Mapper *mapper = self->mapper;
 	uint8_t vTest = 0x25;
 	Instruction * instru = malloc(sizeof(Instruction));
 	if(instru == NULL) return;
@@ -178,7 +178,7 @@ static void test_addressing_INX(void **state){
 
 static void test_addressing_INY(void **state){
 	CPU *self=(CPU*)*state;
-	Mapper *mapper = self->rmap;
+	Mapper *mapper = self->mapper;
 	uint8_t vTest = 0x6D;
 	Instruction * instru = malloc(sizeof(Instruction));
 	if(instru == NULL) return;
@@ -215,7 +215,7 @@ static void test_addressing_IMM(void **state){
 
 static void test_addressing_ZER(void **state){
 	CPU *self=(CPU*)*state;
-	Mapper *mapper = self->rmap;
+	Mapper *mapper = self->mapper;
 	uint8_t vTest = 0xF4;
 	Instruction * instru = malloc(sizeof(Instruction));
 	if(instru == NULL) return;
@@ -246,7 +246,7 @@ static void test_addressing_REL(void **state){
 
 static void test_addressing_ABS(void **state){
 	CPU *self=(CPU*)*state;
-	Mapper *mapper = self->rmap;
+	Mapper *mapper = self->mapper;
 	uint8_t vTest = 0xF4;
 	Instruction * instru = malloc(sizeof(Instruction));
 	if(instru == NULL) return;
@@ -264,7 +264,7 @@ static void test_addressing_ABS(void **state){
 
 static void test_addressing_ABX(void **state){
 	CPU *self=(CPU*)*state;
-	Mapper *mapper = self->rmap;
+	Mapper *mapper = self->mapper;
 	uint8_t vTest = 0xF4;
 	Instruction * instru = malloc(sizeof(Instruction));
 	if(instru == NULL) return;
@@ -284,7 +284,7 @@ static void test_addressing_ABX(void **state){
 
 static void test_addressing_ABY(void **state){
 	CPU *self=(CPU*)*state;
-	Mapper *mapper = self->rmap;
+	Mapper *mapper = self->mapper;
 	uint8_t vTest = 0xF6;
 	Instruction * instru = malloc(sizeof(Instruction));
 	if(instru == NULL) return;
@@ -304,7 +304,7 @@ static void test_addressing_ABY(void **state){
 
 static void test_addressing_ABI(void **state){
 	CPU *self=(CPU*)*state;
-	Mapper *mapper = self->rmap;
+	Mapper *mapper = self->mapper;
 	uint8_t vTest = 0x25;
 	Instruction * instru = malloc(sizeof(Instruction));
 	if(instru == NULL) return;
@@ -411,7 +411,7 @@ static void test_GET_SR(void **state) {
 static void test_PULL(void **state) {
 	CPU *self = (CPU*) *state;
 	self->SP = 0xFE;
-	uint8_t *ptr = Mapper_Get(self->rmap, AS_CPU, 0x0100 | (self->SP + 1));
+	uint8_t *ptr = Mapper_Get(self->mapper, AS_CPU, 0x0100 | (self->SP + 1));
 	*ptr = 0xAA;
 	assert_int_equal(_PULL(self), 0xAA);
 	assert_int_equal(self->SP, 0xFF);
@@ -423,13 +423,13 @@ static void test_PUSH(void **state) {
 	uint8_t val = 0xAA;
 	_PUSH(self, &val);
 	assert_int_equal(self->SP, 0xFE);
-	uint8_t *ptr = Mapper_Get(self->rmap, AS_CPU, 0x0100 | (self->SP + 1));
+	uint8_t *ptr = Mapper_Get(self->mapper, AS_CPU, 0x0100 | (self->SP + 1));
 	assert_int_equal(*ptr, 0xAA);
 }
 
 static void test_LOAD(void **state) {
 	CPU *self = (CPU*) *state;
-	uint8_t *ptr = Mapper_Get(self->rmap, AS_CPU, 0x1234);
+	uint8_t *ptr = Mapper_Get(self->mapper, AS_CPU, 0x1234);
 	*ptr = 0xAA;
 	assert_int_equal(_LOAD(self, 0x1234), 0xAA);
 }
@@ -438,7 +438,7 @@ static void test_STORE(void **state) {
 	CPU *self = (CPU*) *state;
 	uint8_t val = 0xAA;
 	_STORE(self, 0x1234, &val);
-	uint8_t *ptr = Mapper_Get(self->rmap, AS_CPU, 0x1234);
+	uint8_t *ptr = Mapper_Get(self->mapper, AS_CPU, 0x1234);
 	assert_int_equal(*ptr, 0xAA);
 }
 
@@ -2531,7 +2531,7 @@ CARRY
 static int teardown_CPU(void **state) {
 	if (*state != NULL) {
 		CPU *self = (CPU*) *state;
-		Mapper_Destroy(self->rmap);
+		Mapper_Destroy(self->mapper);
 		free((void*) self);
 		return 0;
 	} else

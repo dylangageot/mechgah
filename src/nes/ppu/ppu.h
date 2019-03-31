@@ -9,6 +9,8 @@
 #ifndef PPU_H
 #define PPU_H
 
+#include "../mapper/mapper.h"
+
 typedef struct {
 	/* IO Register */
 	uint8_t PPUCTRL;
@@ -21,6 +23,34 @@ typedef struct {
 	uint8_t PPUDATA;
 	/* Internal Register */
 	uint16_t VRAMADDR;
+	uint16_t cycle;
+	int16_t scanline;
+	Mapper *mapper;
 } PPU;
+
+/**
+ * \brief PPU_Create
+ *
+ * \param mapper instance of Mapper
+ *
+ * \return instance of PPU
+ */
+PPU* PPU_Create(Mapper *mapper);
+
+/**
+ * \brief PPU_Execute
+ *
+ * \param self instance of PPU
+ * \param context wire through every component
+ * \param clockCycle number of clock cycle consummed
+ */
+void PPU_Execute(PPU* self, uint8_t *context, uint32_t clockCycle);
+
+/**
+ * \brief PPU_Destroy
+ *
+ * \param self instance of PPU
+ */
+void PPU_Destroy(PPU *self);
 
 #endif /* PPU_H */

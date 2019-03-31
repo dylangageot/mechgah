@@ -132,22 +132,22 @@ uint8_t _GET_SR(CPU *cpu) {
 }
 
 uint8_t _PULL(CPU *cpu) {
-	return *Mapper_Get(cpu->rmap, AS_CPU, 0x0100 | (++cpu->SP));
+	return *Mapper_Get(cpu->mapper, AS_CPU, 0x0100 | (++cpu->SP));
 }
 
 void _PUSH(CPU *cpu, uint8_t *src) {
 	uint8_t *ptr = NULL;
-	ptr = Mapper_Get(cpu->rmap, AS_CPU, 0x0100 | (cpu->SP--));
+	ptr = Mapper_Get(cpu->mapper, AS_CPU, 0x0100 | (cpu->SP--));
 	*ptr = *src;
 }
 
 uint8_t _LOAD(CPU *cpu, uint16_t address) {
-	return *Mapper_Get(cpu->rmap, AS_CPU, address);
+	return *Mapper_Get(cpu->mapper, AS_CPU, address);
 }
 
 void _STORE(CPU *cpu, uint16_t address, uint8_t *src) {
 	uint8_t *ptr = NULL;
-	ptr = Mapper_Get(cpu->rmap, AS_CPU, address);
+	ptr = Mapper_Get(cpu->mapper, AS_CPU, address);
 	*ptr = *src;
 }
 
@@ -193,7 +193,7 @@ uint8_t Instruction_Fetch(Instruction *self, CPU *cpu) {
 		return 0;
 
 	/* Fetch data in memory space with PC value */
-	uint8_t *opc = Mapper_Get(cpu->rmap, AS_CPU, cpu->PC);
+	uint8_t *opc = Mapper_Get(cpu->mapper, AS_CPU, cpu->PC);
 	/* Save information before fetching */
 	self->rawOpcode = *opc;
 	self->lastPC = cpu->PC;
@@ -230,7 +230,7 @@ uint8_t Instruction_Resolve(Instruction *self, CPU *cpu) {
 	uint8_t lWeight, hWeight;
 	uint16_t address = 0;
 	self->pageCrossed = 0;
-	Mapper *mapper = cpu->rmap;
+	Mapper *mapper = cpu->mapper;
 	switch (self->opcode.addressingMode) {
 		case IMP : /* Implied : Nothing to do*/
 			return 1;

@@ -1,5 +1,6 @@
 #include "nes.h"
 #include "loader/loader.h"
+#include "mapper/ioreg.h"
 
 NES* NES_Create(char *filename) {
 	NES *self = (NES*) malloc(sizeof(NES));
@@ -8,6 +9,8 @@ NES* NES_Create(char *filename) {
 		self->mapper = loadROM(filename);
 		/* Create instance of CPU */
 		self->cpu = CPU_Create(self->mapper);
+		/* Create instance of PPU */
+		self->ppu = PPU_Create(self->mapper);
 		/* If an allocation goes wrong, free everything */
 		if ((self->mapper == NULL) || (self->cpu == NULL)) {
 			fprintf(stderr, "Error: can't allocate memory for NES structure "
@@ -15,6 +18,8 @@ NES* NES_Create(char *filename) {
 			NES_Destroy(self);
 			return NULL;
 		}
+		/* Connect component together */
+		IOReg_Connect(IOReg_Extract(self->mapper), self->cpu, self->ppu);
 		/* Init CPU */
 		CPU_Init(self->cpu);
 		/* Set to zero clock counter */
