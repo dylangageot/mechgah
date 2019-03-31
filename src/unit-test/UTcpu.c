@@ -5,20 +5,12 @@
 
 static int setup_CPU(void** state) {
     /* create a NROM Mapper*/
-    Mapper* mapper =  (Mapper*)malloc(sizeof(Mapper));
-    if (mapper == NULL)
-        return -1;
-
     Header config;
 	config.mirroring = NROM_HORIZONTAL;
 	config.romSize = NROM_16KIB;
-	mapper->memoryMap = MapNROM_Create(&config);
-	mapper->destroyer = MapNROM_Destroy;
-	mapper->ack = MapNROM_Ack;
-	mapper->get = MapNROM_Get;
+	Mapper *mapper = MapNROM_Create(&config);
 
     /* create a CPU instance */
-
     *state = (void *)CPU_Create(mapper);
     if (*state == NULL)
 		return -1;
@@ -38,8 +30,7 @@ static int setup_CPU_ultimate(void **state) {
 	/* Create instance of CPU */
 	CPU *cpu = CPU_Create(mapper);
 	if (cpu == NULL) {
-		mapper->destroyer(mapper->memoryMap);
-		free(mapper);
+		Mapper_Destroy(mapper);
 		return -1;
 	}
 	/* Init CPU */
@@ -52,8 +43,7 @@ static int teardown_CPU_ultimate(void **state) {
 	CPU *cpu = (CPU*) *state;
 	if (cpu->rmap != NULL) {
 		/* Free mapper data */
-		cpu->rmap->destroyer(cpu->rmap->memoryMap);
-		free(cpu->rmap);
+		Mapper_Destroy(cpu->rmap);
 	}
 	CPU_Destroy(cpu);
 	return 0;
@@ -68,7 +58,7 @@ static void test_CPU_ultimate(void **state) {
 	uint8_t context = 1;
 
 	/* Replace reset vector 0xC000 to launch automate test */
-	*(self->rmap->get(self->rmap->memoryMap, AS_CPU, 0xFFFC)) = 0x00;
+	*(Mapper_Get(self->rmap, AS_CPU, 0xFFFC)) = 0x00;
 
 	/* Execute CPU for 5003 instructions (instruction before illegal opcode) */
 	for (i = 0; i < 5003; i++) {
@@ -104,11 +94,11 @@ static void test_RESET(void** state){
     self->SP = 0xA3;
 
     /* set next PC LSByte */
-    uint8_t* ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, RES_JMP_ADD);
+    uint8_t* ptr = Mapper_Get(self->rmap, AS_CPU, RES_JMP_ADD);
     *ptr = 0xC9;
 
     /* set next PC MSByte */
-    ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, RES_JMP_ADD+1);
+    ptr = Mapper_Get(self->rmap, AS_CPU, RES_JMP_ADD+1);
     *ptr = 0x5D;
 
     /* execute function */
@@ -138,26 +128,26 @@ static void test_NMI(void** state) {
     self->SP = 0xA3;
 
     /* set next PC LSByte */
-    uint8_t* ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, NMI_JMP_ADD);
+    uint8_t* ptr = Mapper_Get(self->rmap, AS_CPU, NMI_JMP_ADD);
     *ptr = 0xC9;
 
     /* set next PC MSByte */
-    ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, NMI_JMP_ADD+1);
+    ptr = Mapper_Get(self->rmap, AS_CPU, NMI_JMP_ADD+1);
     *ptr = 0x5D;
 
     /* execute function */
     uint8_t cycleCount = CPU_InterruptManager(self, &context);
 
     /* get PCL from stack */
-    ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, 0x01A2);
+    ptr = Mapper_Get(self->rmap, AS_CPU, 0x01A2);
     uint16_t on_stack_PC = (uint16_t)(*ptr);
 
     /* get PCH from stack */
-    ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, 0x01A3);
+    ptr = Mapper_Get(self->rmap, AS_CPU, 0x01A3);
     on_stack_PC |= (uint16_t)(*ptr) << 8;
 
     /* get P from stack */
-    ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, 0x01A1);
+    ptr = Mapper_Get(self->rmap, AS_CPU, 0x01A1);
     uint8_t on_stack_P = *ptr;
 
     /* PC on stack */
@@ -188,26 +178,26 @@ static void test_IRQ_I_FLAG_CLEAR(void** state) {
     self->SP = 0xA3;
 
     /* set next PC LSByte */
-    uint8_t* ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, IRQ_JMP_ADD);
+    uint8_t* ptr = Mapper_Get(self->rmap, AS_CPU, IRQ_JMP_ADD);
     *ptr = 0xC9;
 
     /* set next PC MSByte */
-    ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, IRQ_JMP_ADD+1);
+    ptr = Mapper_Get(self->rmap, AS_CPU, IRQ_JMP_ADD+1);
     *ptr = 0x5D;
 
     /* execute function */
     uint8_t cycleCount = CPU_InterruptManager(self, &context);
 
     /* get PCL from stack */
-    ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, 0x01A2);
+    ptr = Mapper_Get(self->rmap, AS_CPU, 0x01A2);
     uint16_t on_stack_PC = (uint16_t)(*ptr);
 
     /* get PCH from stack */
-    ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, 0x01A3);
+    ptr = Mapper_Get(self->rmap, AS_CPU, 0x01A3);
     on_stack_PC |= (uint16_t)(*ptr) << 8;
 
     /* get P from stack */
-    ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, 0x01A1);
+    ptr = Mapper_Get(self->rmap, AS_CPU, 0x01A1);
     uint8_t on_stack_P = *ptr;
 
     /* PC on stack */
@@ -266,26 +256,26 @@ static void test_NMI_IRQ_CONFLICT(void** state) {
     self->SP = 0xA3;
 
     /* set next PC LSByte */
-    uint8_t* ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, NMI_JMP_ADD);
+    uint8_t* ptr = Mapper_Get(self->rmap, AS_CPU, NMI_JMP_ADD);
     *ptr = 0xC9;
 
     /* set next PC MSByte */
-    ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, NMI_JMP_ADD+1);
+    ptr = Mapper_Get(self->rmap, AS_CPU, NMI_JMP_ADD+1);
     *ptr = 0x5D;
 
     /* execute function */
     uint8_t cycleCount = CPU_InterruptManager(self, &context);
 
     /* get PCL from stack */
-    ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, 0x01A2);
+    ptr = Mapper_Get(self->rmap, AS_CPU, 0x01A2);
     uint16_t on_stack_PC = (uint16_t)(*ptr);
 
     /* get PCH from stack */
-    ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, 0x01A3);
+    ptr = Mapper_Get(self->rmap, AS_CPU, 0x01A3);
     on_stack_PC |= (uint16_t)(*ptr) << 8;
 
     /* get P from stack */
-    ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, 0x01A1);
+    ptr = Mapper_Get(self->rmap, AS_CPU, 0x01A1);
     uint8_t on_stack_P = *ptr;
 
     /* PC on stack */
@@ -335,8 +325,7 @@ static void test_NO_INTERRUPT(void** state) {
 /* Execute Unit Test */
 static void test_CPU_Execute(void **state) {
 	CPU *self = (CPU*) *state;
-	Mapper *mapper = self->rmap;
-	uint8_t *memory = mapper->get(mapper->memoryMap, AS_CPU, 0x8000);
+	uint8_t *memory = Mapper_Get(self->rmap, AS_CPU, 0x8000);
 	uint8_t context = 0;
 	uint32_t clk = 0;
 	
@@ -354,7 +343,7 @@ static void test_CPU_Execute(void **state) {
 	memory[4] = 0x00;
 	memory[5] = 0x90;
 	/* Set $1AAA = 0xAA */
-	memory = mapper->get(mapper->memoryMap, AS_CPU, 0x1AAA);
+	memory = Mapper_Get(self->rmap, AS_CPU, 0x1AAA);
 	memory[0] = 0xAA;
 
 	/* Expect 4 clock cycle to be used for ADC_ABS */
@@ -373,9 +362,7 @@ static int teardown_CPU(void **state) {
 	if (*state != NULL) {
 
 		CPU *self = (CPU*) *state;
-		self->rmap->destroyer(self->rmap->memoryMap);
-		free((void*) self->rmap);
-
+		Mapper_Destroy(self->rmap);
         CPU_Destroy(self);
 
 		return 0;

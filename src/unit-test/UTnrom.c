@@ -22,7 +22,8 @@ static int setup_NROM_32(void **state) {
 }
 
 static void test_MapNROM_Get(void **state) {
-	MapNROM *self = (MapNROM*) *state; 
+	Mapper *mapper = (Mapper*) *state;
+	MapNROM *self = mapper->mapperData;
 	uint8_t *ptr = NULL;
 	uint16_t i = 0;
 
@@ -108,18 +109,18 @@ static void test_MapNROM_Get(void **state) {
 static void test_MapNROM_Ack_NoRead(void **state) {
 	uint16_t i;
 	for (i = 0x2000; i < 0x4020; i++)
-		assert_int_equal(0, MapNROM_Ack(*state, i)); 
+		assert_int_equal(0, Mapper_Ack((Mapper*) *state, i)); 
 }
 
 static void test_MapNROM_Ack_IsRead(void **state) {
 	uint16_t i;
 	for (i = 0x3FF8; i < 0x4020; i++)
-		assert_int_equal(1, MapNROM_Ack(*state, i)); 
+		assert_int_equal(1, Mapper_Ack((Mapper*) *state, i)); 
 }
 
 static int teardown_NROM(void **state) {
 	if (*state != NULL) {
-		MapNROM_Destroy(*state);
+		Mapper_Destroy((Mapper*) *state);
 		return 0;
 	} else
 		return -1;

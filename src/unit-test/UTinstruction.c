@@ -16,19 +16,11 @@ static int setup_CPU(void **state) {
 	self->P = 0;
 	self->X = 0;
 	self->Y = 0;
-	self->rmap = malloc(sizeof(Mapper));
-	if (self->rmap == NULL) {
-		free(self);
-		return -1;
-	}
 	/* Init mapper struct with NROM */
 	Header config;
 	config.mirroring = NROM_HORIZONTAL;
 	config.romSize = NROM_16KIB;
-	self->rmap->memoryMap = MapNROM_Create(&config);
-	self->rmap->destroyer = MapNROM_Destroy;
-	self->rmap->ack = MapNROM_Ack;
-	self->rmap->get = MapNROM_Get;
+	self->rmap = MapNROM_Create(&config);
 	return 0;
 }
 
@@ -38,29 +30,29 @@ static void test_instruction_fetch(void **state){
 	Instruction * instru = malloc(sizeof(Instruction));
 	if(instru == NULL) return;
 
-	*(mapper->get(mapper->memoryMap, AS_CPU, 0x80F1)) = 0x12;
-	*(mapper->get(mapper->memoryMap, AS_CPU, 0x80F2)) = 0x13;
+	*(Mapper_Get(mapper, AS_CPU, 0x80F1)) = 0x12;
+	*(Mapper_Get(mapper, AS_CPU, 0x80F2)) = 0x13;
 	/* 0x98 -> opcode d'une instruction utilisant comme m_d IMPLED*/
 	self->PC = 0x80F0;
-	*(mapper->get(mapper->memoryMap, AS_CPU, 0x80F0)) = 0x98;
+	*(Mapper_Get(mapper, AS_CPU, 0x80F0)) = 0x98;
 	assert_int_equal(Instruction_Fetch(instru,self),1);
 	assert_int_equal(instru->nbArg, 0);
 	/* 0xB5 -> opcode d'une instruction utilisant comme m_d ZEX*/
 	self->PC = 0x80F0;
-	*(mapper->get(mapper->memoryMap, AS_CPU, 0x80F0)) = 0xB5;
+	*(Mapper_Get(mapper, AS_CPU, 0x80F0)) = 0xB5;
 	assert_int_equal(Instruction_Fetch(instru,self),1);
 	assert_int_equal(instru->nbArg, 1);
 	assert_int_equal(instru->opcodeArg[0],0x12);
 	/* 0x98 -> opcode d'une instruction utilisant comme m_d ABX*/
 	self->PC = 0x80F0;
-	*(mapper->get(mapper->memoryMap, AS_CPU, 0x80F0)) = 0xD9;
+	*(Mapper_Get(mapper, AS_CPU, 0x80F0)) = 0xD9;
 	assert_int_equal(Instruction_Fetch(instru,self),1);
 	assert_int_equal(instru->nbArg, 2);
 	assert_int_equal(instru->opcodeArg[0],0x12);
 	assert_int_equal(instru->opcodeArg[1],0x13);
 	/* 0x03 -> opcode inexistant*/
 	self->PC = 0x80F0;
-	*(mapper->get(mapper->memoryMap, AS_CPU, 0x80F0)) = 0x03;
+	*(Mapper_Get(mapper, AS_CPU, 0x80F0)) = 0x03;
 	assert_int_equal(Instruction_Fetch(NULL,NULL),0);
 	assert_int_equal(Instruction_Fetch(instru,self),0);
 	assert_int_equal(instru->nbArg, 0);
@@ -77,7 +69,7 @@ static void test_Instruction_PrintLog(void **state) {
 		"8000 6D CD AB    A:11 X:22 Y:33 P:44 SP:55 CYC:555\n";
 	char readStr[256];
 	FILE *fLog = NULL;
-	uint8_t *memory = mapper->get(mapper->memoryMap, AS_CPU, 0x8000);
+	uint8_t *memory = Mapper_Get(mapper, AS_CPU, 0x8000);
 	memory[0] = 0x6D;
 	memory[1] = 0xCD;
 	memory[2] = 0xAB;
@@ -130,7 +122,7 @@ static void test_addressing_ZEX(void **state){
 	Instruction * instru = malloc(sizeof(Instruction));
 	if(instru == NULL) return;
 
-	*(mapper->get(mapper->memoryMap, AS_CPU, 0x0013)) = vTest;
+	*(Mapper_Get(mapper, AS_CPU, 0x0013)) = vTest;
 
 	instru->opcode.addressingMode = ZEX;
 	instru->opcodeArg[0] = 0x0E;
@@ -150,7 +142,7 @@ static void test_addressing_ZEY(void **state){
 	Instruction * instru = malloc(sizeof(Instruction));
 	if(instru == NULL) return;
 
-	*(mapper->get(mapper->memoryMap, AS_CPU, 0x000A)) = vTest;
+	*(Mapper_Get(mapper, AS_CPU, 0x000A)) = vTest;
 
 	instru->opcode.addressingMode = ZEY;
 	instru->opcodeArg[0] = 0x08;
@@ -169,9 +161,9 @@ static void test_addressing_INX(void **state){
 	Instruction * instru = malloc(sizeof(Instruction));
 	if(instru == NULL) return;
 
-	*(mapper->get(mapper->memoryMap, AS_CPU, 0x2415)) = vTest;
-	*(mapper->get(mapper->memoryMap, AS_CPU, 0x0043)) = 0x15;
-	*(mapper->get(mapper->memoryMap, AS_CPU, 0x0044)) = 0x24;
+	*(Mapper_Get(mapper, AS_CPU, 0x2415)) = vTest;
+	*(Mapper_Get(mapper, AS_CPU, 0x0043)) = 0x15;
+	*(Mapper_Get(mapper, AS_CPU, 0x0044)) = 0x24;
 
 	instru->opcode.addressingMode = INX;
 	instru->opcodeArg[0] = 0x3E;
@@ -191,9 +183,9 @@ static void test_addressing_INY(void **state){
 	Instruction * instru = malloc(sizeof(Instruction));
 	if(instru == NULL) return;
 
-	*(mapper->get(mapper->memoryMap, AS_CPU, 0x2204)) = vTest;
-	*(mapper->get(mapper->memoryMap, AS_CPU, 0x004C)) = 0x05;
-	*(mapper->get(mapper->memoryMap, AS_CPU, 0x004D)) = 0x21;
+	*(Mapper_Get(mapper, AS_CPU, 0x2204)) = vTest;
+	*(Mapper_Get(mapper, AS_CPU, 0x004C)) = 0x05;
+	*(Mapper_Get(mapper, AS_CPU, 0x004D)) = 0x21;
 
 	instru->opcode.addressingMode = INY;
 	instru->opcodeArg[0] = 0x4C;
@@ -228,7 +220,7 @@ static void test_addressing_ZER(void **state){
 	Instruction * instru = malloc(sizeof(Instruction));
 	if(instru == NULL) return;
 
-	*(mapper->get(mapper->memoryMap, AS_CPU, 0x00F4)) = vTest;
+	*(Mapper_Get(mapper, AS_CPU, 0x00F4)) = vTest;
 
 	instru->opcode.addressingMode = ZER;
 	instru->opcodeArg[0] = vTest;
@@ -259,7 +251,7 @@ static void test_addressing_ABS(void **state){
 	Instruction * instru = malloc(sizeof(Instruction));
 	if(instru == NULL) return;
 
-	*(mapper->get(mapper->memoryMap, AS_CPU, 0x31F6)) = vTest;
+	*(Mapper_Get(mapper, AS_CPU, 0x31F6)) = vTest;
 
 	instru->opcode.addressingMode = ABS;
 	instru->opcodeArg[0] = 0xF6;
@@ -277,7 +269,7 @@ static void test_addressing_ABX(void **state){
 	Instruction * instru = malloc(sizeof(Instruction));
 	if(instru == NULL) return;
 
-	*(mapper->get(mapper->memoryMap, AS_CPU, 0x32F5)) = vTest;
+	*(Mapper_Get(mapper, AS_CPU, 0x32F5)) = vTest;
 
 	instru->opcode.addressingMode = ABX;
 	self->X = 0xFF;
@@ -297,7 +289,7 @@ static void test_addressing_ABY(void **state){
 	Instruction * instru = malloc(sizeof(Instruction));
 	if(instru == NULL) return;
 
-	*(mapper->get(mapper->memoryMap, AS_CPU, 0x12A4)) = vTest;
+	*(Mapper_Get(mapper, AS_CPU, 0x12A4)) = vTest;
 
 	instru->opcode.addressingMode = ABY;
 	self->Y = 0xFF;
@@ -317,9 +309,9 @@ static void test_addressing_ABI(void **state){
 	Instruction * instru = malloc(sizeof(Instruction));
 	if(instru == NULL) return;
 
-	*(mapper->get(mapper->memoryMap, AS_CPU, 0x215F)) = 0x76;
-	*(mapper->get(mapper->memoryMap, AS_CPU, 0x2160)) = 0x30;
-	*(mapper->get(mapper->memoryMap, AS_CPU, 0x3076)) = 0x25;
+	*(Mapper_Get(mapper, AS_CPU, 0x215F)) = 0x76;
+	*(Mapper_Get(mapper, AS_CPU, 0x2160)) = 0x30;
+	*(Mapper_Get(mapper, AS_CPU, 0x3076)) = 0x25;
 
 	instru->opcode.addressingMode = ABI;
 	instru->opcodeArg[0] = 0x5F;
@@ -419,8 +411,7 @@ static void test_GET_SR(void **state) {
 static void test_PULL(void **state) {
 	CPU *self = (CPU*) *state;
 	self->SP = 0xFE;
-	uint8_t *ptr = self->rmap->get(self->rmap->memoryMap, AS_CPU, 0x0100 |
-															(self->SP + 1));
+	uint8_t *ptr = Mapper_Get(self->rmap, AS_CPU, 0x0100 | (self->SP + 1));
 	*ptr = 0xAA;
 	assert_int_equal(_PULL(self), 0xAA);
 	assert_int_equal(self->SP, 0xFF);
@@ -432,14 +423,13 @@ static void test_PUSH(void **state) {
 	uint8_t val = 0xAA;
 	_PUSH(self, &val);
 	assert_int_equal(self->SP, 0xFE);
-	uint8_t *ptr = self->rmap->get(self->rmap->memoryMap, AS_CPU, 0x0100 |
-															(self->SP + 1));
+	uint8_t *ptr = Mapper_Get(self->rmap, AS_CPU, 0x0100 | (self->SP + 1));
 	assert_int_equal(*ptr, 0xAA);
 }
 
 static void test_LOAD(void **state) {
 	CPU *self = (CPU*) *state;
-	uint8_t *ptr = self->rmap->get(self->rmap->memoryMap, AS_CPU, 0x1234);
+	uint8_t *ptr = Mapper_Get(self->rmap, AS_CPU, 0x1234);
 	*ptr = 0xAA;
 	assert_int_equal(_LOAD(self, 0x1234), 0xAA);
 }
@@ -448,7 +438,7 @@ static void test_STORE(void **state) {
 	CPU *self = (CPU*) *state;
 	uint8_t val = 0xAA;
 	_STORE(self, 0x1234, &val);
-	uint8_t *ptr = self->rmap->get(self->rmap->memoryMap, AS_CPU, 0x1234);
+	uint8_t *ptr = Mapper_Get(self->rmap, AS_CPU, 0x1234);
 	assert_int_equal(*ptr, 0xAA);
 }
 
@@ -2541,8 +2531,7 @@ CARRY
 static int teardown_CPU(void **state) {
 	if (*state != NULL) {
 		CPU *self = (CPU*) *state;
-		self->rmap->destroyer(self->rmap->memoryMap);
-		free((void*) self->rmap);
+		Mapper_Destroy(self->rmap);
 		free((void*) self);
 		return 0;
 	} else

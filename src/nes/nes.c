@@ -31,8 +31,7 @@ void NES_Destroy(NES *self) {
 	CPU_Destroy(self->cpu);
 	if (self->mapper != NULL) {
 		/* Free mapper data */
-		self->mapper->destroyer(self->mapper->memoryMap);
-		free(self->mapper);
+		Mapper_Destroy(self->mapper);
 	}
 	free(self);
 }

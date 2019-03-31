@@ -74,11 +74,11 @@ static void test_loadROM_NROM(void **state){
   assert_int_equal(mapper->get,MapNROM_Get);
   assert_int_equal(mapper->destroyer,MapNROM_Destroy);
   assert_int_equal(mapper->ack,MapNROM_Ack);
-  uint8_t * romAddr = mapper->get(mapper->memoryMap,AS_LDR,LDR_PRG);
+  uint8_t * romAddr = mapper->get(mapper->mapperData,AS_LDR,LDR_PRG);
   for(int i=0 ; i<32768; i++){
     assert_int_equal(*(romAddr+i),prg[i]);
   }
-  uint8_t * vromAddr = mapper->get(mapper->memoryMap,AS_LDR,LDR_CHR);
+  uint8_t * vromAddr = mapper->get(mapper->mapperData,AS_LDR,LDR_CHR);
   for(int i=0 ; i<8192; i++){
     assert_int_equal(*(vromAddr+i),chr[i]);
   }
@@ -86,7 +86,7 @@ static void test_loadROM_NROM(void **state){
 
 static int teardown_loadROM_NROM(void **state){
   Mapper * mapper = (Mapper*)*state;
-  MapNROM_Destroy(mapper->memoryMap);
+  MapNROM_Destroy(mapper->mapperData);
   free(mapper);
   if(*state != NULL){
     return 0;
