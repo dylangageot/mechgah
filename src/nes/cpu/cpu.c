@@ -32,7 +32,8 @@ uint8_t CPU_Init(CPU* self) {
 	self->Y = 0;
 	self->SP = 0x00;
 	self->P = 0;
-
+	self->cntDMA = -1;
+	self->OAMDMA = 0;
 	/* 16-bit program counter */
 	self->PC = 0x0000;
 	/* Remove debug log */
@@ -127,17 +128,20 @@ uint32_t CPU_Execute(CPU* self, uint8_t* context, uint32_t *clockCycle) {
 
 	*clockCycle += CPU_InterruptManager(self, context); 
 
-	/* Fetch instruction information from opcode and arg */
-	if (Instruction_Fetch(&inst, self) == 0)
-		return 0;
+	/* If no DMA operation is on-going, execute program */
+	if (!Instruction_DMA(&inst, self, clockCycle)) {
+		/* Fetch instruction information from opcode and arg */
+		if (Instruction_Fetch(&inst, self) == 0)
+			return 0;
+
+		/* Resolve addressing mode from instruction information */
+		if (Instruction_Resolve(&inst, self) == 0)
+			return 0;
+	}
 
 	/* Log execution information */
 	Instruction_PrintLog(&inst, self, *clockCycle); 
-
-	/* Resolve addressing mode from instruction information */
-	if (Instruction_Resolve(&inst, self) == 0)
-		return 0;
-
+	
 	/* If no instruction is coded for this opcode, exit */
 	if (inst.opcode.inst == NULL)
 		return 0;

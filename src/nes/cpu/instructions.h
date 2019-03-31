@@ -61,6 +61,17 @@ enum AddressingMode {
 };
 
 /**
+ * \fn Instruction_DMA
+ * \brief Manage DMA request
+ *
+ * \param self instance of Instruction
+ * \param cpu instance of CPU
+ *
+ * \return 0 if it failed, 1 otherwise 
+ */
+uint8_t Instruction_DMA(Instruction *self, CPU *cpu, uint32_t *clockCycle);
+
+/**
  * \fn Instruction_Fetch
  * \brief Fetch and decode instruction from PGR-ROM
  *

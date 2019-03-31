@@ -1,27 +1,87 @@
 #include "UTest.h"
 #include "../nes/cpu/instructions.h"
 #include "../nes/mapper/nrom.h"
+#include "../nes/mapper/ioreg.h"
 #include <stdlib.h>
 #include <stdio.h>
 
 static int setup_CPU(void **state) {
-	*state = malloc(sizeof(CPU));
-	if (*state == NULL)
-		return -1;
-	/* Init CPU struct */
-	CPU *self = (CPU*) *state;
-	self->SP = 0;
-	self->PC = 0;
-	self->A = 0;
-	self->P = 0;
-	self->X = 0;
-	self->Y = 0;
-	/* Init mapper struct with NROM */
+	/* Init NROM */
 	Header config;
 	config.mirroring = NROM_HORIZONTAL;
 	config.romSize = NROM_16KIB;
-	self->mapper = MapNROM_Create(&config);
+	Mapper *mapper = MapNROM_Create(&config);
+	/* Init CPU struct */
+	CPU *self = CPU_Create(mapper);
+	CPU_Init(self);
+	*state = self;
 	return 0;
+}
+
+
+static void test_Instruction_DMA(void **state) {
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint32_t clockCycle = 0;
+	int i;
+
+	uint8_t *memInit = Mapper_Get(self->mapper, AS_CPU, 0x1100);
+	for (i = 0; i < 64; i++)
+		memInit[i] = i;
+
+	self->cntDMA = -1;
+	/* Reset acknlowdge  bit of OAMDMA */
+	Mapper_Ack(self->mapper, 0x4014);
+	/* Connect to OAMDMA register */
+	IOReg_Extract(self->mapper)->bank2[OAMDMA] = &self->OAMDMA;
+
+	/* No DMA request */
+	assert_int_equal(Instruction_DMA(&inst, self, &clockCycle), 0); 
+
+	/* Request a DMA */
+	*(Mapper_Get(self->mapper, AS_CPU, 0x4014)) = 0x11;
+	assert_int_equal(Instruction_DMA(&inst, self, &clockCycle), 1); 
+	assert_int_equal(clockCycle, 1);
+	for (i = 0; i < 128; i++) {
+		if ((i % 2) == 0) {
+			assert_int_equal(inst.rawOpcode,  0xAD);
+			assert_int_equal(inst.opcodeArg[0], i >> 1);
+			assert_int_equal(inst.opcodeArg[1], 0x11);
+		} else {
+			assert_int_equal(inst.rawOpcode,  0x8D);
+			assert_int_equal(inst.opcodeArg[0], 0x04);
+			assert_int_equal(inst.opcodeArg[1], 0x20);
+		}	
+		clockCycle += inst.opcode.inst(self, &inst);
+		Instruction_DMA(&inst, self, &clockCycle);
+	}
+	assert_int_equal(clockCycle, 513);
+	assert_int_equal(Instruction_DMA(&inst, self, &clockCycle), 0); 
+	assert_int_equal(self->cntDMA, -1); 
+
+	/* Request a DMA with odd clock cycle */
+	*(Mapper_Get(self->mapper, AS_CPU, 0x4014)) = 0x11;
+	assert_int_equal(Instruction_DMA(&inst, self, &clockCycle), 1); 
+	assert_int_equal(clockCycle, 515);
+	for (i = 0; i < 128; i++) {
+		if ((i % 2) == 0) {
+			assert_int_equal(inst.rawOpcode,  0xAD);
+			assert_int_equal(inst.opcodeArg[0], i >> 1);
+			assert_int_equal(inst.opcodeArg[1], 0x11);
+		} else {
+			assert_int_equal(inst.rawOpcode,  0x8D);
+			assert_int_equal(inst.opcodeArg[0], 0x04);
+			assert_int_equal(inst.opcodeArg[1], 0x20);
+		}	
+		clockCycle += inst.opcode.inst(self, &inst);
+		Instruction_DMA(&inst, self, &clockCycle);
+	}
+	assert_int_equal(clockCycle, 1027);
+	assert_int_equal(Instruction_DMA(&inst, self, &clockCycle), 0); 
+	assert_int_equal(self->cntDMA, -1); 
+
+
+
 }
 
 static void test_instruction_fetch(void **state){
@@ -2780,6 +2840,7 @@ int run_instruction(void) {
 		cmocka_unit_test(test_addressing_MIS),
 	};
 	const struct CMUnitTest test_fetch[] = {
+		cmocka_unit_test(test_Instruction_DMA),
 		cmocka_unit_test(test_instruction_fetch),
 		cmocka_unit_test(test_Instruction_PrintLog),
 	};
