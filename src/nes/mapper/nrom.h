@@ -75,7 +75,7 @@ enum NROMMirroring {
  *
  * \return pointer to the new allocated mapper
  */
-void* MapNROM_Create(Header * header);
+Mapper* MapNROM_Create(Header * header);
 
 /**
  * \fn MapNROM_Get

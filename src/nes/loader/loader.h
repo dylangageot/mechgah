@@ -39,17 +39,6 @@ typedef struct{
 } Header;
 
 /**
- * \struct MapperFunctions
- * \brief Stores a Mappers own functions
- */
-typedef struct{
-  void* (*create)(Header*);
-  uint8_t* (*get)(void*, uint8_t, uint16_t);
-  uint8_t (*ack)(void*, uint16_t);
-  void (*destroyer)(void*);
-} MapperFunctions;
-
-/**
  * \brief Fills the header with its attributes
  * \param header a pointer to the Header structure to be filled
  * \param h a pointer to the char array containing the raw data
