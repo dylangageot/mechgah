@@ -10,6 +10,7 @@
 #define NROM_H
 
 #include "mapper.h"
+#include "ioreg.h"
 #include "../loader/loader.h"
 
 #define NROM_RAM_SIZE 2048

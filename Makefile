@@ -11,6 +11,7 @@ NESDIR		= src/nes
 UTESTDIR	= src/unit-test
 SRC  		= $(NESDIR)/mapper/nrom.c \
 			  $(NESDIR)/mapper/mapper.c \
+			  $(NESDIR)/mapper/ioreg.c \
 			  $(NESDIR)/loader/loader.c \
 			  $(NESDIR)/cpu/instructions.c \
 			  $(NESDIR)/cpu/cpu.c \
