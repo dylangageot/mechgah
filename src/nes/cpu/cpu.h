@@ -30,6 +30,7 @@ typedef struct {
 	uint8_t SP;								/*! Stack Pointer			*/
 	uint8_t P;								/*! Status					*/
 	uint16_t PC;							/*! Program counter		    */
+	int16_t cntDMA;							/*! DMA counter				*/
 	Mapper* mapper;							/*! Mapper					*/
 } CPU;
 

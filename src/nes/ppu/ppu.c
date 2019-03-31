@@ -19,8 +19,8 @@ void PPU_Execute(PPU* self, uint8_t *context, uint32_t clockCycle) {
 	if ((self == NULL) || (context == NULL))
 		return;
 
-	if (Mapper_Ack(self->mapper, 0x2007)) {
-		printf("[PPU] PPUDATA:%02X accessed at CYC:%d\n", self->PPUDATA, clockCycle);
+	if (Mapper_Ack(self->mapper, 0x2004)) {
+		printf("[PPU] PPUDATA:%02X accessed at CYC:%d\n", self->OAMDATA, clockCycle);
 	}
 }
 

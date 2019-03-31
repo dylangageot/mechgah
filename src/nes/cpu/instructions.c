@@ -186,7 +186,48 @@ uint8_t _BRANCH(CPU* cpu, Instruction *arg, uint8_t cond) {
 	return arg->opcode.cycle;
 }
 
-/* Instructions management*/
+/* Instructions management */
+
+uint8_t Instruction_DMA(Instruction *self, CPU *cpu, uint32_t *clockCycle) {
+	/* Start DMA operation if needed */
+	if (Mapper_Ack(cpu->mapper, 0x4014)) {
+		cpu->cntDMA = 0;
+		/* Add to clock cycle 1 (+1 if odd) */
+		*clockCycle += 1 + (*clockCycle % 2);
+	}
+
+	/* DMA on-going */
+	if ((cpu->cntDMA > -1) && (cpu->cntDMA < 128)) {
+		self->pageCrossed = 0;
+		self->lastPC = cpu->PC;
+		if ((cpu->cntDMA % 2) == 0) {
+			/* Load cycle : Fetch from memory */
+			self->rawOpcode = 0xAD;
+			self->opcode = opcode[self->rawOpcode];	
+			self->nbArg = 2;
+			self->opcodeArg[0] = (cpu->cntDMA >> 1);
+			self->opcodeArg[1] = cpu->OAMDMA;
+			self->dataAddr = (self->opcodeArg[1] << 8) + self->opcodeArg[0];
+			self->dataMem = Mapper_Get(cpu->mapper, AS_CPU, self->dataAddr);
+		} else {
+			/* Store cycle : Write to 0x2004 (OAMDATA) */
+			self->rawOpcode = 0x8D;
+			self->opcode = opcode[self->rawOpcode];	
+			self->nbArg = 2;
+			self->opcodeArg[0] = 0x04;
+			self->opcodeArg[1] = 0x20;
+			self->dataAddr = 0x2004;
+			self->dataMem = Mapper_Get(cpu->mapper, AS_CPU, self->dataAddr);
+		}
+		cpu->cntDMA++;
+		return 1;
+	} else if (cpu->cntDMA == 128) {
+		cpu->cntDMA = -1;
+	}
+
+	/* If no DMA operation on-going, return 0 */
+	return 0;
+}
 
 uint8_t Instruction_Fetch(Instruction *self, CPU *cpu) {
 	if ((self == NULL) || (cpu == NULL))
