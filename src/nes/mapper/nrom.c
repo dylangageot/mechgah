@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include "nrom.h"
 
-
 Mapper* MapNROM_Create(Header * header) {
 	MapNROM *mapperData = (MapNROM*) malloc(sizeof(MapNROM));
 	/*	If allocation failed, return NULL */
