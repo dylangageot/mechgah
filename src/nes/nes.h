@@ -10,7 +10,7 @@
 #define NES_H
 
 #include "cpu/cpu.h"
-/* #include "ppu/ppu.h" */
+#include "ppu/ppu.h"
 #include "mapper/mapper.h"
 #include "loader/loader.h"
 
@@ -20,7 +20,7 @@
  */
 typedef struct {
 	CPU *cpu;
-	/* PPU ppu; */
+	PPU *ppu;
 	Mapper *mapper;
 	uint32_t clockCount;
 } NES;
