@@ -86,9 +86,9 @@ Mapper* MapNROM_Create(Header * header);
  * \param space CPU or PPU address space ?
  * \param address Address of the data to fetch
  *
- * \return uint8_t pointer of the data addressed
+ * \return void* pointer of the data addressed
  */
-uint8_t* MapNROM_Get(void* mapperData, uint8_t space, uint16_t address);
+void* MapNROM_Get(void* mapperData, uint8_t space, uint16_t address);
 
 /**
  * \fn MapNROM_Ack

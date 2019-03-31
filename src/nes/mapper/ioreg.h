@@ -9,7 +9,9 @@
 #ifndef IOREG_H
 #define IOREG_H
 
-#include "stdint.h"
+#include "mapper.h"
+#include "../cpu/cpu.h"
+#include "../ppu/ppu.h"
 
 /**
  * \struct IOReg
@@ -21,9 +23,10 @@
  * Flags array are used to know if data was read or written
  */
 typedef struct {
-	uint8_t bank1[8];
-	uint8_t bank2[32];
+	uint8_t *bank1[8];
+	uint8_t *bank2[32];
 	uint8_t acknowledge[40];
+	uint8_t dummy;
 } IOReg;
 
 /**
@@ -33,6 +36,17 @@ typedef struct {
  * \return instance of IOReg if succeed
  */
 IOReg* IOReg_Create(void);
+
+/**
+ * \brief IOReg_Connect
+ *
+ * \param self instance of IOReg
+ * \param cpu instance of CPU
+ * \param ppu instance of PPU
+ *
+ * \return EXIT_SUCCESS if succeed, EXIT_FAILURE otherwise 
+ */
+uint8_t IOReg_Connect(IOReg *self, CPU *cpu, PPU *ppu);
 
 /**
  * \brief Get pointer to access IO register
@@ -63,6 +77,16 @@ uint8_t IOReg_Ack(IOReg *self, uint16_t address);
  */
 void IOReg_Destroy(IOReg *self);
 
+
+/**
+ * \brief IOReg_Extract
+ *
+ * \param mapper instance of Mapper
+ *
+ * \return instance of IOReg
+ */
+IOReg* IOReg_Extract(Mapper *mapper);
+
 /**
  * \enum Bank1Register
  * \brief Mnemonic for Bank 1 registers
@@ -74,6 +98,7 @@ enum Bank1Register {
 	OAMADDR,
 	OAMDATA,
 	PPUSCROLL,
+	PPUADDR,
 	PPUDATA
 };
 

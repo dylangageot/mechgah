@@ -21,9 +21,16 @@
  * \brief Hold CPU's register and memory
  */
 typedef struct {
-	uint8_t A, X, Y, SP, P;					/*! 8-bit registers		    */
-	uint16_t PC;							/*! 16-bit register		    */
-	Mapper* rmap;							/*! Mapper from NES struct	*/
+	/* IO Register */
+	uint8_t OAMDMA;							/*! OAMDMA					*/
+	/* Internal Register */
+	uint8_t A;								/*! Accumulator				*/
+	uint8_t X;								/*! X index					*/
+	uint8_t Y;								/*! Y index					*/
+	uint8_t SP;								/*! Stack Pointer			*/
+	uint8_t P;								/*! Status					*/
+	uint16_t PC;							/*! Program counter		    */
+	Mapper* rmap;							/*! Mapper					*/
 } CPU;
 
 /**
@@ -38,7 +45,7 @@ CPU* CPU_Create(Mapper* mapper);
 
 /**
  * \fn CPU_Init
- * \brief Initialize all CPU registers (A,X,Y,SP,P adn PC)
+ * \brief Initialize all CPU registers (A, X, Y, SP, P and PC)
  *
  * \param self instance of CPU
  *
