@@ -67,17 +67,17 @@ uint8_t CPU_InterruptManager(CPU* self, uint8_t* context){
 	else if (N || I) {
 
 		/* push PC MSByte on stack */
-		ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, (0x0100+self->SP));
+		ptr = Mapper_Get(self->rmap, AS_CPU, (0x0100+self->SP));
 		*ptr = (uint8_t)(self->PC >> 8);
 		self->SP --;
 
 		/* push PC LSByte on stack */
-		ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, (0x0100+self->SP));
+		ptr = Mapper_Get(self->rmap, AS_CPU, (0x0100+self->SP));
 		*ptr = (uint8_t)(self->PC);
 		self->SP --;
 
 		/* push P on stack */
-		ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, (0x0100+self->SP));
+		ptr = Mapper_Get(self->rmap, AS_CPU, (0x0100+self->SP));
 		*ptr = (self->P & ~(1UL << 4)); /* clear B bit on stack */
 		self->SP --;
 	}
@@ -103,11 +103,11 @@ uint8_t CPU_InterruptManager(CPU* self, uint8_t* context){
 	}
 
 	/* fetch PC LSByte */
-	ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, jump_address);
+	ptr = Mapper_Get(self->rmap, AS_CPU, jump_address);
 	self->PC = (uint16_t)(*ptr);
 
 	/* fetch PC MSByte */
-	ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, jump_address+1);
+	ptr = Mapper_Get(self->rmap, AS_CPU, jump_address+1);
 	self->PC |= (uint16_t)(*ptr) << 8;
 
 	/* set I flag to disable further IRQs */
