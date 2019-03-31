@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-Mapper* Mapper_Create(uint8_t* (*get)(void*, uint8_t, uint16_t),
+Mapper* Mapper_Create(void* (*get)(void*, uint8_t, uint16_t),
 					  void (*destroyer)(void*),
 					  uint8_t (*ack)(void*, uint16_t),
 					  void *mapperData) {
@@ -36,7 +36,7 @@ uint8_t* Mapper_Get(Mapper *self, uint8_t space, uint16_t address) {
 
 	/* If there is a mapper data and get's callback, use it */
 	if ((self->mapperData != NULL) && (self->get != NULL))
-		return self->get(self->mapperData, space, address);
+		return (uint8_t*) self->get(self->mapperData, space, address);
 	else
 		return NULL;
 }

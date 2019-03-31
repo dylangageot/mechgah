@@ -13,12 +13,36 @@ IOReg* IOReg_Create(void) {
 		return self;
 	}
 
-	/* Initialize acknowledge array */
+	/* Initialize arrays */
 	uint8_t i;
 	for (i = 0; i < 40; i++)
 		self->acknowledge[i] = 0;
+	for (i = 0; i < 8; i++)
+		self->bank1[i] = &(self->dummy);
+	for (i = 0; i < 32; i++)
+		self->bank2[i] = &(self->dummy);
 
 	return self;
+}
+
+uint8_t IOReg_Connect(IOReg *self, CPU *cpu, PPU* ppu) {
+	if ((self == NULL) || (cpu == NULL) || (ppu == NULL))
+		return EXIT_FAILURE;
+	
+	/* Bank 1 connection */
+	self->bank1[PPUCTRL]	= &(ppu->PPUCTRL);
+	self->bank1[PPUMASK]	= &(ppu->PPUMASK);
+	self->bank1[PPUSTATUS]	= &(ppu->PPUSTATUS);
+	self->bank1[OAMADDR]	= &(ppu->OAMADDR);
+	self->bank1[OAMDATA]	= &(ppu->OAMDATA);
+	self->bank1[PPUSCROLL]	= &(ppu->PPUSCROLL);
+	self->bank1[PPUADDR]	= &(ppu->PPUADDR);
+	self->bank1[PPUDATA]	= &(ppu->PPUDATA);
+
+	/* Bank 2 connection */
+	self->bank2[OAMDMA]		= &(cpu->OAMDMA);
+
+	return EXIT_SUCCESS;
 }
 
 uint8_t* IOReg_Get(IOReg *self, uint16_t address) {
@@ -28,11 +52,11 @@ uint8_t* IOReg_Get(IOReg *self, uint16_t address) {
 	/* If address is in 0x2000-0x3FFF */
 	if (_ADDRESS_IN(address, 0x2000, 0x3FFF)) {
 		self->acknowledge[address & 0x0007] = 1;
-		return self->bank1 + (address % 8);
+		return self->bank1[address % 8];
 	/* If address is in 0x4000-0x4019 */
 	} else if (_ADDRESS_IN(address, 0x4000, 0x401F)) {
 		self->acknowledge[(address & 0x001F) + 8] = 1;
-		return self->bank2 + (address & 0x001F);
+		return self->bank2[address & 0x001F];
 	}
 	
 	return NULL;
@@ -60,3 +84,9 @@ void IOReg_Destroy(IOReg* self) {
 	if (self != NULL)
 		free(self);
 }
+
+IOReg* IOReg_Extract(Mapper *mapper) {
+	/* Get IOReg from mapper */
+	return (IOReg*) Mapper_Get(mapper, AS_LDR, LDR_IOR);
+}
+

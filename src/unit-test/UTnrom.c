@@ -37,14 +37,14 @@ static void test_MapNROM_Get(void **state) {
 	for (i = 0x2000; i < 0x4000; i++) {
 		ptr = MapNROM_Get(self, AS_CPU, i);
 		assert_ptr_equal((void*) ptr, 
-				(void*) (self->cpu.ioReg->bank1 + (i % 8)));
+				(void*) (self->cpu.ioReg->bank1[i % 8]));
 	}
 
 	/* Test CPU IO bank 2 memory space */
 	for (i = 0x4000; i < 0x4020; i++) {
 		ptr = MapNROM_Get(self, AS_CPU, i);
 		assert_ptr_equal((void*) ptr, 
-				(void*) (self->cpu.ioReg->bank2 + (i & 0x00FF)));
+				(void*) (self->cpu.ioReg->bank2[i & 0x00FF]));
 	}
 
 	/* Test CPU SRAM memory space */

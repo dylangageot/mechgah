@@ -101,7 +101,7 @@ void MapNROM_Destroy(void* mapperData) {
 	return;
 }
 
-uint8_t* MapNROM_Get(void* mapperData, uint8_t space, uint16_t address) {
+void* MapNROM_Get(void* mapperData, uint8_t space, uint16_t address) {
 	/* If no mapperData has been given, return NULL */
 	if (mapperData == NULL)
 		return NULL;
@@ -175,6 +175,8 @@ uint8_t* MapNROM_Get(void* mapperData, uint8_t space, uint16_t address) {
 				return map->cpu.rom;
 			case LDR_CHR:
 				return map->ppu.chr;
+			case LDR_IOR:
+				return map->cpu.ioReg;
 			default:
 				break;
 		}

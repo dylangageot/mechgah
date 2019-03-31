@@ -23,7 +23,7 @@
  * \brief Generic structure to hold mapper
  */
 typedef struct {
-	uint8_t* (*get)(void*, uint8_t, uint16_t);		/*! Get callback	     */
+	void* (*get)(void*, uint8_t, uint16_t);			/*! Get callback	     */
 	void (*destroyer)(void*);						/*! Destroyer callback	 */
 	uint8_t (*ack)(void*, uint16_t);				/*! Acknowledge callback */
 	void *mapperData;								/*! Mapper data			 */
@@ -39,7 +39,7 @@ typedef struct {
  *
  * \return instance of Mapper
  */
-Mapper* Mapper_Create(uint8_t* (*get)(void*, uint8_t, uint16_t),
+Mapper* Mapper_Create(void* (*get)(void*, uint8_t, uint16_t),
 					  void (*destroyer)(void*),
 					  uint8_t (*ack)(void*, uint16_t),
 					  void *mapperData);
@@ -89,7 +89,8 @@ enum AddressSpace {
  */
 enum LoaderData {
 	LDR_PRG = 0,
-	LDR_CHR
+	LDR_CHR,
+	LDR_IOR
 };
 
 #endif /* MAPPER_H */
