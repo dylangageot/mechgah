@@ -136,9 +136,7 @@ uint8_t _PULL(CPU *cpu) {
 }
 
 void _PUSH(CPU *cpu, uint8_t *src) {
-	uint8_t *ptr = NULL;
-	ptr = Mapper_Get(cpu->mapper, AS_CPU, 0x0100 | (cpu->SP--));
-	*ptr = *src;
+	*(Mapper_Get(cpu->mapper, AS_CPU, 0x0100 | (cpu->SP--))) = *src;
 }
 
 uint8_t _LOAD(CPU *cpu, uint16_t address) {
@@ -146,9 +144,7 @@ uint8_t _LOAD(CPU *cpu, uint16_t address) {
 }
 
 void _STORE(CPU *cpu, uint16_t address, uint8_t *src) {
-	uint8_t *ptr = NULL;
-	ptr = Mapper_Get(cpu->mapper, AS_CPU, address);
-	*ptr = *src;
+	*(Mapper_Get(cpu->mapper, AS_CPU, address)) = *src;
 }
 
 uint8_t _IF_CARRY(CPU *cpu) {
@@ -189,6 +185,7 @@ uint8_t _BRANCH(CPU* cpu, Instruction *arg, uint8_t cond) {
 /* Instructions management */
 
 uint8_t Instruction_DMA(Instruction *self, CPU *cpu, uint32_t *clockCycle) {
+	uint8_t data;
 	/* Start DMA operation if needed */
 	if (Mapper_Ack(cpu->mapper, 0x4014)) {
 		cpu->cntDMA = 0;
@@ -197,31 +194,20 @@ uint8_t Instruction_DMA(Instruction *self, CPU *cpu, uint32_t *clockCycle) {
 	}
 
 	/* DMA on-going */
-	if ((cpu->cntDMA > -1) && (cpu->cntDMA < 128)) {
-		self->pageCrossed = 0;
+	if ((cpu->cntDMA > -1) && (cpu->cntDMA < 256)) {
+		/* Setup Instruction structure with NOP operation (2 cycle) */
+		self->dataAddr = (cpu->OAMDMA << 8) + (cpu->cntDMA & 0xFF);
+		self->nbArg = NBARG_DMA;
 		self->lastPC = cpu->PC;
-		if ((cpu->cntDMA % 2) == 0) {
-			/* Load cycle : Fetch from memory */
-			self->rawOpcode = 0xAD;
-			self->opcode = opcode[self->rawOpcode];	
-			self->nbArg = 2;
-			self->opcodeArg[0] = (cpu->cntDMA >> 1);
-			self->opcodeArg[1] = cpu->OAMDMA;
-			self->dataAddr = (self->opcodeArg[1] << 8) + self->opcodeArg[0];
-			self->dataMem = Mapper_Get(cpu->mapper, AS_CPU, self->dataAddr);
-		} else {
-			/* Store cycle : Write to 0x2004 (OAMDATA) */
-			self->rawOpcode = 0x8D;
-			self->opcode = opcode[self->rawOpcode];	
-			self->nbArg = 2;
-			self->opcodeArg[0] = 0x04;
-			self->opcodeArg[1] = 0x20;
-			self->dataAddr = 0x2004;
-			self->dataMem = Mapper_Get(cpu->mapper, AS_CPU, self->dataAddr);
-		}
+		self->opcode.cycle = 2;
+		self->pageCrossed = 0;
+		self->opcode.inst = _NOP;
+		/* Load and store */
+		data = _LOAD(cpu, self->dataAddr);
+		_STORE(cpu, 0x2004, &data); 
 		cpu->cntDMA++;
 		return 1;
-	} else if (cpu->cntDMA == 128) {
+	} else if (cpu->cntDMA == 256) {
 		cpu->cntDMA = -1;
 	}
 
@@ -375,12 +361,20 @@ void Instruction_PrintLog(Instruction *self, CPU *cpu, uint32_t clockCycle) {
 	}
 
 	/* Print to cpu.log */
-	fprintf(fLog, "%04X %02X ", self->lastPC, self->rawOpcode);
-	for (i = 0; i < 3; i++) {
-		if (i < self->nbArg)
-			fprintf(fLog, "%02X ", self->opcodeArg[i]);
-		else
-			fprintf(fLog, "   ");
+	fprintf(fLog, "%04X ", self->lastPC);
+	if (self->nbArg == NBARG_DMA) {
+		/* If instruction is a DMA */
+		fprintf(fLog, "DMA @%04X   ", self->dataAddr);
+	} else {
+		/* If instruction is not a DMA */
+		/* Print opcode and args */
+		fprintf(fLog, "%02X ", self->rawOpcode);
+		for (i = 0; i < 3; i++) {
+			if (i < self->nbArg)
+				fprintf(fLog, "%02X ", self->opcodeArg[i]);
+			else
+				fprintf(fLog, "   ");
+		}
 	}
 	fprintf(fLog, "A:%02X X:%02X Y:%02X P:%02X SP:%02X CYC:%-d\n",
 			cpu->A, cpu->X, cpu->Y, cpu->P,cpu->SP, clockCycle);

@@ -22,18 +22,20 @@ static int setup_CPU(void **state) {
 static void test_Instruction_DMA(void **state) {
 	CPU *self = (CPU*) *state;
 	Instruction inst;
+	uint8_t oamData;
 	uint32_t clockCycle = 0;
 	int i;
 
-	uint8_t *memInit = Mapper_Get(self->mapper, AS_CPU, 0x1100);
-	for (i = 0; i < 64; i++)
-		memInit[i] = i;
+	uint8_t *memData = Mapper_Get(self->mapper, AS_CPU, 0x1100);
+	for (i = 0; i < 256; i++)
+		memData[i] = i;
 
 	self->cntDMA = -1;
 	/* Reset acknlowdge  bit of OAMDMA */
 	Mapper_Ack(self->mapper, 0x4014);
 	/* Connect to OAMDMA register */
 	IOReg_Extract(self->mapper)->bank2[OAMDMA] = &self->OAMDMA;
+	IOReg_Extract(self->mapper)->bank1[OAMDATA] = &oamData;
 
 	/* No DMA request */
 	assert_int_equal(Instruction_DMA(&inst, self, &clockCycle), 0); 
@@ -42,17 +44,9 @@ static void test_Instruction_DMA(void **state) {
 	*(Mapper_Get(self->mapper, AS_CPU, 0x4014)) = 0x11;
 	assert_int_equal(Instruction_DMA(&inst, self, &clockCycle), 1); 
 	assert_int_equal(clockCycle, 1);
-	for (i = 0; i < 128; i++) {
-		if ((i % 2) == 0) {
-			assert_int_equal(inst.rawOpcode,  0xAD);
-			assert_int_equal(inst.opcodeArg[0], i >> 1);
-			assert_int_equal(inst.opcodeArg[1], 0x11);
-		} else {
-			assert_int_equal(inst.rawOpcode,  0x8D);
-			assert_int_equal(inst.opcodeArg[0], 0x04);
-			assert_int_equal(inst.opcodeArg[1], 0x20);
-		}	
+	for (i = 0; i < 256; i++) {
 		clockCycle += inst.opcode.inst(self, &inst);
+		assert_int_equal(memData[i], oamData); 
 		Instruction_DMA(&inst, self, &clockCycle);
 	}
 	assert_int_equal(clockCycle, 513);
@@ -63,17 +57,9 @@ static void test_Instruction_DMA(void **state) {
 	*(Mapper_Get(self->mapper, AS_CPU, 0x4014)) = 0x11;
 	assert_int_equal(Instruction_DMA(&inst, self, &clockCycle), 1); 
 	assert_int_equal(clockCycle, 515);
-	for (i = 0; i < 128; i++) {
-		if ((i % 2) == 0) {
-			assert_int_equal(inst.rawOpcode,  0xAD);
-			assert_int_equal(inst.opcodeArg[0], i >> 1);
-			assert_int_equal(inst.opcodeArg[1], 0x11);
-		} else {
-			assert_int_equal(inst.rawOpcode,  0x8D);
-			assert_int_equal(inst.opcodeArg[0], 0x04);
-			assert_int_equal(inst.opcodeArg[1], 0x20);
-		}	
+	for (i = 0; i < 256; i++) {
 		clockCycle += inst.opcode.inst(self, &inst);
+		assert_int_equal(memData[i], oamData); 
 		Instruction_DMA(&inst, self, &clockCycle);
 	}
 	assert_int_equal(clockCycle, 1027);

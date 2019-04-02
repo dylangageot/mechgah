@@ -11,6 +11,8 @@
 
 #include "cpu.h"
 
+#define NBARG_DMA 0xFF
+
 typedef struct Instruction Instruction;
 
 /**
