@@ -1,69 +1,152 @@
 #include "UTest.h"
 #include "../nes/cpu/instructions.h"
 #include "../nes/mapper/nrom.h"
+#include "../nes/mapper/ioreg.h"
 #include <stdlib.h>
 #include <stdio.h>
 
 static int setup_CPU(void **state) {
-	*state = malloc(sizeof(CPU));
-	if (*state == NULL)
-		return -1;
-	/* Init CPU struct */
-	CPU *self = (CPU*) *state;
-	self->SP = 0;
-	self->PC = 0;
-	self->A = 0;
-	self->P = 0;
-	self->X = 0;
-	self->Y = 0;
-	self->rmap = malloc(sizeof(Mapper));
-	if (self->rmap == NULL) {
-		free(self);
-		return -1;
-	}
-	/* Init mapper struct with NROM */
+	/* Init NROM */
 	Header config;
 	config.mirroring = NROM_HORIZONTAL;
 	config.romSize = NROM_16KIB;
-	self->rmap->memoryMap = MapNROM_Create(&config);
-	self->rmap->destroyer = MapNROM_Destroy;
-	self->rmap->ack = MapNROM_Ack;
-	self->rmap->get = MapNROM_Get;
+	Mapper *mapper = MapNROM_Create(&config);
+	/* Init CPU struct */
+	CPU *self = CPU_Create(mapper);
+	CPU_Init(self);
+	*state = self;
 	return 0;
+}
+
+
+static void test_Instruction_DMA(void **state) {
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint32_t clockCycle = 0;
+	int i;
+
+	uint8_t *memInit = Mapper_Get(self->mapper, AS_CPU, 0x1100);
+	for (i = 0; i < 64; i++)
+		memInit[i] = i;
+
+	self->cntDMA = -1;
+	/* Reset acknlowdge  bit of OAMDMA */
+	Mapper_Ack(self->mapper, 0x4014);
+	/* Connect to OAMDMA register */
+	IOReg_Extract(self->mapper)->bank2[OAMDMA] = &self->OAMDMA;
+
+	/* No DMA request */
+	assert_int_equal(Instruction_DMA(&inst, self, &clockCycle), 0); 
+
+	/* Request a DMA */
+	*(Mapper_Get(self->mapper, AS_CPU, 0x4014)) = 0x11;
+	assert_int_equal(Instruction_DMA(&inst, self, &clockCycle), 1); 
+	assert_int_equal(clockCycle, 1);
+	for (i = 0; i < 128; i++) {
+		if ((i % 2) == 0) {
+			assert_int_equal(inst.rawOpcode,  0xAD);
+			assert_int_equal(inst.opcodeArg[0], i >> 1);
+			assert_int_equal(inst.opcodeArg[1], 0x11);
+		} else {
+			assert_int_equal(inst.rawOpcode,  0x8D);
+			assert_int_equal(inst.opcodeArg[0], 0x04);
+			assert_int_equal(inst.opcodeArg[1], 0x20);
+		}	
+		clockCycle += inst.opcode.inst(self, &inst);
+		Instruction_DMA(&inst, self, &clockCycle);
+	}
+	assert_int_equal(clockCycle, 513);
+	assert_int_equal(Instruction_DMA(&inst, self, &clockCycle), 0); 
+	assert_int_equal(self->cntDMA, -1); 
+
+	/* Request a DMA with odd clock cycle */
+	*(Mapper_Get(self->mapper, AS_CPU, 0x4014)) = 0x11;
+	assert_int_equal(Instruction_DMA(&inst, self, &clockCycle), 1); 
+	assert_int_equal(clockCycle, 515);
+	for (i = 0; i < 128; i++) {
+		if ((i % 2) == 0) {
+			assert_int_equal(inst.rawOpcode,  0xAD);
+			assert_int_equal(inst.opcodeArg[0], i >> 1);
+			assert_int_equal(inst.opcodeArg[1], 0x11);
+		} else {
+			assert_int_equal(inst.rawOpcode,  0x8D);
+			assert_int_equal(inst.opcodeArg[0], 0x04);
+			assert_int_equal(inst.opcodeArg[1], 0x20);
+		}	
+		clockCycle += inst.opcode.inst(self, &inst);
+		Instruction_DMA(&inst, self, &clockCycle);
+	}
+	assert_int_equal(clockCycle, 1027);
+	assert_int_equal(Instruction_DMA(&inst, self, &clockCycle), 0); 
+	assert_int_equal(self->cntDMA, -1); 
+
+
+
 }
 
 static void test_instruction_fetch(void **state){
 	CPU *self =(CPU*)*state;
-	Mapper *mapper = self->rmap;
+	Mapper *mapper = self->mapper;
 	Instruction * instru = malloc(sizeof(Instruction));
 	if(instru == NULL) return;
 
-	*(mapper->get(mapper->memoryMap, AS_CPU, 0x80F1)) = 0x12;
-	*(mapper->get(mapper->memoryMap, AS_CPU, 0x80F2)) = 0x13;
+	*(Mapper_Get(mapper, AS_CPU, 0x80F1)) = 0x12;
+	*(Mapper_Get(mapper, AS_CPU, 0x80F2)) = 0x13;
 	/* 0x98 -> opcode d'une instruction utilisant comme m_d IMPLED*/
 	self->PC = 0x80F0;
-	*(mapper->get(mapper->memoryMap, AS_CPU, 0x80F0)) = 0x98;
+	*(Mapper_Get(mapper, AS_CPU, 0x80F0)) = 0x98;
 	assert_int_equal(Instruction_Fetch(instru,self),1);
+	assert_int_equal(instru->nbArg, 0);
 	/* 0xB5 -> opcode d'une instruction utilisant comme m_d ZEX*/
 	self->PC = 0x80F0;
-	*(mapper->get(mapper->memoryMap, AS_CPU, 0x80F0)) = 0xB5;
+	*(Mapper_Get(mapper, AS_CPU, 0x80F0)) = 0xB5;
 	assert_int_equal(Instruction_Fetch(instru,self),1);
+	assert_int_equal(instru->nbArg, 1);
 	assert_int_equal(instru->opcodeArg[0],0x12);
 	/* 0x98 -> opcode d'une instruction utilisant comme m_d ABX*/
 	self->PC = 0x80F0;
-	*(mapper->get(mapper->memoryMap, AS_CPU, 0x80F0)) = 0xD9;
+	*(Mapper_Get(mapper, AS_CPU, 0x80F0)) = 0xD9;
 	assert_int_equal(Instruction_Fetch(instru,self),1);
+	assert_int_equal(instru->nbArg, 2);
 	assert_int_equal(instru->opcodeArg[0],0x12);
 	assert_int_equal(instru->opcodeArg[1],0x13);
 	/* 0x03 -> opcode inexistant*/
 	self->PC = 0x80F0;
-	*(mapper->get(mapper->memoryMap, AS_CPU, 0x80F0)) = 0x03;
+	*(Mapper_Get(mapper, AS_CPU, 0x80F0)) = 0x03;
 	assert_int_equal(Instruction_Fetch(NULL,NULL),0);
 	assert_int_equal(Instruction_Fetch(instru,self),0);
-
+	assert_int_equal(instru->nbArg, 0);
 	assert_int_equal(Instruction_Fetch(NULL,NULL),0);
 
 	free(instru);
+}
+
+static void test_Instruction_PrintLog(void **state) {
+	CPU *self = (CPU*) *state;
+	Mapper *mapper = self->mapper;
+	Instruction inst;
+	char expectedStr[] =
+		"8000 6D CD AB    A:11 X:22 Y:33 P:44 SP:55 CYC:555\n";
+	char readStr[256];
+	FILE *fLog = NULL;
+	uint8_t *memory = Mapper_Get(mapper, AS_CPU, 0x8000);
+	memory[0] = 0x6D;
+	memory[1] = 0xCD;
+	memory[2] = 0xAB;
+	self->PC = 0x8000;
+	self->A = 0x11;
+	self->X = 0x22;
+	self->Y = 0x33;
+	self->P = 0x44;
+	self->SP = 0x55;
+	assert_int_equal(Instruction_Fetch(&inst, self), 1);
+	remove("cpu.log");
+	Instruction_PrintLog(&inst, self, 555);
+	fLog = fopen("cpu.log", "r");
+	assert_ptr_not_equal(fLog, NULL);
+	fgets(readStr, 256, fLog);
+	assert_int_equal(strcmp(expectedStr,readStr), 0);
+	fclose(fLog);
 }
 
 static void test_addressing_IMP(void **state){
@@ -94,12 +177,12 @@ static void test_addressing_ACC(void **state){
 
 static void test_addressing_ZEX(void **state){
 	CPU *self=(CPU*)*state;
-	Mapper *mapper = self->rmap;
+	Mapper *mapper = self->mapper;
 	uint8_t vTest = 0x25;
 	Instruction * instru = malloc(sizeof(Instruction));
 	if(instru == NULL) return;
 
-	*(mapper->get(mapper->memoryMap, AS_CPU, 0x0013)) = vTest;
+	*(Mapper_Get(mapper, AS_CPU, 0x0013)) = vTest;
 
 	instru->opcode.addressingMode = ZEX;
 	instru->opcodeArg[0] = 0x0E;
@@ -114,12 +197,12 @@ static void test_addressing_ZEX(void **state){
 
 static void test_addressing_ZEY(void **state){
 	CPU *self=(CPU*)*state;
-	Mapper *mapper = self->rmap;
+	Mapper *mapper = self->mapper;
 	uint8_t vTest = 25;
 	Instruction * instru = malloc(sizeof(Instruction));
 	if(instru == NULL) return;
 
-	*(mapper->get(mapper->memoryMap, AS_CPU, 0x000A)) = vTest;
+	*(Mapper_Get(mapper, AS_CPU, 0x000A)) = vTest;
 
 	instru->opcode.addressingMode = ZEY;
 	instru->opcodeArg[0] = 0x08;
@@ -133,14 +216,14 @@ static void test_addressing_ZEY(void **state){
 
 static void test_addressing_INX(void **state){
 	CPU *self=(CPU*)*state;
-	Mapper *mapper = self->rmap;
+	Mapper *mapper = self->mapper;
 	uint8_t vTest = 0x25;
 	Instruction * instru = malloc(sizeof(Instruction));
 	if(instru == NULL) return;
 
-	*(mapper->get(mapper->memoryMap, AS_CPU, 0x2415)) = vTest;
-	*(mapper->get(mapper->memoryMap, AS_CPU, 0x0043)) = 0x15;
-	*(mapper->get(mapper->memoryMap, AS_CPU, 0x0044)) = 0x24;
+	*(Mapper_Get(mapper, AS_CPU, 0x2415)) = vTest;
+	*(Mapper_Get(mapper, AS_CPU, 0x0043)) = 0x15;
+	*(Mapper_Get(mapper, AS_CPU, 0x0044)) = 0x24;
 
 	instru->opcode.addressingMode = INX;
 	instru->opcodeArg[0] = 0x3E;
@@ -155,14 +238,14 @@ static void test_addressing_INX(void **state){
 
 static void test_addressing_INY(void **state){
 	CPU *self=(CPU*)*state;
-	Mapper *mapper = self->rmap;
+	Mapper *mapper = self->mapper;
 	uint8_t vTest = 0x6D;
 	Instruction * instru = malloc(sizeof(Instruction));
 	if(instru == NULL) return;
 
-	*(mapper->get(mapper->memoryMap, AS_CPU, 0x2204)) = vTest;
-	*(mapper->get(mapper->memoryMap, AS_CPU, 0x004C)) = 0x05;
-	*(mapper->get(mapper->memoryMap, AS_CPU, 0x004D)) = 0x21;
+	*(Mapper_Get(mapper, AS_CPU, 0x2204)) = vTest;
+	*(Mapper_Get(mapper, AS_CPU, 0x004C)) = 0x05;
+	*(Mapper_Get(mapper, AS_CPU, 0x004D)) = 0x21;
 
 	instru->opcode.addressingMode = INY;
 	instru->opcodeArg[0] = 0x4C;
@@ -192,12 +275,12 @@ static void test_addressing_IMM(void **state){
 
 static void test_addressing_ZER(void **state){
 	CPU *self=(CPU*)*state;
-	Mapper *mapper = self->rmap;
+	Mapper *mapper = self->mapper;
 	uint8_t vTest = 0xF4;
 	Instruction * instru = malloc(sizeof(Instruction));
 	if(instru == NULL) return;
 
-	*(mapper->get(mapper->memoryMap, AS_CPU, 0x00F4)) = vTest;
+	*(Mapper_Get(mapper, AS_CPU, 0x00F4)) = vTest;
 
 	instru->opcode.addressingMode = ZER;
 	instru->opcodeArg[0] = vTest;
@@ -223,12 +306,12 @@ static void test_addressing_REL(void **state){
 
 static void test_addressing_ABS(void **state){
 	CPU *self=(CPU*)*state;
-	Mapper *mapper = self->rmap;
+	Mapper *mapper = self->mapper;
 	uint8_t vTest = 0xF4;
 	Instruction * instru = malloc(sizeof(Instruction));
 	if(instru == NULL) return;
 
-	*(mapper->get(mapper->memoryMap, AS_CPU, 0x31F6)) = vTest;
+	*(Mapper_Get(mapper, AS_CPU, 0x31F6)) = vTest;
 
 	instru->opcode.addressingMode = ABS;
 	instru->opcodeArg[0] = 0xF6;
@@ -241,12 +324,12 @@ static void test_addressing_ABS(void **state){
 
 static void test_addressing_ABX(void **state){
 	CPU *self=(CPU*)*state;
-	Mapper *mapper = self->rmap;
+	Mapper *mapper = self->mapper;
 	uint8_t vTest = 0xF4;
 	Instruction * instru = malloc(sizeof(Instruction));
 	if(instru == NULL) return;
 
-	*(mapper->get(mapper->memoryMap, AS_CPU, 0x32F5)) = vTest;
+	*(Mapper_Get(mapper, AS_CPU, 0x32F5)) = vTest;
 
 	instru->opcode.addressingMode = ABX;
 	self->X = 0xFF;
@@ -261,12 +344,12 @@ static void test_addressing_ABX(void **state){
 
 static void test_addressing_ABY(void **state){
 	CPU *self=(CPU*)*state;
-	Mapper *mapper = self->rmap;
+	Mapper *mapper = self->mapper;
 	uint8_t vTest = 0xF6;
 	Instruction * instru = malloc(sizeof(Instruction));
 	if(instru == NULL) return;
 
-	*(mapper->get(mapper->memoryMap, AS_CPU, 0x12A4)) = vTest;
+	*(Mapper_Get(mapper, AS_CPU, 0x12A4)) = vTest;
 
 	instru->opcode.addressingMode = ABY;
 	self->Y = 0xFF;
@@ -281,14 +364,14 @@ static void test_addressing_ABY(void **state){
 
 static void test_addressing_ABI(void **state){
 	CPU *self=(CPU*)*state;
-	Mapper *mapper = self->rmap;
+	Mapper *mapper = self->mapper;
 	uint8_t vTest = 0x25;
 	Instruction * instru = malloc(sizeof(Instruction));
 	if(instru == NULL) return;
 
-	*(mapper->get(mapper->memoryMap, AS_CPU, 0x215F)) = 0x76;
-	*(mapper->get(mapper->memoryMap, AS_CPU, 0x2160)) = 0x30;
-	*(mapper->get(mapper->memoryMap, AS_CPU, 0x3076)) = 0x25;
+	*(Mapper_Get(mapper, AS_CPU, 0x215F)) = 0x76;
+	*(Mapper_Get(mapper, AS_CPU, 0x2160)) = 0x30;
+	*(Mapper_Get(mapper, AS_CPU, 0x3076)) = 0x25;
 
 	instru->opcode.addressingMode = ABI;
 	instru->opcodeArg[0] = 0x5F;
@@ -388,8 +471,7 @@ static void test_GET_SR(void **state) {
 static void test_PULL(void **state) {
 	CPU *self = (CPU*) *state;
 	self->SP = 0xFE;
-	uint8_t *ptr = self->rmap->get(self->rmap->memoryMap, AS_CPU, 0x0100 |
-															(self->SP + 1));
+	uint8_t *ptr = Mapper_Get(self->mapper, AS_CPU, 0x0100 | (self->SP + 1));
 	*ptr = 0xAA;
 	assert_int_equal(_PULL(self), 0xAA);
 	assert_int_equal(self->SP, 0xFF);
@@ -401,14 +483,13 @@ static void test_PUSH(void **state) {
 	uint8_t val = 0xAA;
 	_PUSH(self, &val);
 	assert_int_equal(self->SP, 0xFE);
-	uint8_t *ptr = self->rmap->get(self->rmap->memoryMap, AS_CPU, 0x0100 |
-															(self->SP + 1));
+	uint8_t *ptr = Mapper_Get(self->mapper, AS_CPU, 0x0100 | (self->SP + 1));
 	assert_int_equal(*ptr, 0xAA);
 }
 
 static void test_LOAD(void **state) {
 	CPU *self = (CPU*) *state;
-	uint8_t *ptr = self->rmap->get(self->rmap->memoryMap, AS_CPU, 0x1234);
+	uint8_t *ptr = Mapper_Get(self->mapper, AS_CPU, 0x1234);
 	*ptr = 0xAA;
 	assert_int_equal(_LOAD(self, 0x1234), 0xAA);
 }
@@ -417,7 +498,7 @@ static void test_STORE(void **state) {
 	CPU *self = (CPU*) *state;
 	uint8_t val = 0xAA;
 	_STORE(self, 0x1234, &val);
-	uint8_t *ptr = self->rmap->get(self->rmap->memoryMap, AS_CPU, 0x1234);
+	uint8_t *ptr = Mapper_Get(self->mapper, AS_CPU, 0x1234);
 	assert_int_equal(*ptr, 0xAA);
 }
 
@@ -600,6 +681,63 @@ static void test_ADC(void **state) {
 	assert_int_equal(clk, 5);
 }
 
+static void test_AND(void **state) {
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*) = _AND;
+	uint8_t src = 0xFF, clk = 0;
+	inst.dataMem = &src;
+	inst.pageCrossed = 0;
+	self->A = 0x00;
+	self->P = 0x00;
+
+	inst.opcode = Opcode_Get(0x29); /* _AND Immediate clk=2 */
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk,2);
+	assert_ptr_equal(ptr, inst.opcode.inst);
+
+	inst.opcode = Opcode_Get(0x25); /* _AND Zero Page  clk=3 */
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk,3);
+	assert_ptr_equal(ptr, inst.opcode.inst);
+
+	inst.opcode = Opcode_Get(0x35); /* _AND Zero Page,X  clk=4 */
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk,4); //Erreur sur le nombre de cycle d'horloge
+	assert_ptr_equal(ptr, inst.opcode.inst);
+
+	inst.opcode = Opcode_Get(0x2D); /* _AND Absolute clk=4 */
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk,4);
+	assert_ptr_equal(ptr, inst.opcode.inst);
+
+	inst.opcode = Opcode_Get(0x3D); /* _AND Absolute,X  clk=4 */
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk,4);
+	assert_ptr_equal(ptr, inst.opcode.inst);
+
+	inst.opcode = Opcode_Get(0x39); /* _AND Absolute,Y  clk=4 */
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk,4);
+	assert_ptr_equal(ptr, inst.opcode.inst);
+
+	inst.opcode = Opcode_Get(0x21); /* _AND Indirect,X  clk=6 */
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk,6);
+	assert_ptr_equal(ptr, inst.opcode.inst);
+
+	self->A = 0x81;
+
+	inst.opcode = Opcode_Get(0x31); /* _AND Indirect,Y  clk=5 */
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk,5);
+	assert_ptr_equal(ptr, inst.opcode.inst);
+
+	assert_int_equal(self->A,0x81);
+	assert_int_equal(self->P&0x02,0x00);
+	assert_int_equal(self->P&0x80,0x80);
+}
+
 static void test_ASL(void **state) {
 	CPU *self = (CPU*) *state;
 	Instruction inst;
@@ -776,7 +914,7 @@ static void test_BRK(void **state) {
 	assert_int_equal(0x10, _PULL(self));
 	assert_int_equal(0xCD, _PULL(self));
 	assert_int_equal(0xAB, _PULL(self));
-	assert_int_equal(0x14, self->P);
+	assert_int_equal(0x04, self->P);
 }
 
 static void test_BVC(void **state) {
@@ -791,8 +929,8 @@ static void test_JMP(void **state) {
 	CPU *self = (CPU*) *state;
 	Instruction inst;
 	uint8_t (*ptr)(CPU*, Instruction*) = _JMP;
-	uint8_t src[2] = {0xAA, 0xBB}, clk = 0;
-	inst.dataMem = src;
+	uint8_t clk = 0;
+	inst.dataAddr = 0xBBAA;
 	inst.pageCrossed = 1; /* Supposed to have no effect */
 
 	/* Verify Opcode LUT */
@@ -817,8 +955,8 @@ static void test_JSR(void **state) {
 	CPU *self = (CPU*) *state;
 	Instruction inst;
 	uint8_t (*ptr)(CPU*, Instruction*) = _JSR;
-	uint8_t src[2] = {0xAA, 0xBB}, clk = 0;
-	inst.dataMem = src;
+	uint8_t clk = 0;
+	inst.dataAddr = 0xBBAA;
 
 	/* Verify Opcode LUT */
 	inst.opcode = Opcode_Get(0x20); /* JSR */
@@ -1488,9 +1626,13 @@ static void test_NOP(void **state){
 
 	/* Verify opcode LUT */
 	inst.opcode = Opcode_Get(0xEA); /* NOP IMP */
+	inst.pageCrossed = 0;
 	assert_ptr_equal(ptr, inst.opcode.inst);
 	clk = inst.opcode.inst(self, &inst);
 	assert_int_equal(clk, 2);
+	inst.pageCrossed = 1;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 3);
 }
 
 static void test_PHA(void **state) {
@@ -1526,7 +1668,7 @@ static void test_PHP(void **state) {
 	clock = inst.opcode.inst(self,&inst);
 
 	assert_int_equal(clock, 3);
-	assert_int_equal(_PULL(self), 0X2A);
+	assert_int_equal(_PULL(self), 0X3A);
 }
 
 static void test_PLA(void **state) {
@@ -1612,7 +1754,7 @@ static void test_PLP(void **state) {
 	clock = inst.opcode.inst(self,&inst);
 
 	assert_int_equal(clock, 4);
-	assert_int_equal(_GET_SR(self), 0xD7);
+	assert_int_equal(_GET_SR(self), 0xE7);
 
 }
 
@@ -1648,7 +1790,7 @@ static void test_RTI(void **state) {
 	clock = inst.opcode.inst(self,&inst);
 
 	assert_int_equal(clock, 6);
-	assert_int_equal(_GET_SR(self), 0xD7);
+	assert_int_equal(_GET_SR(self), 0xE7);
 	assert_int_equal(self->PC, 0xF56D);
 }
 
@@ -1677,7 +1819,7 @@ static void test_RTS(void **state) {
 	clock = inst.opcode.inst(self,&inst);
 
 	assert_int_equal(clock, 6);
-	assert_int_equal(self->PC, 0xA731);
+	assert_int_equal(self->PC, 0xA732);
 }
 
 static void test_SEI(void **state) {
@@ -1884,11 +2026,572 @@ static void test_TSX(void **state) {
 
 }
 
+static void test_SEC(void **state){
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*) = _SEC;
+	uint8_t clk = 0;
+	self->P = 0x00;
+
+	/* Verify opcode LUT */
+	inst.opcode = Opcode_Get(0x38); /* SEC IMP */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+
+	/* Verify general behavior */
+	assert_int_equal(self->P & 0x01,0x01);
+}
+
+static void test_SED(void **state){
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*) = _SED;
+	uint8_t clk = 0;
+	self->P = 0x00;
+
+	/* Verify opcode LUT */
+	inst.opcode = Opcode_Get(0xF8); /* SED IMP */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+
+	/* Verify general behavior */
+	assert_int_equal(self->P & 0x08,0x08);
+}
+
+static void test_STA(void **state){
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*) = _STA;
+	self->A = 0x11;
+	uint8_t src = 0xFF, clk = 0;
+	inst.dataMem = &src;
+
+	/* Verify opcode LUT */
+	inst.opcode = Opcode_Get(0x85); /* STA ZER */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 3);
+
+	/* Verify general behavior */
+	assert_int_equal(*(inst.dataMem),self->A);
+
+	/* Test addressing mode clock */
+	inst.opcode = Opcode_Get(0x95); /* STA ZEX */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 4);
+
+	inst.opcode = Opcode_Get(0x8D); /* STA ABS */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 4);
+
+	inst.opcode = Opcode_Get(0x9D); /* LSR ABX */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 5);
+
+	inst.opcode = Opcode_Get(0x99); /* LSR ABY */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 5);
+
+	inst.opcode = Opcode_Get(0x81); /* LSR INX */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 6);
+
+	inst.opcode = Opcode_Get(0x91); /* LSR INY */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 6);
+}
+
+static void test_STX(void **state){
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*) = _STX;
+	self->X = 0x11;
+	uint8_t src = 0xFF, clk = 0;
+	inst.dataMem = &src;
+
+	/* Verify opcode LUT */
+	inst.opcode = Opcode_Get(0x86); /* STX ZER */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 3);
+
+	/* Verify general behavior */
+	assert_int_equal(*(inst.dataMem),self->X);
+
+	/* Test addressing mode clock */
+	inst.opcode = Opcode_Get(0x96); /* STX ZEY */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 4);
+
+	inst.opcode = Opcode_Get(0x8E); /* STX ABS */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 4);
+}
+
+static void test_STY(void **state){
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*) = _STY;
+	self->Y = 0x11;
+	uint8_t src = 0xFF, clk = 0;
+	inst.dataMem = &src;
+
+	/* Verify opcode LUT */
+	inst.opcode = Opcode_Get(0x84); /* STY ZER */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 3);
+
+	/* Verify general behavior */
+	assert_int_equal(*(inst.dataMem),self->Y);
+
+	/* Test addressing mode clock */
+	inst.opcode = Opcode_Get(0x94); /* STY ZEX */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 4);
+
+	inst.opcode = Opcode_Get(0x8C); /* STY ABS */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 4);
+}
+
+static void test_ORA(void **state){
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*) = _ORA;
+	uint8_t src = 0x00, clk = 0;
+	inst.dataMem = &src;
+	inst.pageCrossed = 0;
+
+	/* Verify opcode LUT */
+	inst.opcode = Opcode_Get(0x09); /* ORA IMM */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	/* Test ORA general behavior */
+	/* Result is signed and non zero */
+	self->P = 0;
+	self->A = 0x69;
+	src = 0x96;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x80,0x80);
+	assert_int_equal(self->P & 0x02,0x00);
+	assert_int_equal(self->A,0xFF); /* 0x69 | 0x96 = 0xFF */
+	/* Result is unsigned and non zero */
+	self->P = 0;
+	self->A = 0x1A;
+	src = 0x4F;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x80,0x00);
+	assert_int_equal(self->P & 0x02,0x00);
+	assert_int_equal(self->A,0x5F); /* 0x1A | 0x4F = 0x5F */
+	/* Result is zero */
+	self->P = 0;
+	self->A = 0x00;
+	src = 0x00;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x80,0x00);
+	assert_int_equal(self->P & 0x02,0x02);
+	assert_int_equal(self->A,0x00); /* 0x00 | 0x00 = 0x00 */
+
+	/* Test addressing mode clock */
+	inst.opcode = Opcode_Get(0x05); /* ORA ZER */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 3);
+
+	inst.opcode = Opcode_Get(0x15); /* ORA ZEX */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 4);
+
+	inst.opcode = Opcode_Get(0x0D); /* ORA ABS */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 4);
+
+	inst.pageCrossed = 0;
+	inst.opcode = Opcode_Get(0x1D); /* ORA ABX */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 4);
+
+	inst.pageCrossed = 1;
+	inst.opcode = Opcode_Get(0x1D); /* ORA ABX */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 5);
+
+	inst.pageCrossed = 0;
+	inst.opcode = Opcode_Get(0x19); /* ORA ABY */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 4);
+
+	inst.pageCrossed = 1;
+	inst.opcode = Opcode_Get(0x19); /* ORA ABY */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 5);
+
+	inst.pageCrossed = 0;
+	inst.opcode = Opcode_Get(0x01); /* ORA INX */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 6);
+
+	inst.opcode = Opcode_Get(0x11); /* ORA INY */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 5);
+}
+
+static void test_ROL(void **state){
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*) = _ROL;
+	uint8_t src = 0x00, clk = 0;
+	inst.dataMem = &src;
+
+	/* Verify opcode LUT */
+	inst.opcode = Opcode_Get(0x2A); /* ROL ACC */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	/* Test ROL general behavior */
+	/* initial Carry is 0, bit 7 is 0, bit 6 is 0 */
+	self->P = 0x00;
+	src = 0x3F;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x01,0x00);
+	assert_int_equal(self->P & 0x80,0x00);
+	assert_int_equal(self->P & 0x02,0x00);
+	assert_int_equal(src,0x7E); /* 0011 1111 -> 0111 1110 */
+	/* initial Carry is 0, bit 7 is 0, bit 6 is 1 */
+	self->P = 0x00;
+	src = 0x7F;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x01,0x00);
+	assert_int_equal(self->P & 0x80,0x80);
+	assert_int_equal(self->P & 0x02,0x00);
+	assert_int_equal(src,0xFE); /* 0111 1111 -> 1111 1110 */
+	/* initial Carry is 0, bit 7 is 1, bit 6 is 0 */
+	self->P = 0x00;
+	src = 0xBF;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x01,0x01);
+	assert_int_equal(self->P & 0x80,0x00);
+	assert_int_equal(self->P & 0x02,0x00);
+	assert_int_equal(src,0x7E); /* 1011 1111 -> 0111 1110 */
+	/* initial Carry is 0, bit 7 is 1, bit 6 is 1 */
+	self->P = 0x00;
+	src = 0xFF;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x01,0x01);
+	assert_int_equal(self->P & 0x80,0x80);
+	assert_int_equal(self->P & 0x02,0x00);
+	assert_int_equal(src,0xFE); /* 1111 1111 -> 1111 1110 */
+	/* initial Carry is 1, bit 7 is 0, bit 6 is 0 */
+	self->P = 0x01;
+	src = 0x3F;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x01,0x00);
+	assert_int_equal(self->P & 0x80,0x00);
+	assert_int_equal(self->P & 0x02,0x00);
+	assert_int_equal(src,0x7F); /* 0011 1111 -> 0111 1111 */
+	/* initial Carry is 1, bit 7 is 0, bit 6 is 1 */
+	self->P = 0x01;
+	src = 0x7F;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x01,0x00);
+	assert_int_equal(self->P & 0x80,0x80);
+	assert_int_equal(self->P & 0x02,0x00);
+	assert_int_equal(src,0xFF); /* 0111 1111 -> 1111 1111 */
+	/* initial Carry is 1, bit 7 is 1, bit 6 is 0 */
+	self->P = 0x01;
+	src = 0xBF;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x01,0x01);
+	assert_int_equal(self->P & 0x80,0x00);
+	assert_int_equal(self->P & 0x02,0x00);
+	assert_int_equal(src,0x7F); /* 1011 1111 -> 0111 1111 */
+	/* initial Carry is 1, bit 7 is 1, bit 6 is 1 */
+	self->P = 0x01;
+	src = 0xFF;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x01,0x01);
+	assert_int_equal(self->P & 0x80,0x80);
+	assert_int_equal(self->P & 0x02,0x00);
+	assert_int_equal(src,0xFF); /* 1111 1111 -> 1111 1111 */
+	/* result becomes 0x00 */
+	self->P = 0x00;
+	src = 0x80;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x01,0x01);
+	assert_int_equal(self->P & 0x80,0x00);
+	assert_int_equal(self->P & 0x02,0x02);
+	assert_int_equal(src,0x00); /* 1000 0000 -> 0000 0000 */
+
+	/* Test addressing mode clock */
+	inst.opcode = Opcode_Get(0x26); /* ROL ZER */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 5);
+
+	inst.opcode = Opcode_Get(0x36); /* ROL ZEX */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 6);
+
+	inst.opcode = Opcode_Get(0x2E); /* ROL ABS */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 6);
+
+	inst.opcode = Opcode_Get(0x3E); /* ROL ABX */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 7);
+}
+
+static void test_ROR(void **state){
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*) = _ROR;
+	uint8_t src = 0x00, clk = 0;
+	inst.dataMem = &src;
+
+	/* Verify opcode LUT */
+	inst.opcode = Opcode_Get(0x6A); /* ROR ACC */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	/* Test ROL general behavior */
+	/* initial Carry is 0, bit 0 is 0 */
+	self->P = 0x00;
+	src = 0xFE;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x01,0x00);
+	assert_int_equal(self->P & 0x80,0x00);
+	assert_int_equal(self->P & 0x02,0x00);
+	assert_int_equal(src,0x7F); /* 1111 1110 -> 0111 1111 */
+	/* initial Carry is 0, bit 0 is 1 */
+	self->P = 0x00;
+	src = 0xFF;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x01,0x01);
+	assert_int_equal(self->P & 0x80,0x00);
+	assert_int_equal(self->P & 0x02,0x00);
+	assert_int_equal(src,0x7F); /* 1111 1110 -> 0111 1111 */
+	/* initial Carry is 1, bit 0 is 0 */
+	self->P = 0x01;
+	src = 0xFE;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x01,0x00);
+	assert_int_equal(self->P & 0x80,0x80);
+	assert_int_equal(self->P & 0x02,0x00);
+	assert_int_equal(src,0xFF); /* 1111 1110 -> 1111 1111 */
+	/* initial Carry is 1, bit 0 is 1 */
+	self->P = 0x01;
+	src = 0xFF;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x01,0x01);
+	assert_int_equal(self->P & 0x80,0x80);
+	assert_int_equal(self->P & 0x02,0x00);
+	assert_int_equal(src,0xFF); /* 1111 1110 -> 1111 1111 */
+	/* result becomes 0x00 */
+	self->P = 0x00;
+	src = 0x01;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x01,0x01);
+	assert_int_equal(self->P & 0x80,0x00);
+	assert_int_equal(self->P & 0x02,0x02);
+	assert_int_equal(src,0x00); /* 0000 0001 -> 0000 0000 */
+
+	/* Test addressing mode clock */
+	inst.opcode = Opcode_Get(0x66); /* ROR ZER */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 5);
+
+	inst.opcode = Opcode_Get(0x76); /* ROR ZEX */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 6);
+
+	inst.opcode = Opcode_Get(0x6E); /* ROR ABS */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 6);
+
+	inst.opcode = Opcode_Get(0x7E); /* ROR ABX */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 7);
+}
+
+
+static void test_SBC(void **state) {
+	CPU *self = (CPU*) *state;
+	Instruction inst;
+	uint8_t (*ptr)(CPU*, Instruction*)  = _SBC;
+	uint8_t src = 0x00, clk = 0;
+	inst.dataMem = &src;
+	inst.pageCrossed = 0;
+
+	/* Verify Opcode LUT */
+	inst.opcode = Opcode_Get(0xE9); /* SBC IMM */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+
+/*
+SIGN A-B et B>A
+ZERO 5-5 with initial carry
+OVERFLOW
+CARRY
+*/
+
+	/* Test SBC general behavior */
+	/* Unsigned result, without initial carry */
+	self->P = 0x00;
+	self->A = 0x02;
+	src = 0x01;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x80, 0x00); /* Sign = 0 */
+	assert_int_equal(self->P & 0x02, 0x02); /* Zero = 1 */
+	assert_int_equal(self->P & 0x40, 0x00); /* Ovf = 0 */
+	assert_int_equal(self->P & 0x01, 0x01); /* Carry out = 1 */
+	assert_int_equal(self->A, 0x00); /* 0x02 - 0x01 - 0x01 = 0x00 */
+	/* Unsigned result, with initial carry */
+	self->P = 0x01;
+	self->A = 0x02;
+	src = 0x01;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x80, 0x00); /* Sign = 0 */
+	assert_int_equal(self->P & 0x02, 0x00); /* Zero = 0 */
+	assert_int_equal(self->P & 0x40, 0x00); /* Ovf = 0 */
+	assert_int_equal(self->P & 0x01, 0x01); /* Carry out = 1 */
+	assert_int_equal(self->A, 0x01); /* 0x02 - 0x01 = 0x01 */
+	/* Signed result, without initial carry */
+	self->P = 0x00;
+	self->A = 0x01;
+	src = 0x02;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x80, 0x80); /* Sign = 1 */
+	assert_int_equal(self->P & 0x02, 0x00); /* Zero = 0 */
+	assert_int_equal(self->P & 0x40, 0x00); /* Ovf = 0 */
+	assert_int_equal(self->P & 0x01, 0x00); /* Carry out = 0 */
+	assert_int_equal(self->A, 0xFE); /* 0x01 - 0x02 - 0x01 = 0xFE */
+	/* Signed result, with initial carry */
+	self->P = 0x01;
+	self->A = 0x01;
+	src = 0x02;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x80, 0x80); /* Sign = 1 */
+	assert_int_equal(self->P & 0x02, 0x00); /* Zero = 0 */
+	assert_int_equal(self->P & 0x40, 0x00); /* Ovf = 0 */
+	assert_int_equal(self->P & 0x01, 0x00); /* Carry out = 0 */
+	assert_int_equal(self->A, 0xFF); /* 0x01 - 0x02 = 0xFF */
+	/* Result has overflowed */
+	self->P = 0x01;
+	self->A = 0x80;
+	src = 0x01;
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 2);
+	assert_int_equal(self->P & 0x80, 0x00); /* Sign = 0 */
+	assert_int_equal(self->P & 0x02, 0x00); /* Zero = 0 */
+	assert_int_equal(self->P & 0x40, 0x40); /* Ovf = 1 */
+	assert_int_equal(self->P & 0x01, 0x01); /* Carry out = 1 */
+	assert_int_equal(self->A, 0x7F); /* 0x80 - 0x01 = 0x7F (and not -129) */
+
+	/* Test addressing mode clock */
+	inst.opcode = Opcode_Get(0xE5); /* SBC ZER */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 3);
+
+	inst.opcode = Opcode_Get(0xF5); /* SBC ZEX */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 4);
+
+	inst.opcode = Opcode_Get(0xED); /* SBC ABS */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 4);
+
+	inst.pageCrossed = 0;
+	inst.opcode = Opcode_Get(0xFD); /* SBC ABX */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 4);
+
+	inst.pageCrossed = 1;
+	inst.opcode = Opcode_Get(0xFD); /* SBC ABX */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 5);
+
+	inst.pageCrossed = 0;
+	inst.opcode = Opcode_Get(0xF9); /* SBC ABY */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 4);
+
+	inst.pageCrossed = 1;
+	inst.opcode = Opcode_Get(0xF9); /* SBC ABY */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 5);
+
+	inst.pageCrossed = 0;
+	inst.opcode = Opcode_Get(0xE1); /* SBC INX */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 6);
+
+	inst.opcode = Opcode_Get(0xF1); /* SBC INY */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 5);
+
+	inst.pageCrossed = 1;
+	inst.opcode = Opcode_Get(0xF1); /* SBC INY */
+	assert_ptr_equal(ptr, inst.opcode.inst);
+	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(clk, 6);
+}
+
 static int teardown_CPU(void **state) {
 	if (*state != NULL) {
 		CPU *self = (CPU*) *state;
-		self->rmap->destroyer(self->rmap->memoryMap);
-		free((void*) self->rmap);
+		Mapper_Destroy(self->mapper);
 		free((void*) self);
 		return 0;
 	} else
@@ -2063,6 +2766,7 @@ int run_instruction(void) {
 	};
 	const struct CMUnitTest test_instruction[] = {
 		cmocka_unit_test(test_ADC),
+		cmocka_unit_test(test_AND),
 		cmocka_unit_test(test_ASL),
 		cmocka_unit_test(test_BCC),
 		cmocka_unit_test(test_BCS),
@@ -2107,7 +2811,16 @@ int run_instruction(void) {
 		cmocka_unit_test(test_TSX),
 		cmocka_unit_test(test_TXA),
 		cmocka_unit_test(test_TXS),
-		cmocka_unit_test(test_TYA)
+		cmocka_unit_test(test_TYA),
+		cmocka_unit_test(test_SEC),
+		cmocka_unit_test(test_SED),
+		cmocka_unit_test(test_STA),
+		cmocka_unit_test(test_STX),
+		cmocka_unit_test(test_STY),
+		cmocka_unit_test(test_ORA),
+		cmocka_unit_test(test_ROL),
+		cmocka_unit_test(test_ROR),
+		cmocka_unit_test(test_SBC)
 		};
 	const struct CMUnitTest test_addressing_Mode[] = {
 		cmocka_unit_test(test_addressing_IMP),
@@ -2127,7 +2840,9 @@ int run_instruction(void) {
 		cmocka_unit_test(test_addressing_MIS),
 	};
 	const struct CMUnitTest test_fetch[] = {
+		cmocka_unit_test(test_Instruction_DMA),
 		cmocka_unit_test(test_instruction_fetch),
+		cmocka_unit_test(test_Instruction_PrintLog),
 	};
 	int out = 0;
 	out += cmocka_run_group_tests(test_instruction_macro, setup_CPU, teardown_CPU);

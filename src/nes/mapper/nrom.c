@@ -2,60 +2,68 @@
 #include <stdio.h>
 #include "nrom.h"
 
-
-void* MapNROM_Create(Header * header) {
-	MapNROM *self = (MapNROM*) malloc(sizeof(MapNROM));
-
+Mapper* MapNROM_Create(Header * header) {
+	MapNROM *mapperData = (MapNROM*) malloc(sizeof(MapNROM));
 	/*	If allocation failed, return NULL */
-	if (self == NULL) {
+	if (mapperData == NULL) {
 		fprintf(stderr, "Error: can't allocate MapNROM structure "
 				"at %s, line %d.\n", __FILE__, __LINE__);
+		return NULL;
+	}
+
+	/* Allocate Mapper structure */
+	Mapper *self = Mapper_Create(MapNROM_Get,
+								 MapNROM_Destroy,
+								 MapNROM_Ack,
+								 mapperData);
+	if (self == NULL) {
+		MapNROM_Destroy(mapperData);
 		return self;
 	}
 
 	/*	Save context */
-	self->romSize = header->romSize;
-	self->mirroring = header->mirroring;
+	mapperData->romSize = header->romSize;
+	mapperData->mirroring = header->mirroring;
 
 	/*	Allocation of ROM space */
-	switch (self->romSize % 2) {
+	switch (mapperData->romSize % 2) {
 		case NROM_16KIB:
-			self->cpu.rom = (uint8_t*) malloc(16384);
+			mapperData->cpu.rom = (uint8_t*) malloc(16384);
 			break;
 		case NROM_32KIB:
-			self->cpu.rom = (uint8_t*) malloc(32768);
+			mapperData->cpu.rom = (uint8_t*) malloc(32768);
 			break;
 		default:
 			break;
 	}
 
 	/*	Allocation of SRAM space */
-	self->cpu.sram = (uint8_t*) malloc(8192);
+	mapperData->cpu.sram = (uint8_t*) malloc(8192);
 
 	/*	Allocation of IOReg space */
-	self->cpu.ioReg = IOReg_Create();
+	mapperData->cpu.ioReg = IOReg_Create();
 
 	/*	Allocation of RAM space */
-	self->cpu.ram = (uint8_t*) malloc(8192);
+	mapperData->cpu.ram = (uint8_t*) malloc(8192);
 
 	/*	Allocation of CHR-ROM space */
-	self->ppu.chr = (uint8_t*) malloc(8192);
+	mapperData->ppu.chr = (uint8_t*) malloc(8192);
 
 	/*	Allocation of nametable space */
-	self->ppu.nametable = (uint8_t*) malloc(2048);
+	mapperData->ppu.nametable = (uint8_t*) malloc(2048);
 
 	/*	Allocation of palette space */
-	self->ppu.palette = (uint8_t*) malloc(32);
+	mapperData->ppu.palette = (uint8_t*) malloc(32);
 
 
 	/*	Test if allocation failed */
-	if ((self->cpu.rom == NULL) || (self->cpu.ram == NULL) ||
-		(self->cpu.ioReg == NULL) || (self->cpu.sram == NULL) ||
-		(self->ppu.chr == NULL) || (self->ppu.nametable == NULL) ||
-		(self->ppu.palette == NULL)) {
+	if ((mapperData->cpu.rom == NULL) || (mapperData->cpu.ram == NULL) ||
+		(mapperData->cpu.ioReg == NULL) || (mapperData->cpu.sram == NULL) ||
+		(mapperData->ppu.chr == NULL) || (mapperData->ppu.nametable == NULL) ||
+		(mapperData->ppu.palette == NULL)) {
 		fprintf(stderr, "Error: can't allocate memory for NROM "
 				"at %s, line %d.\n", __FILE__, __LINE__);
-		MapNROM_Destroy((void*) self);
+		Mapper_Destroy(self);
 		return NULL;
 	}
 
@@ -93,7 +101,7 @@ void MapNROM_Destroy(void* mapperData) {
 	return;
 }
 
-uint8_t* MapNROM_Get(void* mapperData, uint8_t space, uint16_t address) {
+void* MapNROM_Get(void* mapperData, uint8_t space, uint16_t address) {
 	/* If no mapperData has been given, return NULL */
 	if (mapperData == NULL)
 		return NULL;
@@ -130,6 +138,36 @@ uint8_t* MapNROM_Get(void* mapperData, uint8_t space, uint16_t address) {
 			}
 		}
 
+	} else if (space == AS_PPU) {
+
+		MapNROM_PPU *ppu = &map->ppu;
+		address &= 0x3FFF;
+		/* Which memory is addressed? */
+		/* 0x0000 -> 0x1FFF : Pattern Table */
+		if (_ADDRESS_INF(address, 0x1FFF)) {
+			return ppu->chr + (address & 0x1FFF);
+		/* 0x2000 -> 0x3EFF : Nametable and Attribute Table */
+		} else if (_ADDRESS_IN(address, 0x2000, 0x3EFF)) {
+			/* Nametable Mirroring */
+			switch (map->mirroring % 2) {
+				case NROM_HORIZONTAL:
+					if (address & 0x0800)
+						return ppu->nametable + 0x400 + (address & 0x03FF);
+					else
+						return ppu->nametable + (address & 0x03FF);
+				case NROM_VERTICAL:
+					if (address & 0x0400)
+						return ppu->nametable + 0x400 + (address & 0x03FF);
+					else
+						return ppu->nametable + (address & 0x03FF);
+				default:
+					break;
+			}
+		/* 0x3F00 -> 0x3FFF : Palette */
+		} else if (_ADDRESS_IN(address, 0x3F00, 0x3FFF)) {
+			return ppu->palette + (address & 0x00FF);
+		}
+
 	} else if (space == AS_LDR) {
 
 		switch (address) {
@@ -137,12 +175,13 @@ uint8_t* MapNROM_Get(void* mapperData, uint8_t space, uint16_t address) {
 				return map->cpu.rom;
 			case LDR_CHR:
 				return map->ppu.chr;
+			case LDR_IOR:
+				return map->cpu.ioReg;
 			default:
 				break;
 		}
 
 	}
-	/* else if (space == AS_PPU) {*/
 
 	return NULL;
 }
