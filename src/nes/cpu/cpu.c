@@ -16,7 +16,7 @@ CPU* CPU_Create(Mapper* mapper){
 	}
 
 	/* mapper used by the NES */
-	self->rmap = mapper;
+	self->mapper = mapper;
 
 	return self;
 }
@@ -30,11 +30,14 @@ uint8_t CPU_Init(CPU* self) {
 	self->A = 0;
 	self->X = 0;
 	self->Y = 0;
-	self->SP = 0xFF;
+	self->SP = 0x00;
 	self->P = 0;
-
-	/* 16-bit program counter register */
-	self->PC = 0;
+	self->cntDMA = -1;
+	self->OAMDMA = 0;
+	/* 16-bit program counter */
+	self->PC = 0x0000;
+	/* Remove debug log */
+	remove("cpu.log");
 
 	return 0;
 }
@@ -65,17 +68,17 @@ uint8_t CPU_InterruptManager(CPU* self, uint8_t* context){
 	else if (N || I) {
 
 		/* push PC MSByte on stack */
-		ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, (0x0100+self->SP));
+		ptr = Mapper_Get(self->mapper, AS_CPU, (0x0100+self->SP));
 		*ptr = (uint8_t)(self->PC >> 8);
 		self->SP --;
 
 		/* push PC LSByte on stack */
-		ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, (0x0100+self->SP));
+		ptr = Mapper_Get(self->mapper, AS_CPU, (0x0100+self->SP));
 		*ptr = (uint8_t)(self->PC);
 		self->SP --;
 
 		/* push P on stack */
-		ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, (0x0100+self->SP));
+		ptr = Mapper_Get(self->mapper, AS_CPU, (0x0100+self->SP));
 		*ptr = (self->P & ~(1UL << 4)); /* clear B bit on stack */
 		self->SP --;
 	}
@@ -87,6 +90,7 @@ uint8_t CPU_InterruptManager(CPU* self, uint8_t* context){
 	if (R){
 		jump_address = RES_JMP_ADD;
 		*context &= ~(1UL);
+		self->P |= 0x20;
 	}
 	/* if the N bit of context is set */
 	else if (N){
@@ -100,11 +104,11 @@ uint8_t CPU_InterruptManager(CPU* self, uint8_t* context){
 	}
 
 	/* fetch PC LSByte */
-	ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, jump_address);
+	ptr = Mapper_Get(self->mapper, AS_CPU, jump_address);
 	self->PC = (uint16_t)(*ptr);
 
 	/* fetch PC MSByte */
-	ptr = (self->rmap->get)(self->rmap->memoryMap, AS_CPU, jump_address+1);
+	ptr = Mapper_Get(self->mapper, AS_CPU, jump_address+1);
 	self->PC |= (uint16_t)(*ptr) << 8;
 
 	/* set I flag to disable further IRQs */
@@ -114,6 +118,38 @@ uint8_t CPU_InterruptManager(CPU* self, uint8_t* context){
 	cycleCount += 7;
 
 	return cycleCount;
+}
+
+uint32_t CPU_Execute(CPU* self, uint8_t* context, uint32_t *clockCycle) {
+	if (self == NULL)
+		return 0;
+
+	Instruction inst;
+
+	*clockCycle += CPU_InterruptManager(self, context); 
+
+	/* If no DMA operation is on-going, execute program */
+	if (!Instruction_DMA(&inst, self, clockCycle)) {
+		/* Fetch instruction information from opcode and arg */
+		if (Instruction_Fetch(&inst, self) == 0)
+			return 0;
+
+		/* Resolve addressing mode from instruction information */
+		if (Instruction_Resolve(&inst, self) == 0)
+			return 0;
+	}
+
+	/* Log execution information */
+	Instruction_PrintLog(&inst, self, *clockCycle); 
+	
+	/* If no instruction is coded for this opcode, exit */
+	if (inst.opcode.inst == NULL)
+		return 0;
+
+	/* Execute instruction */
+	*clockCycle += inst.opcode.inst(self, &inst);	
+
+	return *clockCycle;
 }
 
 void CPU_Destroy(CPU* self){

@@ -11,13 +11,16 @@ NESDIR		= src/nes
 UTESTDIR	= src/unit-test
 SRC  		= $(NESDIR)/mapper/nrom.c \
 			  $(NESDIR)/mapper/mapper.c \
+			  $(NESDIR)/mapper/ioreg.c \
 			  $(NESDIR)/loader/loader.c \
 			  $(NESDIR)/cpu/instructions.c \
 			  $(NESDIR)/cpu/cpu.c \
+			  $(NESDIR)/ppu/ppu.c \
+			  $(NESDIR)/nes.c \
 			  $(UTESTDIR)/UTnrom.c \
 			  $(UTESTDIR)/UTinstruction.c \
 			  $(UTESTDIR)/UTloader.c \
-			  $(UTESTDIR)/UTinterrupt.c \
+			  $(UTESTDIR)/UTcpu.c \
 
 # use gcc
 CC			= gcc
@@ -51,7 +54,7 @@ $(UTEST): $(UTESTDIR)/$(UTEST).o $(OBJS) $(SRC)
 run-test: CFLAGS  += -coverage
 run-test: LDFLAGS += -coverage
 run-test: $(UTEST)
-		valgrind ./$(UTEST) ; \
+		valgrind --leak-check=full --show-leak-kinds=all ./$(UTEST) ; \
 		lcov --capture --directory . --output-file coverage.info ; \
 		genhtml coverage.info --output-directory out
 

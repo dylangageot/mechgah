@@ -21,9 +21,17 @@
  * \brief Hold CPU's register and memory
  */
 typedef struct {
-	uint8_t A, X, Y, SP, P;					/*! 8-bit registers		    */
-	uint16_t PC;							/*! 16-bit register		    */
-	Mapper* rmap;							/*! Mapper from NES struct	*/
+	/* IO Register */
+	uint8_t OAMDMA;							/*! OAMDMA					*/
+	/* Internal Register */
+	uint8_t A;								/*! Accumulator				*/
+	uint8_t X;								/*! X index					*/
+	uint8_t Y;								/*! Y index					*/
+	uint8_t SP;								/*! Stack Pointer			*/
+	uint8_t P;								/*! Status					*/
+	uint16_t PC;							/*! Program counter		    */
+	int16_t cntDMA;							/*! DMA counter				*/
+	Mapper* mapper;							/*! Mapper					*/
 } CPU;
 
 /**
@@ -38,7 +46,7 @@ CPU* CPU_Create(Mapper* mapper);
 
 /**
  * \fn CPU_Init
- * \brief Initialize all CPU registers (A,X,Y,SP,P adn PC)
+ * \brief Initialize all CPU registers (A, X, Y, SP, P and PC)
  *
  * \param self instance of CPU
  *
@@ -68,11 +76,11 @@ uint8_t CPU_InterruptManager(CPU* self, uint8_t* context);
  *
  * \param self instance of CPU
  * \param context variable containing interrupt flags
+ * \param clockCycle pointer to clock cycle variable
  *
  * \return number of clock cycle used to execute the instruction
  */
-uint8_t CPU_Execute(CPU* self, uint8_t* context);
-
+uint32_t CPU_Execute(CPU* self, uint8_t* context, uint32_t *clockCycle);
 
 /**
  * \fn CPU_Destroy

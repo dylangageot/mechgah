@@ -10,7 +10,7 @@
 #define NES_H
 
 #include "cpu/cpu.h"
-/* #include "ppu/ppu.h" */
+#include "ppu/ppu.h"
 #include "mapper/mapper.h"
 #include "loader/loader.h"
 
@@ -20,8 +20,8 @@
  */
 typedef struct {
 	CPU *cpu;
-	/* PPU ppu; */
-	Mapper mapper;
+	PPU *ppu;
+	Mapper *mapper;
 	uint32_t clockCount;
 } NES;
 
@@ -53,7 +53,9 @@ NES* NES_Create(char *filename);
 /**
  * \fn NES_Destroy
  * \brief Free the memory used by the emulator
+ *
+ * \param self instance of NES
  */
-void NES_Destroy(void);
+void NES_Destroy(NES *self);
 
 #endif /* NES_H */
