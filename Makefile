@@ -27,7 +27,7 @@ CC			= gcc
 # compilation options
 CFLAGS  	= -Wall -Wextra -MMD
 # linking options
-LDFLAGS 	= -lcmocka
+LDFLAGS 	= -lcmocka -lSDL -lSDL_gfx
 
 # add debug option to gcc if needed
 DEBUG = no

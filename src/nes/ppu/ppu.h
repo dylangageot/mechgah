@@ -28,6 +28,8 @@ typedef struct {
 	Mapper *mapper;
 } PPU;
 
+char* RenderColorPalette(void);
+
 /**
  * \brief PPU_Create
  *
