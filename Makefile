@@ -38,7 +38,7 @@ endif
 # compile individual object files
 OBJS    	= $(SRC:.c=.o)
 %.o: %.c
-			  $(CC) $(CFLAGS) -c $< -o $@
+			 $(CC) $(CFLAGS) -c $< -o $@
 
 all: $(OUTNAME) $(UTEST)
 
@@ -51,7 +51,7 @@ $(UTEST): $(UTESTDIR)/$(UTEST).o $(OBJS) $(SRC)
 			  $(CC) $< $(OBJS) $(LDFLAGS) -o $@
 
 # run unit test and generate coverage page
-run-test: CFLAGS  += -coverage
+run-test: CFLAGS  += -coverage -DDEBUG_CPU
 run-test: LDFLAGS += -coverage
 run-test: $(UTEST)
 		valgrind --leak-check=full --show-leak-kinds=all ./$(UTEST) ; \

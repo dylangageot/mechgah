@@ -80,7 +80,7 @@ uint8_t CPU_InterruptManager(CPU* self, uint8_t* context);
  *
  * \return number of clock cycle used to execute the instruction
  */
-uint32_t CPU_Execute(CPU* self, uint8_t* context, uint32_t *clockCycle);
+uint8_t CPU_Execute(CPU* self, uint8_t* context, uint32_t *clockCycle);
 
 /**
  * \fn CPU_Destroy

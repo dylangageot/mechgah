@@ -12,13 +12,6 @@
 #include "stdint.h"
 
 /**
- * \brief Useful macro when dealing with address mapping
- */
-#define _ADDRESS_IN(x,y,z)	(((x) >= (y)) && ((x) <= (z)))
-#define _ADDRESS_SUP(x,y)	(((x) >= (y)))
-#define _ADDRESS_INF(x,y)	(((x) <= (y)))
-
-/**
  * \struct Mapper
  * \brief Generic structure to hold mapper
  */

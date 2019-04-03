@@ -8,6 +8,7 @@
 #include "instructions.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include "../../common/macro.h"
 
 /* Opcode LUT */
 static Opcode opcode[256] = {
@@ -174,6 +175,7 @@ uint8_t _IF_BREAK(CPU *cpu) {
 uint8_t _BRANCH(CPU* cpu, Instruction *arg, uint8_t cond) {
 	uint16_t newPC;
 	if (cond) {
+		/* Compute address to jump on */
 		newPC = _REL_ADDR(cpu, (int8_t*) arg->dataMem);
 		/* Check if the branch occurs to same page */
 		arg->opcode.cycle += ((cpu->PC & 0xFF00) != (newPC & 0xFF00) ? 2 : 1);
@@ -186,10 +188,11 @@ uint8_t _BRANCH(CPU* cpu, Instruction *arg, uint8_t cond) {
 
 uint8_t Instruction_DMA(Instruction *self, CPU *cpu, uint32_t *clockCycle) {
 	uint8_t data;
+
 	/* Start DMA operation if needed */
 	if (Mapper_Ack(cpu->mapper, 0x4014)) {
 		cpu->cntDMA = 0;
-		/* Add to clock cycle 1 (+1 if odd) */
+		/* Add 1 (+1 if odd) to clock cycle 1 */
 		*clockCycle += 1 + (*clockCycle % 2);
 	}
 
@@ -205,20 +208,18 @@ uint8_t Instruction_DMA(Instruction *self, CPU *cpu, uint32_t *clockCycle) {
 		/* Load and store */
 		data = _LOAD(cpu, self->dataAddr);
 		_STORE(cpu, 0x2004, &data); 
+		/* Increment DMA counter */
 		cpu->cntDMA++;
-		return 1;
+		return DMA_ON;
 	} else if (cpu->cntDMA == 256) {
 		cpu->cntDMA = -1;
 	}
 
 	/* If no DMA operation on-going, return 0 */
-	return 0;
+	return DMA_OFF;
 }
 
 uint8_t Instruction_Fetch(Instruction *self, CPU *cpu) {
-	if ((self == NULL) || (cpu == NULL))
-		return 0;
-
 	/* Fetch data in memory space with PC value */
 	uint8_t *opc = Mapper_Get(cpu->mapper, AS_CPU, cpu->PC);
 	/* Save information before fetching */
@@ -244,23 +245,21 @@ uint8_t Instruction_Fetch(Instruction *self, CPU *cpu) {
 		self->nbArg = 2;
 	} else {
 		self->nbArg = 0;
-		return 0;
+		ERROR_MSG("can't fetch the next instruction");	
+		return EXIT_FAILURE;
 	}
 
-	return 1;
+	return EXIT_SUCCESS;
 }
 
 uint8_t Instruction_Resolve(Instruction *self, CPU *cpu) {
-	if ((self == NULL) || (cpu == NULL))
-		return 0;
-
 	uint8_t lWeight, hWeight;
 	uint16_t address = 0;
 	self->pageCrossed = 0;
 	Mapper *mapper = cpu->mapper;
 	switch (self->opcode.addressingMode) {
-		case IMP : /* Implied : Nothing to do*/
-			return 1;
+		case IMP :
+			/* Nothing to do */
 			break;
 
 		case ACC :
@@ -280,8 +279,7 @@ uint8_t Instruction_Resolve(Instruction *self, CPU *cpu) {
 		case INX :
 			address = (self->opcodeArg[0] + cpu->X) & 0xFF;
 			lWeight = *(Mapper_Get(mapper, AS_CPU, address));
-			hWeight = *(Mapper_Get(mapper, AS_CPU,
-						(address + 1) & 0xFF));
+			hWeight = *(Mapper_Get(mapper, AS_CPU, (address + 1) & 0xFF));
 			address = (hWeight << 8) + lWeight;
 			self->dataMem = Mapper_Get(mapper, AS_CPU, address);
 			break;
@@ -289,8 +287,7 @@ uint8_t Instruction_Resolve(Instruction *self, CPU *cpu) {
 		case INY :
 			address = self->opcodeArg[0] & 0xFF;
 			lWeight = *(Mapper_Get(mapper, AS_CPU, address));
-			hWeight = *(Mapper_Get(mapper, AS_CPU,
-						(address + 1) & 0xFF));
+			hWeight = *(Mapper_Get(mapper, AS_CPU, (address + 1) & 0xFF));
 			address = (hWeight << 8) + lWeight;
 			if ((address & 0xFF00) != ((address + cpu->Y) & 0xFF00))
 				self->pageCrossed = 1;
@@ -298,7 +295,7 @@ uint8_t Instruction_Resolve(Instruction *self, CPU *cpu) {
 			self->dataMem = Mapper_Get(mapper, AS_CPU, address);
 			break;
 
-		case IMM : /* Immediate : Nothing to do*/
+		case IMM :
 			self->dataMem = self->opcodeArg;
 			break;
 
@@ -307,7 +304,7 @@ uint8_t Instruction_Resolve(Instruction *self, CPU *cpu) {
 			self->dataMem = Mapper_Get(mapper, AS_CPU, address);
 			break;
 
-		case REL : /* Immediate : Nothing to do*/
+		case REL :
 			self->dataMem = self->opcodeArg;
 			break;
 
@@ -342,11 +339,11 @@ uint8_t Instruction_Resolve(Instruction *self, CPU *cpu) {
 			break;
 
 		default :
-			return 0;
-			break;
+			ERROR_MSG("can't resolve addressing mode of the next instruction");	
+			return EXIT_FAILURE;
 	}
 	self->dataAddr = address;
-	return 1;
+	return EXIT_SUCCESS;
 }
 
 void Instruction_PrintLog(Instruction *self, CPU *cpu, uint32_t clockCycle) {
@@ -355,8 +352,7 @@ void Instruction_PrintLog(Instruction *self, CPU *cpu, uint32_t clockCycle) {
 	/* Open log file for append line into */
 	fLog = fopen("cpu.log", "a+");
 	if (fLog == NULL) {
-		fprintf(stderr, "Error: can't create cpu.log file "
-				"at %s, line %d.\n", __FILE__, __LINE__);
+		ERROR_MSG("can't access cpu.log");
 		return;
 	}
 
