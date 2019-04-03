@@ -8,6 +8,7 @@
 
 #include "loader.h"
 #include "../mapper/nrom.h"
+#include "../../common/macro.h"
 
 /* Mapper function LUT */
 Mapper* (*createLUT[MAPPER_TOTAL])(Header*) = {
@@ -62,15 +63,13 @@ Mapper * loadROM(char* filename){
 	FILE *romFile = NULL;
 	romFile = fopen(filename,"rb");
 	if(romFile ==  (FILE*)NULL){
-		fprintf(stderr,"Couldn't open ROM file (is the path right?) "
-				"at %s, line %d\n", __FILE__, __LINE__);
+		ERROR_MSG("can't open ROM file (is the path right?)");
 		return NULL;
 	}
 
 	Header * header = malloc(sizeof(Header));
 	if(header == (Header*)NULL){
-		fprintf(stderr, "Couldn't allocate Header structure memory "
-				"at %s, line %d\n", __FILE__, __LINE__);
+		ERROR_MSG("can't allocate Header structure");
 		free(header);
 		fclose(romFile);
 		return NULL;
@@ -79,8 +78,7 @@ Mapper * loadROM(char* filename){
 	/* Storing the .nes header into a 16 unsigned Byte table */
 	uint8_t h[16];
 	if (fread(h,16,1,romFile) != 1){
-		fprintf(stderr, "Error while reading the file header "
-				"at %s, line %d\n", __FILE__, __LINE__);
+		ERROR_MSG("while reading file header");
 		free(header);
 		fclose(romFile);
 		return NULL;
@@ -88,7 +86,7 @@ Mapper * loadROM(char* filename){
 
 	/* Checking the file format */
 	if(h[0]!='N' || h[1]!='E' || h[2]!='S' || h[3]!=26){
-		fprintf(stderr, "Given ROM is not a .nes file\n");
+		ERROR_MSG("given ROM is not a .nes file");
 		free(header);
 		fclose(romFile);
 		return NULL;
@@ -97,7 +95,7 @@ Mapper * loadROM(char* filename){
 	/* Checking its integrity, only supports iNES (1.0) format */
 	for(int i=10; i<16 ; i++){
 		if(h[i]!=0){
-			fprintf(stderr,"Given ROM is not upright or may be a rip\n");
+			ERROR_MSG("given ROM is not upright or may be a rip");
 			free(header);
 			fclose(romFile);
 			return NULL;
@@ -109,7 +107,7 @@ Mapper * loadROM(char* filename){
 
 	/* Checking if mapper is described */
 	if(header->mapper > MAPPER_TOTAL || createLUT[header->mapper] == NULL){
-		fprintf(stderr,"ROM Mapper is not described (yet)\n");
+		ERROR_MSG("ROM mapper is not described (yet)");
 		free(header);
 		fclose(romFile);
 		return NULL;

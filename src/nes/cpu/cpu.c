@@ -3,15 +3,16 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "../../common/macro.h"
 
-CPU* CPU_Create(Mapper* mapper){
 
-	CPU* self = (CPU *)malloc(sizeof(CPU));
+CPU* CPU_Create(Mapper *mapper){
+
+	CPU* self = (CPU*) malloc(sizeof(CPU));
 
 	/*	If allocation failed, return NULL */
 	if (self == NULL) {
-		fprintf(stderr, "Error: can't allocate CPU structure "
-				"at %s, line %d.\n", __FILE__, __LINE__);
+		ERROR_MSG("can't allocate CPU structure");
 		return self;
 	}
 
@@ -24,7 +25,7 @@ CPU* CPU_Create(Mapper* mapper){
 uint8_t CPU_Init(CPU* self) {
 
 	if (self == NULL)
-		return 1;
+		return EXIT_FAILURE;
 
 	/* 8-bit registers */
 	self->A = 0;
@@ -39,14 +40,14 @@ uint8_t CPU_Init(CPU* self) {
 	/* Remove debug log */
 	remove("cpu.log");
 
-	return 0;
+	return EXIT_SUCCESS;
 }
 
 uint8_t CPU_InterruptManager(CPU* self, uint8_t* context){
 
 	uint8_t cycleCount = 0;
 	uint16_t jump_address = 0; /* address of the interrupt routine */
-	uint8_t* ptr; /* pointer used to fetch and write in memory */
+	uint8_t tmp; /* temporary variable to get data from memory */
 
 	const uint8_t R = *context & 1UL;
 	const uint8_t N = (*context >> 1) & 1UL;
@@ -68,19 +69,16 @@ uint8_t CPU_InterruptManager(CPU* self, uint8_t* context){
 	else if (N || I) {
 
 		/* push PC MSByte on stack */
-		ptr = Mapper_Get(self->mapper, AS_CPU, (0x0100+self->SP));
-		*ptr = (uint8_t)(self->PC >> 8);
-		self->SP --;
+		tmp = self->PC >> 8;
+		_PUSH(self, &tmp); 
 
 		/* push PC LSByte on stack */
-		ptr = Mapper_Get(self->mapper, AS_CPU, (0x0100+self->SP));
-		*ptr = (uint8_t)(self->PC);
-		self->SP --;
+		tmp = self->PC & 0xFF;
+		_PUSH(self, &tmp); 
 
 		/* push P on stack */
-		ptr = Mapper_Get(self->mapper, AS_CPU, (0x0100+self->SP));
-		*ptr = (self->P & ~(1UL << 4)); /* clear B bit on stack */
-		self->SP --;
+		tmp = self->P & ~(1UL << 4); /* Clear B flag on stack */
+		_PUSH(self, &tmp); 
 	}
 	else { /* if IRQ occured but they are disabled */
 		return cycleCount;
@@ -104,12 +102,10 @@ uint8_t CPU_InterruptManager(CPU* self, uint8_t* context){
 	}
 
 	/* fetch PC LSByte */
-	ptr = Mapper_Get(self->mapper, AS_CPU, jump_address);
-	self->PC = (uint16_t)(*ptr);
+	self->PC = (uint16_t) _LOAD(self, jump_address);
 
 	/* fetch PC MSByte */
-	ptr = Mapper_Get(self->mapper, AS_CPU, jump_address+1);
-	self->PC |= (uint16_t)(*ptr) << 8;
+	self->PC |= (uint16_t) (_LOAD(self, jump_address + 1) << 8);
 
 	/* set I flag to disable further IRQs */
 	self->P |= (1UL << 2);
@@ -120,43 +116,45 @@ uint8_t CPU_InterruptManager(CPU* self, uint8_t* context){
 	return cycleCount;
 }
 
-uint32_t CPU_Execute(CPU* self, uint8_t* context, uint32_t *clockCycle) {
-	if (self == NULL)
-		return 0;
-
+uint8_t CPU_Execute(CPU* self, uint8_t* context, uint32_t *clockCycle) {
+	/* Instruction that will be initialize for execution */
 	Instruction inst;
 
 	*clockCycle += CPU_InterruptManager(self, context); 
 
 	/* If no DMA operation is on-going, execute program */
-	if (!Instruction_DMA(&inst, self, clockCycle)) {
+	if (Instruction_DMA(&inst, self, clockCycle) == DMA_OFF) {
 		/* Fetch instruction information from opcode and arg */
-		if (Instruction_Fetch(&inst, self) == 0)
-			return 0;
+		if (Instruction_Fetch(&inst, self) == EXIT_FAILURE)
+			return EXIT_FAILURE;
 
 		/* Resolve addressing mode from instruction information */
-		if (Instruction_Resolve(&inst, self) == 0)
-			return 0;
+		if (Instruction_Resolve(&inst, self) == EXIT_FAILURE) 
+			return EXIT_FAILURE;
 	}
 
-	/* Log execution information */
+#ifdef DEBUG_CPU
+	/* Log execution information
+	 * This operation will drastically impact execution time */
 	Instruction_PrintLog(&inst, self, *clockCycle); 
-	
+#endif
+
 	/* If no instruction is coded for this opcode, exit */
-	if (inst.opcode.inst == NULL)
-		return 0;
+	if (inst.opcode.inst == NULL) {
+		ERROR_MSG("instruction fetched is not described");	
+		return EXIT_FAILURE;
+	}
 
 	/* Execute instruction */
 	*clockCycle += inst.opcode.inst(self, &inst);	
 
-	return *clockCycle;
+	return EXIT_SUCCESS;
 }
 
 void CPU_Destroy(CPU* self){
-
 	if (self == NULL)
 		return;
-
+	/* Free CPU */
 	free(self);
 	return;
 }

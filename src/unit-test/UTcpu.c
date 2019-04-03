@@ -62,7 +62,7 @@ static void test_CPU_ultimate(void **state) {
 
 	/* Execute CPU for 5003 instructions (instruction before illegal opcode) */
 	for (i = 0; i < 5003; i++) {
-		assert_int_not_equal(CPU_Execute(self, &context, &clockCount), 0);
+		assert_int_equal(CPU_Execute(self, &context, &clockCount), EXIT_SUCCESS);
 	}
 
 	/* Diff between log files to ensure that CPU is working as expected */
@@ -347,12 +347,14 @@ static void test_CPU_Execute(void **state) {
 	memory[0] = 0xAA;
 
 	/* Expect 4 clock cycle to be used for ADC_ABS */
-	assert_int_equal(CPU_Execute(self, &context, &clk), 4);
+	assert_int_equal(CPU_Execute(self, &context, &clk), EXIT_SUCCESS);
+	assert_int_equal(clk, 4);
 	/* Verify instruction execution */
 	assert_int_equal(self->PC, 0x8003);
 	assert_int_equal(self->A, 0xAB);
 	/* Expect 7 clock cycle to be used after JMP_ABS */
-	assert_int_equal(CPU_Execute(self, &context, &clk), 7);
+	assert_int_equal(CPU_Execute(self, &context, &clk), EXIT_SUCCESS);
+	assert_int_equal(clk, 7);
 	assert_int_equal(self->PC, 0x9000);
 	assert_int_equal(self->A, 0xAB);
 }

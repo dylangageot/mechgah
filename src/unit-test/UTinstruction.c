@@ -65,13 +65,10 @@ static void test_Instruction_DMA(void **state) {
 	assert_int_equal(clockCycle, 1027);
 	assert_int_equal(Instruction_DMA(&inst, self, &clockCycle), 0); 
 	assert_int_equal(self->cntDMA, -1); 
-
-
-
 }
 
-static void test_instruction_fetch(void **state){
-	CPU *self =(CPU*)*state;
+static void test_Instruction_Fetch(void **state){
+	CPU *self = (CPU*) *state;
 	Mapper *mapper = self->mapper;
 	Instruction * instru = malloc(sizeof(Instruction));
 	if(instru == NULL) return;
@@ -81,28 +78,26 @@ static void test_instruction_fetch(void **state){
 	/* 0x98 -> opcode d'une instruction utilisant comme m_d IMPLED*/
 	self->PC = 0x80F0;
 	*(Mapper_Get(mapper, AS_CPU, 0x80F0)) = 0x98;
-	assert_int_equal(Instruction_Fetch(instru,self),1);
+	assert_int_equal(Instruction_Fetch(instru,self), EXIT_SUCCESS);
 	assert_int_equal(instru->nbArg, 0);
 	/* 0xB5 -> opcode d'une instruction utilisant comme m_d ZEX*/
 	self->PC = 0x80F0;
 	*(Mapper_Get(mapper, AS_CPU, 0x80F0)) = 0xB5;
-	assert_int_equal(Instruction_Fetch(instru,self),1);
+	assert_int_equal(Instruction_Fetch(instru,self), EXIT_SUCCESS);
 	assert_int_equal(instru->nbArg, 1);
 	assert_int_equal(instru->opcodeArg[0],0x12);
 	/* 0x98 -> opcode d'une instruction utilisant comme m_d ABX*/
 	self->PC = 0x80F0;
 	*(Mapper_Get(mapper, AS_CPU, 0x80F0)) = 0xD9;
-	assert_int_equal(Instruction_Fetch(instru,self),1);
+	assert_int_equal(Instruction_Fetch(instru,self), EXIT_SUCCESS);
 	assert_int_equal(instru->nbArg, 2);
 	assert_int_equal(instru->opcodeArg[0],0x12);
 	assert_int_equal(instru->opcodeArg[1],0x13);
 	/* 0x03 -> opcode inexistant*/
 	self->PC = 0x80F0;
 	*(Mapper_Get(mapper, AS_CPU, 0x80F0)) = 0x03;
-	assert_int_equal(Instruction_Fetch(NULL,NULL),0);
-	assert_int_equal(Instruction_Fetch(instru,self),0);
+	assert_int_equal(Instruction_Fetch(instru,self), EXIT_FAILURE);
 	assert_int_equal(instru->nbArg, 0);
-	assert_int_equal(Instruction_Fetch(NULL,NULL),0);
 
 	free(instru);
 }
@@ -125,7 +120,7 @@ static void test_Instruction_PrintLog(void **state) {
 	self->Y = 0x33;
 	self->P = 0x44;
 	self->SP = 0x55;
-	assert_int_equal(Instruction_Fetch(&inst, self), 1);
+	assert_int_equal(Instruction_Fetch(&inst, self), EXIT_SUCCESS);
 	remove("cpu.log");
 	Instruction_PrintLog(&inst, self, 555);
 	fLog = fopen("cpu.log", "r");
@@ -142,7 +137,7 @@ static void test_addressing_IMP(void **state){
 
 	instru->opcode.addressingMode = IMP;
 
-	assert_int_equal(Instruction_Resolve(instru,self),1);
+	assert_int_equal(Instruction_Resolve(instru,self), EXIT_SUCCESS);
 	free(instru);
 }
 
@@ -371,13 +366,12 @@ static void test_addressing_ABI(void **state){
 static void test_addressing_MIS(void **state){
 	CPU *self=(CPU*)*state;
 	Instruction * instru = malloc(sizeof(Instruction));
-	if(instru == NULL) return;
+	if (instru == NULL) return;
 
 	instru->opcode.addressingMode = NUL;
 
-	Instruction_Resolve(instru,self);
-	assert_int_equal(Instruction_Resolve(instru,self),0);
-	assert_int_equal(Instruction_Resolve(NULL,NULL),0);
+	Instruction_Resolve(instru, self);
+	assert_int_equal(Instruction_Resolve(instru, self), EXIT_FAILURE);
 	free(instru);
 }
 
@@ -2827,7 +2821,7 @@ int run_instruction(void) {
 	};
 	const struct CMUnitTest test_fetch[] = {
 		cmocka_unit_test(test_Instruction_DMA),
-		cmocka_unit_test(test_instruction_fetch),
+		cmocka_unit_test(test_Instruction_Fetch),
 		cmocka_unit_test(test_Instruction_PrintLog),
 	};
 	int out = 0;

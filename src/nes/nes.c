@@ -1,6 +1,7 @@
 #include "nes.h"
 #include "loader/loader.h"
 #include "mapper/ioreg.h"
+#include "../common/macro.h"
 
 NES* NES_Create(char *filename) {
 	NES *self = (NES*) malloc(sizeof(NES));
@@ -12,9 +13,9 @@ NES* NES_Create(char *filename) {
 		/* Create instance of PPU */
 		self->ppu = PPU_Create(self->mapper);
 		/* If an allocation goes wrong, free everything */
-		if ((self->mapper == NULL) || (self->cpu == NULL)) {
-			fprintf(stderr, "Error: can't allocate memory for NES structure "
-				"at %s, line %d.\n", __FILE__, __LINE__);
+		if ((self->mapper == NULL) || (self->cpu == NULL) || 
+			(self->ppu == NULL)) {
+			ERROR_MSG("can't allocate memory for NES");
 			NES_Destroy(self);
 			return NULL;
 		}
@@ -24,7 +25,8 @@ NES* NES_Create(char *filename) {
 		CPU_Init(self->cpu);
 		/* Set to zero clock counter */
 		self->clockCount = 0;
-	}
+	} else
+		ERROR_MSG("can't allocate NES structure");
 
 	return self;
 }

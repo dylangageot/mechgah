@@ -11,7 +11,9 @@
 
 #include "cpu.h"
 
-#define NBARG_DMA 0xFF
+#define DMA_OFF		0
+#define DMA_ON		1
+#define NBARG_DMA	0xFF
 
 typedef struct Instruction Instruction;
 

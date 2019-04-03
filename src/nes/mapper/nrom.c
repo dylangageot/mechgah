@@ -1,13 +1,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "nrom.h"
+#include "../../common/macro.h"
 
 Mapper* MapNROM_Create(Header * header) {
 	MapNROM *mapperData = (MapNROM*) malloc(sizeof(MapNROM));
 	/*	If allocation failed, return NULL */
 	if (mapperData == NULL) {
-		fprintf(stderr, "Error: can't allocate MapNROM structure "
-				"at %s, line %d.\n", __FILE__, __LINE__);
+		ERROR_MSG("can't allocate MapNROM structure");
 		return NULL;
 	}
 
@@ -61,8 +61,7 @@ Mapper* MapNROM_Create(Header * header) {
 		(mapperData->cpu.ioReg == NULL) || (mapperData->cpu.sram == NULL) ||
 		(mapperData->ppu.chr == NULL) || (mapperData->ppu.nametable == NULL) ||
 		(mapperData->ppu.palette == NULL)) {
-		fprintf(stderr, "Error: can't allocate memory for NROM "
-				"at %s, line %d.\n", __FILE__, __LINE__);
+		ERROR_MSG("can't allocate memory for NROM");
 		Mapper_Destroy(self);
 		return NULL;
 	}
@@ -114,19 +113,19 @@ void* MapNROM_Get(void* mapperData, uint8_t space, uint16_t address) {
 		MapNROM_CPU *cpu = &map->cpu;
 		/* Which memory is addressed? */
 		/* 0x0000 -> 0x1FFF : RAM */
-		if (_ADDRESS_INF(address, 0x1FFF)) {
+		if (ADDRESS_INF(address, 0x1FFF)) {
 			return cpu->ram + (address & 0x07FF);
 		/* 0x2000 -> 0x4017 : IO bank 1 */
-		} else if (_ADDRESS_IN(address, 0x2000, 0x401F)) {
+		} else if (ADDRESS_IN(address, 0x2000, 0x401F)) {
 			return IOReg_Get(cpu->ioReg, address);
 		/* 0x6000 -> 0x7FFF : SRAM */
-		} else if (_ADDRESS_IN(address, 0x6000, 0x7FFF)) {
+		} else if (ADDRESS_IN(address, 0x6000, 0x7FFF)) {
 			return cpu->sram + (address & 0x1FFF);
 		/* 0x8000 -> 0xBFFF : PRGROM 1 */
-		} else if (_ADDRESS_IN(address, 0x8000, 0xBFFF)) {
+		} else if (ADDRESS_IN(address, 0x8000, 0xBFFF)) {
 			return cpu->rom + (address & 0x3FFF);
 		/* 0xC000 -> 0xFFFF : PRGROM 2 */
-		} else if (_ADDRESS_SUP(address, 0xC000)) {
+		} else if (ADDRESS_SUP(address, 0xC000)) {
 			/* Function of ROM size, map twice or following memory */
 			switch (map->romSize % 2) {
 				case NROM_16KIB:
@@ -144,10 +143,10 @@ void* MapNROM_Get(void* mapperData, uint8_t space, uint16_t address) {
 		address &= 0x3FFF;
 		/* Which memory is addressed? */
 		/* 0x0000 -> 0x1FFF : Pattern Table */
-		if (_ADDRESS_INF(address, 0x1FFF)) {
+		if (ADDRESS_INF(address, 0x1FFF)) {
 			return ppu->chr + (address & 0x1FFF);
 		/* 0x2000 -> 0x3EFF : Nametable and Attribute Table */
-		} else if (_ADDRESS_IN(address, 0x2000, 0x3EFF)) {
+		} else if (ADDRESS_IN(address, 0x2000, 0x3EFF)) {
 			/* Nametable Mirroring */
 			switch (map->mirroring % 2) {
 				case NROM_HORIZONTAL:
@@ -164,7 +163,7 @@ void* MapNROM_Get(void* mapperData, uint8_t space, uint16_t address) {
 					break;
 			}
 		/* 0x3F00 -> 0x3FFF : Palette */
-		} else if (_ADDRESS_IN(address, 0x3F00, 0x3FFF)) {
+		} else if (ADDRESS_IN(address, 0x3F00, 0x3FFF)) {
 			return ppu->palette + (address & 0x00FF);
 		}
 
