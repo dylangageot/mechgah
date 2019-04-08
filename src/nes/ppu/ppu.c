@@ -41,13 +41,15 @@ char* RenderColorPalette(void) {
 	return (char*) tab;
 }
 
-void PPU_Execute(PPU* self, uint8_t *context, uint32_t clockCycle) {
+uint8_t PPU_Execute(PPU* self, uint8_t *context, uint8_t clock) {
 	if ((self == NULL) || (context == NULL))
-		return;
+		return EXIT_FAILURE;
 
 	if (Mapper_Ack(self->mapper, 0x2004)) {
-		printf("[PPU] PPUDATA:%02X accessed at CYC:%d\n", self->OAMDATA, clockCycle);
+		printf("[PPU] PPUDATA:%02X accessed at CYC:%d\n", self->OAMDATA, clock);
 	}
+
+	return EXIT_SUCCESS;
 }
 
 void PPU_Destroy(PPU *self) {
