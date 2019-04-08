@@ -31,8 +31,16 @@ int run_UTloader(void);
 
 /**
  * \fn run_UTcpu
- * \brief Unit test of interrupt manager
+ * \brief Unit test of CPU module
  *
  * \return 0 if passed, number of failed otherwise
  */
 int run_UTcpu(void);
+
+/**
+ * \fn run_UTstack
+ * \brief Unit test of Stack module
+ *
+ * \return 0 if passed, number of failed otherwise
+ */
+int run_UTstack(void);
