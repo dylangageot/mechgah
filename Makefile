@@ -9,6 +9,7 @@ UTEST		= UTest
 # directories and sources definition
 NESDIR		= src/nes
 UTESTDIR	= src/unit-test
+COMMONDIR	= src/common
 SRC  		= $(NESDIR)/mapper/nrom.c \
 			  $(NESDIR)/mapper/mapper.c \
 			  $(NESDIR)/mapper/ioreg.c \
@@ -17,10 +18,12 @@ SRC  		= $(NESDIR)/mapper/nrom.c \
 			  $(NESDIR)/cpu/cpu.c \
 			  $(NESDIR)/ppu/ppu.c \
 			  $(NESDIR)/nes.c \
+			  $(COMMONDIR)/stack.c \
 			  $(UTESTDIR)/UTnrom.c \
 			  $(UTESTDIR)/UTinstruction.c \
 			  $(UTESTDIR)/UTloader.c \
 			  $(UTESTDIR)/UTcpu.c \
+			  $(UTESTDIR)/UTstack.c \
 
 # use gcc
 CC			= gcc
