@@ -10,6 +10,14 @@
 #define PPU_H
 
 #include "../mapper/mapper.h"
+#include "../../common/stack.h"
+
+typedef struct {
+	uint16_t v;
+	uint16_t t;
+	uint8_t x;
+	uint8_t w;
+} VRAM;
 
 typedef struct {
 	/* IO Register */
@@ -22,16 +30,16 @@ typedef struct {
 	uint8_t PPUADDR;
 	uint8_t PPUDATA;
 	/* Internal Register */
-	uint16_t VRAMADDR;
+	VRAM vram;
 	uint16_t cycle;
-	int16_t scanline;
+	uint16_t scanline;
 	Mapper *mapper;
 } PPU;
 
 char* RenderColorPalette(void);
 
 /**
- * \brief PPU_Create
+ * \fn PPU_Create
  *
  * \param mapper instance of Mapper
  *
@@ -40,13 +48,79 @@ char* RenderColorPalette(void);
 PPU* PPU_Create(Mapper *mapper);
 
 /**
- * \brief PPU_Execute
+ * \fn PPU_Execute
  *
  * \param self instance of PPU
  * \param context wire through every component
- * \param clockCycle number of clock cycle consummed
+ * \param clock number of PPU cycle to consumme
+ *
+ * \return EXIT_SUCCESS if succeed, EXIT_FAILURE otherwise
  */
-void PPU_Execute(PPU* self, uint8_t *context, uint32_t clockCycle);
+uint8_t PPU_Execute(PPU *self, uint8_t *context, uint8_t clock);
+
+/**
+ * \fn PPU_CheckRegister 
+ *
+ * \param self instance of PPU
+ *
+ * \return EXIT_SUCCESS if succeed, EXIT_FAILURE otherwise 
+ */
+uint8_t PPU_CheckRegister(PPU *self); 
+
+/**
+ * \fn PPU_ManageTiming
+ *
+ * \param self instance of PPU
+ * \param taskList instance of Stack to schedule task to execute
+ *
+ * \return EXIT_SUCCESS if succeed, EXIT_FAILURE otherwise
+ */
+uint8_t PPU_ManageTiming(PPU *self, Stack *taskList);
+
+/**
+ * \fn PPU_RefreshRegister
+ *
+ * \param self instance of PPU
+ *
+ * \return EXIT_SUCCESS if succeed, EXIT_FAILURE otherwise
+ */
+uint8_t PPU_RefreshRegister(PPU *self);
+
+/**
+ * \fn PPU_FetchTile
+ *
+ * \param self instance of PPU
+ *
+ * \return EXIT_SUCCESS if succeed, EXIT_FAILURE otherwise
+ */
+uint8_t PPU_FetchTile(PPU *self);
+
+/**
+ * \fn PPU_SpriteEvaluation
+ *
+ * \param self instance of PPU
+ *
+ * \return EXIT_SUCCESS if succeed, EXIT_FAILURE otherwise
+ */
+uint8_t PPU_SpriteEvaluation(PPU *self);
+
+/**
+ * \fn PPU_FetchSprite
+ *
+ * \param self instance of PPU
+ *
+ * \return EXIT_SUCCESS if succeed, EXIT_FAILURE otherwise
+ */
+uint8_t PPU_FetchSprite(PPU *self);
+
+/**
+ * \fn PPU_Draw
+ *
+ * \param self instance of PPU
+ *
+ * \return EXIT_SUCCESS if succeed, EXIT_FAILURE otherwise
+ */
+uint8_t PPU_Draw(PPU *self);
 
 /**
  * \brief PPU_Destroy
