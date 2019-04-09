@@ -64,6 +64,7 @@ run-test: $(UTEST)
 # cleaning rule
 clean:
 	rm -f *.o *.d $(OBJS) $(SRC:.c=.gcda) $(SRC:.c=.d) $(OUTNAME) $(UTEST) \
-	$(SRC:.c=.gcno) $(SRC:.c=.gcov) *.gcda *.gcno *.gcov *.info *~ -r out
+	$(SRC:.c=.gcno) $(SRC:.c=.gcov) *.gcda *.gcno *.gcov *.info *~ -r out  \
+	*.log
 
 include $(shell find -name '*.d' | sed 's\./\\')

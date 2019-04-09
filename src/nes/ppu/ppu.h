@@ -31,6 +31,7 @@ typedef struct {
 	uint8_t PPUDATA;
 	/* Internal Register */
 	VRAM vram;
+	uint8_t OAM[256];
 	uint16_t cycle;
 	uint16_t scanline;
 	Mapper *mapper;

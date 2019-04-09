@@ -1,4 +1,5 @@
 #include "ppu.h"
+#include "../../common/macro.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -23,27 +24,101 @@ static uint32_t colorPalette[64] = {
 };
 
 PPU* PPU_Create(Mapper *mapper) {
-	if (mapper == NULL)
-		return NULL;
-
 	/* Allocate PPU structure */
 	PPU *self = (PPU*) malloc(sizeof(PPU));
-	if (self != NULL) {
-		self->mapper = mapper;
+	if (self == NULL) {
+		ERROR_MSG("can't allocate memory for PPU structure");
+		return NULL;
 	}
 
+	/* Connect mapper to PPU */
+	self->mapper = mapper;
 	return self;
 }
 
 char* RenderColorPalette(void) {
+	/* Copy Color Palette to a new array */
 	uint32_t *tab = (uint32_t*) malloc(64 * sizeof(uint32_t));
 	memcpy(tab, colorPalette, 64 * sizeof(uint32_t));
 	return (char*) tab;
 }
 
+uint8_t PPU_CheckRegister(PPU *self) {
+	/* PPUCTRL behavior:
+	 * Write	->	Update VRAM.t */
+	if (Mapper_Ack(self->mapper, 0x2000)) {
+		/* t: ...BA.. ........ = d: ......BA */
+		self->vram.t &= ~0x0C00;
+		self->vram.t |= (self->PPUCTRL & 0x03) << 10;
+		return EXIT_SUCCESS;
+	}
+
+
+	/* PPUSTATUS behavior:
+	 * Read		->	Clear Vertical Blank Bit and VRAM.w latch */
+	if (Mapper_Ack(self->mapper, 0x2002)) {
+		self->PPUCTRL &= ~(1 << 7);	
+		self->vram.w = 0;
+		return EXIT_SUCCESS;
+	}
+
+	/* OAMDATA behavior:
+	 * Write	->	Update OAM[OAMADDR] with given value and inc OAMADDR */
+	if (Mapper_Ack(self->mapper, 0x2003)) {
+		self->OAM[self->OAMADDR++] = self->OAMDATA;
+		return EXIT_SUCCESS;
+	}
+
+	/* PPUSCROLL behavior:
+	 * 2 Write	->	VRAM.w++ and update VRAM.t */
+	if (Mapper_Ack(self->mapper, 0x2005)) {
+		if (self->vram.w == 0) {
+			/* t: ....... ...HGFED = d: HGFED... */
+			self->vram.t &= 0x001F;
+			self->vram.t |= self->PPUSCROLL >> 3;
+			/* x:              CBA = d: .....CBA */
+			self->vram.x = self->PPUSCROLL & 0x07;
+			self->vram.w++;
+		} else {
+			/* t: CBA..HG FED..... = d: HGFEDCBA */
+			self->vram.t &= ~0xE3E0;
+			self->vram.t |= self->PPUSCROLL << 12;
+			self->vram.t |= (self->PPUSCROLL & 0xF8) << 2;
+			self->vram.w = 0;	
+		}
+	}
+
+	/* PPUADDR behavior:
+	 * 2 Write	->	VRAM.w++ and update VRAM.t */
+	if (Mapper_Ack(self->mapper, 0x2006)) {
+		if (self->vram.w == 0) {
+			/* t: 0FEDCBA ........ = d: ..FEDCBA */
+			self->vram.t &= 0x7F00;
+			self->vram.t |= self->PPUSCROLL << 8;
+			self->vram.w++;
+		} else {
+			/* t: ....... HGFEDCBA = d: HGFEDCBA */
+			self->vram.t &= ~0x00FF;
+			self->vram.t |= self->PPUSCROLL;
+			/* v = t */
+			self->vram.v = self->vram.t;
+			self->vram.w = 0;	
+		}
+	}
+
+	/* PPUDATA behavior:
+	 * R/W		->	Update Mapper[VRAM] with given value and VRAM++ */
+	if (Mapper_Ack(self->mapper, 0x2007)) {
+		if (self->PPUCTRL & 0x04)
+			self->vram.v += 32;
+		else
+			self->vram.v++;
+	}
+
+	return EXIT_SUCCESS;
+}
+
 uint8_t PPU_Execute(PPU* self, uint8_t *context, uint8_t clock) {
-	if ((self == NULL) || (context == NULL))
-		return EXIT_FAILURE;
 
 	if (Mapper_Ack(self->mapper, 0x2004)) {
 		printf("[PPU] PPUDATA:%02X accessed at CYC:%d\n", self->OAMDATA, clock);
