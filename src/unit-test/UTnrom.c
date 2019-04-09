@@ -35,14 +35,14 @@ static void test_MapNROM_Get(void **state) {
 
 	/* Test CPU IO bank 1 memory space */
 	for (i = 0x2000; i < 0x4000; i++) {
-		ptr = MapNROM_Get(self, AS_CPU, i);
+		ptr = MapNROM_Get(self, AC_WR | AC_RD | AS_CPU, i);
 		assert_ptr_equal((void*) ptr, 
 				(void*) (self->cpu.ioReg->bank1[i % 8]));
 	}
 
 	/* Test CPU IO bank 2 memory space */
 	for (i = 0x4000; i < 0x4020; i++) {
-		ptr = MapNROM_Get(self, AS_CPU, i);
+		ptr = MapNROM_Get(self, AC_WR | AC_RD | AS_CPU, i);
 		assert_ptr_equal((void*) ptr, 
 				(void*) (self->cpu.ioReg->bank2[i & 0x00FF]));
 	}
@@ -128,7 +128,7 @@ static void test_MapNROM_Ack_NoRead(void **state) {
 static void test_MapNROM_Ack_IsRead(void **state) {
 	uint16_t i;
 	for (i = 0x3FF8; i < 0x4020; i++)
-		assert_int_equal(1, Mapper_Ack((Mapper*) *state, i)); 
+		assert_int_equal(AC_RD | AC_WR, Mapper_Ack((Mapper*) *state, i)); 
 }
 
 static int teardown_NROM(void **state) {

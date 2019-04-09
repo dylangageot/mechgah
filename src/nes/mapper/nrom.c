@@ -108,6 +108,10 @@ void* MapNROM_Get(void* mapperData, uint8_t space, uint16_t address) {
 	/* Cast to MapNROM */
 	MapNROM *map = (MapNROM*) mapperData;
 
+	/* Retrieve type of access and address space to fetch from */
+	uint8_t accessType = space & 0xF0;
+	space &= 0x0F;
+
 	if (space == AS_CPU) {
 
 		MapNROM_CPU *cpu = &map->cpu;
@@ -117,7 +121,7 @@ void* MapNROM_Get(void* mapperData, uint8_t space, uint16_t address) {
 			return cpu->ram + (address & 0x07FF);
 		/* 0x2000 -> 0x4017 : IO bank 1 */
 		} else if (ADDRESS_IN(address, 0x2000, 0x401F)) {
-			return IOReg_Get(cpu->ioReg, address);
+			return IOReg_Get(cpu->ioReg, accessType, address);
 		/* 0x6000 -> 0x7FFF : SRAM */
 		} else if (ADDRESS_IN(address, 0x6000, 0x7FFF)) {
 			return cpu->sram + (address & 0x1FFF);

@@ -52,11 +52,12 @@ uint8_t IOReg_Connect(IOReg *self, CPU *cpu, PPU *ppu);
  * \brief Get pointer to access IO register
  *
  * \param self instance of IOReg
+ * \param accessType which address type and which type of access (rd,wr) ?
  * \param address address to access
  *
  * \return pointer to selected IO register 
  */
-uint8_t* IOReg_Get(IOReg *self, uint16_t address);
+uint8_t* IOReg_Get(IOReg *self, uint8_t accessType, uint16_t address);
 
 /**
  * \brief Check if the selected IO register was accessed before and acknowledge
@@ -86,6 +87,16 @@ void IOReg_Destroy(IOReg *self);
  * \return instance of IOReg
  */
 IOReg* IOReg_Extract(Mapper *mapper);
+
+/**
+ * \enum Acknowledge
+ * \brief Type of access
+ */
+enum Acknowledge {
+	AC_NO = 0,
+	AC_RD = 16,
+	AC_WR = 32
+};
 
 /**
  * \enum Bank1Register

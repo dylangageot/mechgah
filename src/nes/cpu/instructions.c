@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "../../common/macro.h"
+#include "../mapper/ioreg.h"
 
 /* Opcode LUT */
 static Opcode opcode[256] = {
@@ -140,12 +141,16 @@ void _PUSH(CPU *cpu, uint8_t *src) {
 	*(Mapper_Get(cpu->mapper, AS_CPU, 0x0100 | (cpu->SP--))) = *src;
 }
 
-uint8_t _LOAD(CPU *cpu, uint16_t address) {
-	return *Mapper_Get(cpu->mapper, AS_CPU, address);
+uint8_t* _LOAD(CPU *cpu, uint16_t address) {
+	return Mapper_Get(cpu->mapper, AC_RD | AS_CPU, address);
 }
 
 void _STORE(CPU *cpu, uint16_t address, uint8_t *src) {
-	*(Mapper_Get(cpu->mapper, AS_CPU, address)) = *src;
+	*(Mapper_Get(cpu->mapper, AC_WR | AS_CPU, address)) = *src;
+}
+
+void _SET_WR(CPU *cpu, uint16_t address) {
+	Mapper_Get(cpu->mapper, AC_WR | AS_CPU, address);
 }
 
 uint8_t _IF_CARRY(CPU *cpu) {
@@ -206,7 +211,7 @@ uint8_t Instruction_DMA(Instruction *self, CPU *cpu, uint32_t *clockCycle) {
 		self->pageCrossed = 0;
 		self->opcode.inst = _NOP;
 		/* Load and store */
-		data = _LOAD(cpu, self->dataAddr);
+		data = *(_LOAD(cpu, self->dataAddr));
 		_STORE(cpu, 0x2004, &data); 
 		/* Increment DMA counter */
 		cpu->cntDMA++;
@@ -221,11 +226,10 @@ uint8_t Instruction_DMA(Instruction *self, CPU *cpu, uint32_t *clockCycle) {
 
 uint8_t Instruction_Fetch(Instruction *self, CPU *cpu) {
 	/* Fetch data in memory space with PC value */
-	uint8_t *opc = Mapper_Get(cpu->mapper, AS_CPU, cpu->PC);
+	uint8_t *opc = _LOAD(cpu, cpu->PC);
 	/* Save information before fetching */
 	self->rawOpcode = *opc;
-	self->lastPC = cpu->PC;
-	cpu->PC++;
+	self->lastPC = cpu->PC++;
 	self->opcode = opcode[*(opc++)];
 
 	/* Decode and update PC */
@@ -255,8 +259,10 @@ uint8_t Instruction_Fetch(Instruction *self, CPU *cpu) {
 uint8_t Instruction_Resolve(Instruction *self, CPU *cpu) {
 	uint8_t lWeight, hWeight;
 	uint16_t address = 0;
+	
+	/* Init pageCrossed at 0 */
 	self->pageCrossed = 0;
-	Mapper *mapper = cpu->mapper;
+
 	switch (self->opcode.addressingMode) {
 		case IMP :
 			/* Nothing to do */
@@ -268,31 +274,31 @@ uint8_t Instruction_Resolve(Instruction *self, CPU *cpu) {
 
 		case ZEX :
 			address = (self->opcodeArg[0] + cpu->X) & 0xFF;
-			self->dataMem = Mapper_Get(mapper, AS_CPU, address);
+			self->dataMem = _LOAD(cpu, address);
 			break;
 
 		case ZEY :
 			address = (self->opcodeArg[0] + cpu->Y) & 0xFF;
-			self->dataMem = Mapper_Get(mapper, AS_CPU, address);
+			self->dataMem = _LOAD(cpu, address);
 			break;
 
 		case INX :
 			address = (self->opcodeArg[0] + cpu->X) & 0xFF;
-			lWeight = *(Mapper_Get(mapper, AS_CPU, address));
-			hWeight = *(Mapper_Get(mapper, AS_CPU, (address + 1) & 0xFF));
+			lWeight = *(_LOAD(cpu, address));
+			hWeight = *(_LOAD(cpu, (address + 1) & 0xFF));
 			address = (hWeight << 8) + lWeight;
-			self->dataMem = Mapper_Get(mapper, AS_CPU, address);
+			self->dataMem = _LOAD(cpu, address);
 			break;
 
 		case INY :
 			address = self->opcodeArg[0] & 0xFF;
-			lWeight = *(Mapper_Get(mapper, AS_CPU, address));
-			hWeight = *(Mapper_Get(mapper, AS_CPU, (address + 1) & 0xFF));
+			lWeight = *(_LOAD(cpu, address));
+			hWeight = *(_LOAD(cpu, (address + 1) & 0xFF));
 			address = (hWeight << 8) + lWeight;
 			if ((address & 0xFF00) != ((address + cpu->Y) & 0xFF00))
 				self->pageCrossed = 1;
 			address = (hWeight <<8 ) + lWeight + cpu->Y;
-			self->dataMem = Mapper_Get(mapper, AS_CPU, address);
+			self->dataMem = _LOAD(cpu, address);
 			break;
 
 		case IMM :
@@ -301,7 +307,7 @@ uint8_t Instruction_Resolve(Instruction *self, CPU *cpu) {
 
 		case ZER :
 			address = self->opcodeArg[0] & 0xFF;
-			self->dataMem = Mapper_Get(mapper, AS_CPU, address);
+			self->dataMem = _LOAD(cpu, address);
 			break;
 
 		case REL :
@@ -310,7 +316,7 @@ uint8_t Instruction_Resolve(Instruction *self, CPU *cpu) {
 
 		case ABS :
 			address = (self->opcodeArg[1] << 8) + self->opcodeArg[0];
-			self->dataMem = Mapper_Get(mapper, AS_CPU, address);
+			self->dataMem = _LOAD(cpu, address);
 			break;
 
 		case ABX :
@@ -318,7 +324,7 @@ uint8_t Instruction_Resolve(Instruction *self, CPU *cpu) {
 			if ((address & 0xFF00) != ((address + cpu->X) & 0xFF00))
 				self->pageCrossed = 1;
 			address = (self->opcodeArg[1] << 8) + self->opcodeArg[0] + cpu->X;
-			self->dataMem = Mapper_Get(mapper, AS_CPU, address);
+			self->dataMem = _LOAD(cpu, address);
 			break;
 
 		case ABY :
@@ -326,16 +332,15 @@ uint8_t Instruction_Resolve(Instruction *self, CPU *cpu) {
 			if ((address & 0xFF00) != ((address + cpu->Y) & 0xFF00))
 				self->pageCrossed = 1;
 			address = (self->opcodeArg[1] << 8) + self->opcodeArg[0] + cpu->Y;
-			self->dataMem = Mapper_Get(mapper, AS_CPU, address);
+			self->dataMem = _LOAD(cpu, address);
 			break;
 
 		case ABI :
 			address = (self->opcodeArg[1] << 8) + self->opcodeArg[0];
-			lWeight = *(Mapper_Get(mapper, AS_CPU, address));
-			hWeight = *(Mapper_Get(mapper, AS_CPU,
-						(address & 0xFF00) | ((address + 1) & 0xFF)));
+			lWeight = *(_LOAD(cpu, address));
+			hWeight = *(_LOAD(cpu, (address & 0xFF00) | ((address + 1) & 0xFF)));
 			address = (hWeight << 8) + lWeight;
-			self->dataMem = Mapper_Get(mapper, AS_CPU, address);
+			self->dataMem = _LOAD(cpu, address);
 			break;
 
 		default :
@@ -412,6 +417,7 @@ uint8_t _ASL(CPU *cpu, Instruction *arg) {
 	/* Execute */
 	_SET_CARRY(cpu, *arg->dataMem & 0x80);
 	*arg->dataMem <<= 1;
+	_SET_WR(cpu, arg->dataAddr);
 	_SET_SIGN(cpu, arg->dataMem);
 	_SET_ZERO(cpu, arg->dataMem);
 	/* Manage CPU cycle */
@@ -461,7 +467,7 @@ uint8_t _BRK(CPU *cpu, Instruction *arg) {
 	_PUSH(cpu, &temp);
 	_SET_INTERRUPT(cpu);
 	/* Set program counter from memory */
-	cpu->PC = _LOAD(cpu, 0xFFFE) | (_LOAD(cpu, 0xFFFF) << 8);
+	cpu->PC = *(_LOAD(cpu, 0xFFFE)) | (*(_LOAD(cpu, 0xFFFF)) << 8);
 	return arg->opcode.cycle;
 }
 
@@ -535,6 +541,7 @@ uint8_t _DEC(CPU *cpu, Instruction *arg){
 	_SET_SIGN(cpu,&m);
 	_SET_ZERO(cpu,&m);
 	*(arg->dataMem) = m;
+	_SET_WR(cpu, arg->dataAddr);
 	return arg->opcode.cycle;
 }
 
@@ -576,6 +583,7 @@ uint8_t _INC(CPU *cpu, Instruction *arg){
 	_SET_SIGN(cpu,&m);
 	_SET_ZERO(cpu,&m);
 	*(arg->dataMem) = m;
+	_SET_WR(cpu, arg->dataAddr);
 	return arg->opcode.cycle;
 }
 
@@ -641,6 +649,7 @@ uint8_t _LDY(CPU *cpu, Instruction *arg){
 uint8_t _LSR(CPU *cpu, Instruction *arg){
 	_SET_CARRY(cpu, (*(arg->dataMem) & 0x01));
 	*arg->dataMem >>= 1;
+	_SET_WR(cpu, arg->dataAddr);
 	_SET_SIGN(cpu,arg->dataMem);
 	_SET_ZERO(cpu,arg->dataMem);
 	return arg->opcode.cycle;
@@ -689,6 +698,7 @@ uint8_t _ROL(CPU *cpu, Instruction *arg){
 	if (_IF_CARRY(cpu)){
 		*arg->dataMem |= 0x1;
 	}
+	_SET_WR(cpu, arg->dataAddr);
 	_SET_CARRY(cpu, newCarry == 0x80);
 	_SET_SIGN(cpu, arg->dataMem);
 	_SET_ZERO(cpu, arg->dataMem);
@@ -701,6 +711,7 @@ uint8_t _ROR(CPU *cpu, Instruction *arg){
 	if (_IF_CARRY(cpu)){
 		*arg->dataMem |= 0x80;
 	}
+	_SET_WR(cpu, arg->dataAddr);
 	_SET_CARRY(cpu, newCarry == 0x01);
 	_SET_SIGN(cpu, arg->dataMem);
 	_SET_ZERO(cpu, arg->dataMem);
@@ -751,16 +762,19 @@ uint8_t _SEI(CPU *cpu, Instruction *arg) {
 
 uint8_t _STA(CPU *cpu, Instruction *arg){
 	*(arg->dataMem) = cpu->A;
+	_SET_WR(cpu, arg->dataAddr);
 	return arg->opcode.cycle;
 }
 
 uint8_t _STX(CPU *cpu, Instruction *arg){
 	*(arg->dataMem) = cpu->X;
+	_SET_WR(cpu, arg->dataAddr);
 	return arg->opcode.cycle;
 }
 
 uint8_t _STY(CPU *cpu, Instruction *arg){
 	*(arg->dataMem) = cpu->Y;
+	_SET_WR(cpu, arg->dataAddr);
 	return arg->opcode.cycle;
 }
 
