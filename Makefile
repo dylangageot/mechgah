@@ -24,6 +24,7 @@ SRC  		= $(NESDIR)/mapper/nrom.c \
 			  $(UTESTDIR)/UTloader.c \
 			  $(UTESTDIR)/UTcpu.c \
 			  $(UTESTDIR)/UTstack.c \
+			  $(UTESTDIR)/UTppu.c \
 
 # use gcc
 CC			= gcc
@@ -35,7 +36,7 @@ LDFLAGS 	= -lcmocka -lSDL -lSDL_gfx
 # add debug option to gcc if needed
 DEBUG = no
 ifeq ($(DEBUG),yes)
-	CFLAGS += -g
+	CFLAGS += -g -DDEBUG_CPU
 endif
 
 # compile individual object files
