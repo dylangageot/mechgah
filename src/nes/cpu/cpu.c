@@ -102,10 +102,10 @@ uint8_t CPU_InterruptManager(CPU* self, uint8_t* context){
 	}
 
 	/* fetch PC LSByte */
-	self->PC = (uint16_t) _LOAD(self, jump_address);
+	self->PC = (uint16_t) *(_LOAD(self, jump_address));
 
 	/* fetch PC MSByte */
-	self->PC |= (uint16_t) (_LOAD(self, jump_address + 1) << 8);
+	self->PC |= (uint16_t) (*(_LOAD(self, jump_address + 1)) << 8);
 
 	/* set I flag to disable further IRQs */
 	self->P |= (1UL << 2);

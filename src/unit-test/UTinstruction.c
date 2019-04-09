@@ -41,7 +41,7 @@ static void test_Instruction_DMA(void **state) {
 	assert_int_equal(Instruction_DMA(&inst, self, &clockCycle), 0); 
 
 	/* Request a DMA */
-	*(Mapper_Get(self->mapper, AS_CPU, 0x4014)) = 0x11;
+	*(Mapper_Get(self->mapper, AC_RD | AS_CPU, 0x4014)) = 0x11;
 	assert_int_equal(Instruction_DMA(&inst, self, &clockCycle), 1); 
 	assert_int_equal(clockCycle, 1);
 	for (i = 0; i < 256; i++) {
@@ -54,7 +54,7 @@ static void test_Instruction_DMA(void **state) {
 	assert_int_equal(self->cntDMA, -1); 
 
 	/* Request a DMA with odd clock cycle */
-	*(Mapper_Get(self->mapper, AS_CPU, 0x4014)) = 0x11;
+	*(Mapper_Get(self->mapper, AC_RD | AS_CPU, 0x4014)) = 0x11;
 	assert_int_equal(Instruction_DMA(&inst, self, &clockCycle), 1); 
 	assert_int_equal(clockCycle, 515);
 	for (i = 0; i < 256; i++) {
@@ -469,17 +469,29 @@ static void test_PUSH(void **state) {
 
 static void test_LOAD(void **state) {
 	CPU *self = (CPU*) *state;
-	uint8_t *ptr = Mapper_Get(self->mapper, AS_CPU, 0x1234);
+	uint8_t *ptr = Mapper_Get(self->mapper, AS_CPU, 0x2000);
+	assert_int_equal(Mapper_Ack(self->mapper, 0x2000), 0);
 	*ptr = 0xAA;
-	assert_int_equal(_LOAD(self, 0x1234), 0xAA);
+	assert_int_equal(*_LOAD(self, 0x2000), 0xAA);
+	assert_ptr_equal(_LOAD(self, 0x2000), ptr);
+	assert_int_equal(Mapper_Ack(self->mapper, 0x2000), AC_RD);
 }
 
 static void test_STORE(void **state) {
 	CPU *self = (CPU*) *state;
 	uint8_t val = 0xAA;
-	_STORE(self, 0x1234, &val);
-	uint8_t *ptr = Mapper_Get(self->mapper, AS_CPU, 0x1234);
+	uint8_t *ptr = Mapper_Get(self->mapper, AS_CPU, 0x2000);
+	assert_int_equal(Mapper_Ack(self->mapper, 0x2000), 0);
+	_STORE(self, 0x2000, &val);
 	assert_int_equal(*ptr, 0xAA);
+	assert_int_equal(Mapper_Ack(self->mapper, 0x2000), AC_WR);
+}
+
+static void test_SET_WR(void **state) {
+	CPU *self = (CPU*) *state;
+	assert_int_equal(Mapper_Ack(self->mapper, 0x2000), 0);
+	_SET_WR(self, 0x2000);
+	assert_int_equal(Mapper_Ack(self->mapper, 0x2000), AC_WR);
 }
 
 static void test_IF_CARRY(void **state) {
@@ -724,6 +736,7 @@ static void test_ASL(void **state) {
 	uint8_t (*ptr)(CPU*, Instruction*) = _ASL;
 	uint8_t src = 0xAA, clk = 0;
 	inst.dataMem = &src;
+	inst.dataAddr = 0x2000;
 	inst.pageCrossed = 1;
 
 	/* Verify Opcode LUT */
@@ -733,7 +746,9 @@ static void test_ASL(void **state) {
 	/* Test ASL general behavior */
 	/* Test : Carry bit */
 	self->P = 0;
+	Mapper_Ack(self->mapper, 0x2000);
 	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(Mapper_Ack(self->mapper, 0x2000), AC_WR);
 	assert_int_equal(clk, 2);
 	assert_int_equal(src, (0xAA << 1) & 0xFF);
 	assert_int_equal(self->P, 0x01);
@@ -1125,9 +1140,12 @@ static void test_DEC(void **state){
 	uint8_t (*ptr)(CPU*, Instruction*) = _DEC;
 	uint8_t src = 0x01, clk = 0;
 	inst.dataMem = &src;
+	inst.dataAddr = 0x2000;
 
 	inst.opcode = Opcode_Get(0xC6); /* _DEC Zero page clk=5 */
+	Mapper_Ack(self->mapper, 0x2000);
 	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(Mapper_Ack(self->mapper, 0x2000), AC_WR);
 	assert_int_equal(clk,5);
 	assert_ptr_equal(ptr, inst.opcode.inst);
 
@@ -1247,9 +1265,13 @@ static void test_INC(void **state){
 	uint8_t (*ptr)(CPU*, Instruction*) = _INC;
 	uint8_t src = 0x01, clk = 0;
 	inst.dataMem = &src;
+	inst.dataAddr = 0x2000;
 
+	Mapper_Ack(self->mapper, 0x2000);
 	inst.opcode = Opcode_Get(0xE6); /* _INC Zero page clk=5 */
+	Mapper_Ack(self->mapper, 0x2000);
 	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(Mapper_Ack(self->mapper, 0x2000), AC_WR);
 	assert_int_equal(clk,5);
 	assert_ptr_equal(ptr, inst.opcode.inst);
 
@@ -1542,6 +1564,7 @@ static void test_LSR(void **state){
 	uint8_t (*ptr)(CPU*, Instruction*) = _LSR;
 	uint8_t src = 0x00, clk = 0;
 	inst.dataMem = &src;
+	inst.dataAddr = 0x2000;
 	inst.pageCrossed = 0;
 
 	/* Verify opcode LUT */
@@ -1551,7 +1574,9 @@ static void test_LSR(void **state){
 	/* Signed and Non-Zero */
 	self->P = 0;
 	src = 0xFF;
+	Mapper_Ack(self->mapper, 0x2000);
 	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(Mapper_Ack(self->mapper, 0x2000), AC_WR);
 	assert_int_equal(clk, 2);
 	assert_int_equal(self->P & 0x80,0x00);
 	assert_int_equal(self->P & 0x02,0x00);
@@ -2047,11 +2072,14 @@ static void test_STA(void **state){
 	self->A = 0x11;
 	uint8_t src = 0xFF, clk = 0;
 	inst.dataMem = &src;
+	inst.dataAddr = 0x2000;
 
 	/* Verify opcode LUT */
 	inst.opcode = Opcode_Get(0x85); /* STA ZER */
 	assert_ptr_equal(ptr, inst.opcode.inst);
+	Mapper_Ack(self->mapper, 0x2000);
 	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(Mapper_Ack(self->mapper, 0x2000), AC_WR);
 	assert_int_equal(clk, 3);
 
 	/* Verify general behavior */
@@ -2096,11 +2124,14 @@ static void test_STX(void **state){
 	self->X = 0x11;
 	uint8_t src = 0xFF, clk = 0;
 	inst.dataMem = &src;
+	inst.dataAddr = 0x2000;
 
 	/* Verify opcode LUT */
 	inst.opcode = Opcode_Get(0x86); /* STX ZER */
 	assert_ptr_equal(ptr, inst.opcode.inst);
+	Mapper_Ack(self->mapper, 0x2000);
 	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(Mapper_Ack(self->mapper, 0x2000), AC_WR);
 	assert_int_equal(clk, 3);
 
 	/* Verify general behavior */
@@ -2125,11 +2156,14 @@ static void test_STY(void **state){
 	self->Y = 0x11;
 	uint8_t src = 0xFF, clk = 0;
 	inst.dataMem = &src;
+	inst.dataAddr = 0x2000;
 
 	/* Verify opcode LUT */
 	inst.opcode = Opcode_Get(0x84); /* STY ZER */
 	assert_ptr_equal(ptr, inst.opcode.inst);
+	Mapper_Ack(self->mapper, 0x2000);
 	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(Mapper_Ack(self->mapper, 0x2000), AC_WR);
 	assert_int_equal(clk, 3);
 
 	/* Verify general behavior */
@@ -2245,6 +2279,7 @@ static void test_ROL(void **state){
 	uint8_t (*ptr)(CPU*, Instruction*) = _ROL;
 	uint8_t src = 0x00, clk = 0;
 	inst.dataMem = &src;
+	inst.dataAddr = 0x2000;
 
 	/* Verify opcode LUT */
 	inst.opcode = Opcode_Get(0x2A); /* ROL ACC */
@@ -2253,7 +2288,9 @@ static void test_ROL(void **state){
 	/* initial Carry is 0, bit 7 is 0, bit 6 is 0 */
 	self->P = 0x00;
 	src = 0x3F;
+	Mapper_Ack(self->mapper, 0x2000);
 	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(Mapper_Ack(self->mapper, 0x2000), AC_WR);
 	assert_int_equal(clk, 2);
 	assert_int_equal(self->P & 0x01,0x00);
 	assert_int_equal(self->P & 0x80,0x00);
@@ -2360,6 +2397,7 @@ static void test_ROR(void **state){
 	uint8_t (*ptr)(CPU*, Instruction*) = _ROR;
 	uint8_t src = 0x00, clk = 0;
 	inst.dataMem = &src;
+	inst.dataAddr = 0x2000;
 
 	/* Verify opcode LUT */
 	inst.opcode = Opcode_Get(0x6A); /* ROR ACC */
@@ -2368,7 +2406,9 @@ static void test_ROR(void **state){
 	/* initial Carry is 0, bit 0 is 0 */
 	self->P = 0x00;
 	src = 0xFE;
+	Mapper_Ack(self->mapper, 0x2000);
 	clk = inst.opcode.inst(self, &inst);
+	assert_int_equal(Mapper_Ack(self->mapper, 0x2000), AC_WR);
 	assert_int_equal(clk, 2);
 	assert_int_equal(self->P & 0x01,0x00);
 	assert_int_equal(self->P & 0x80,0x00);
@@ -2736,6 +2776,7 @@ int run_instruction(void) {
 		cmocka_unit_test(test_PUSH),
 		cmocka_unit_test(test_LOAD),
 		cmocka_unit_test(test_STORE),
+		cmocka_unit_test(test_SET_WR),
 		cmocka_unit_test(test_IF_CARRY),
 		cmocka_unit_test(test_IF_OVERFLOW),
 		cmocka_unit_test(test_IF_SIGN),

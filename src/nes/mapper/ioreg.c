@@ -16,7 +16,7 @@ IOReg* IOReg_Create(void) {
 	/* Initialize arrays */
 	uint8_t i;
 	for (i = 0; i < 40; i++)
-		self->acknowledge[i] = 0;
+		self->acknowledge[i] = AC_NO;
 	for (i = 0; i < 8; i++)
 		self->bank1[i] = &(self->dummy);
 	for (i = 0; i < 32; i++)
@@ -45,17 +45,17 @@ uint8_t IOReg_Connect(IOReg *self, CPU *cpu, PPU* ppu) {
 	return EXIT_SUCCESS;
 }
 
-uint8_t* IOReg_Get(IOReg *self, uint16_t address) {
+uint8_t* IOReg_Get(IOReg *self, uint8_t accessType, uint16_t address) {
 	if (self == NULL)
 		return NULL;
 
 	/* If address is in 0x2000-0x3FFF */
 	if (ADDRESS_IN(address, 0x2000, 0x3FFF)) {
-		self->acknowledge[address & 0x0007] = 1;
+		self->acknowledge[address & 0x0007] = accessType;
 		return self->bank1[address % 8];
 	/* If address is in 0x4000-0x4019 */
 	} else if (ADDRESS_IN(address, 0x4000, 0x401F)) {
-		self->acknowledge[(address & 0x001F) + 8] = 1;
+		self->acknowledge[(address & 0x001F) + 8] = accessType;
 		return self->bank2[address & 0x001F];
 	}
 	
@@ -70,11 +70,11 @@ uint8_t IOReg_Ack(IOReg *self, uint16_t address) {
 	/* If address is in 0x2000-0x3FFF */
 	if (ADDRESS_IN(address, 0x2000, 0x3FFF)) {
 		result = self->acknowledge[address % 8];
-		self->acknowledge[address % 8] = 0;
+		self->acknowledge[address % 8] = AC_NO;
 	/* If address is in 0x4000-0x4019 */
 	} else if (ADDRESS_IN(address, 0x4000, 0x401F)) {
 		result = self->acknowledge[(address & 0x001F) + 8];
-		self->acknowledge[(address & 0x001F) + 8] = 0;
+		self->acknowledge[(address & 0x001F) + 8] = AC_NO;
 	}
 	
 	return result;
