@@ -44,3 +44,11 @@ int run_UTcpu(void);
  * \return 0 if passed, number of failed otherwise
  */
 int run_UTstack(void);
+
+/**
+ * \fn run_UTppu
+ * \brief Unit test of PPU module
+ *
+ * \return 0 if passed, number of failed otherwise
+ */
+int run_UTppu(void);

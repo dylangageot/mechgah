@@ -1,5 +1,6 @@
 #include "ppu.h"
 #include "../../common/macro.h"
+#include "../mapper/ioreg.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -44,34 +45,35 @@ char* RenderColorPalette(void) {
 }
 
 uint8_t PPU_CheckRegister(PPU *self) {
+	uint8_t ack = 0;
+
 	/* PPUCTRL behavior:
 	 * Write	->	Update VRAM.t */
-	if (Mapper_Ack(self->mapper, 0x2000)) {
+	if (Mapper_Ack(self->mapper, 0x2000) & AC_WR) {
 		/* t: ...BA.. ........ = d: ......BA */
 		self->vram.t &= ~0x0C00;
 		self->vram.t |= (self->PPUCTRL & 0x03) << 10;
 		return EXIT_SUCCESS;
 	}
 
-
 	/* PPUSTATUS behavior:
 	 * Read		->	Clear Vertical Blank Bit and VRAM.w latch */
 	if (Mapper_Ack(self->mapper, 0x2002)) {
-		self->PPUCTRL &= ~(1 << 7);	
+		self->PPUSTATUS &= ~0x80;	
 		self->vram.w = 0;
 		return EXIT_SUCCESS;
 	}
 
 	/* OAMDATA behavior:
 	 * Write	->	Update OAM[OAMADDR] with given value and inc OAMADDR */
-	if (Mapper_Ack(self->mapper, 0x2003)) {
+	if (Mapper_Ack(self->mapper, 0x2004) & AC_WR) {
 		self->OAM[self->OAMADDR++] = self->OAMDATA;
 		return EXIT_SUCCESS;
 	}
 
 	/* PPUSCROLL behavior:
 	 * 2 Write	->	VRAM.w++ and update VRAM.t */
-	if (Mapper_Ack(self->mapper, 0x2005)) {
+	if (Mapper_Ack(self->mapper, 0x2005) & AC_WR) {
 		if (self->vram.w == 0) {
 			/* t: ....... ...HGFED = d: HGFED... */
 			self->vram.t &= 0x001F;
@@ -82,37 +84,43 @@ uint8_t PPU_CheckRegister(PPU *self) {
 		} else {
 			/* t: CBA..HG FED..... = d: HGFEDCBA */
 			self->vram.t &= ~0xE3E0;
-			self->vram.t |= self->PPUSCROLL << 12;
+			self->vram.t |= (self->PPUSCROLL << 12) & 0x7FFF;
 			self->vram.t |= (self->PPUSCROLL & 0xF8) << 2;
 			self->vram.w = 0;	
 		}
+		return EXIT_SUCCESS;
 	}
 
 	/* PPUADDR behavior:
 	 * 2 Write	->	VRAM.w++ and update VRAM.t */
-	if (Mapper_Ack(self->mapper, 0x2006)) {
+	if (Mapper_Ack(self->mapper, 0x2006) & AC_WR) {
 		if (self->vram.w == 0) {
 			/* t: 0FEDCBA ........ = d: ..FEDCBA */
-			self->vram.t &= 0x7F00;
-			self->vram.t |= self->PPUSCROLL << 8;
+			self->vram.t &= ~0x7F00;
+			self->vram.t |= (self->PPUADDR << 8) & 0x7F00;
 			self->vram.w++;
 		} else {
 			/* t: ....... HGFEDCBA = d: HGFEDCBA */
 			self->vram.t &= ~0x00FF;
-			self->vram.t |= self->PPUSCROLL;
+			self->vram.t |= self->PPUADDR;
 			/* v = t */
 			self->vram.v = self->vram.t;
 			self->vram.w = 0;	
 		}
+		return EXIT_SUCCESS;
 	}
 
 	/* PPUDATA behavior:
 	 * R/W		->	Update Mapper[VRAM] with given value and VRAM++ */
-	if (Mapper_Ack(self->mapper, 0x2007)) {
+	if ((ack = Mapper_Ack(self->mapper, 0x2007))) {
+		if (ack & AC_WR)
+			*Mapper_Get(self->mapper, AS_PPU, self->vram.v) = self->PPUDATA;
+
 		if (self->PPUCTRL & 0x04)
 			self->vram.v += 32;
 		else
 			self->vram.v++;
+		return EXIT_SUCCESS;
 	}
 
 	return EXIT_SUCCESS;
@@ -120,9 +128,7 @@ uint8_t PPU_CheckRegister(PPU *self) {
 
 uint8_t PPU_Execute(PPU* self, uint8_t *context, uint8_t clock) {
 
-	if (Mapper_Ack(self->mapper, 0x2004)) {
-		printf("[PPU] PPUDATA:%02X accessed at CYC:%d\n", self->OAMDATA, clock);
-	}
+	PPU_CheckRegister(self);
 
 	return EXIT_SUCCESS;
 }

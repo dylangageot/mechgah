@@ -7,5 +7,6 @@ int main(void) {
 	out += run_UTloader();
 	out += run_UTcpu();
 	out += run_UTstack();
+	out += run_UTppu();
 	return out;
 }

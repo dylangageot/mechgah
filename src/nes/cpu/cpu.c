@@ -120,6 +120,7 @@ uint8_t CPU_Execute(CPU* self, uint8_t* context, uint32_t *clockCycle) {
 	/* Instruction that will be initialize for execution */
 	Instruction inst;
 
+	/* Check for special event */
 	*clockCycle += CPU_InterruptManager(self, context); 
 
 	/* If no DMA operation is on-going, execute program */
