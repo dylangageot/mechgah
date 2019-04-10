@@ -33,7 +33,8 @@ typedef struct {
 	VRAM vram;
 	uint8_t OAM[256];
 	uint16_t cycle;
-	uint16_t scanline;
+	int16_t scanline;
+	uint8_t nbFrame;
 	Mapper *mapper;
 } PPU;
 
@@ -47,6 +48,16 @@ char* RenderColorPalette(void);
  * \return instance of PPU
  */
 PPU* PPU_Create(Mapper *mapper);
+
+/**
+ * \fn PPU_Init
+ * \brief Initialize PPU structure
+ *
+ * \param self instance of PPU
+ *
+ * \return EXIT_SUCCESS if succeed, EXIT_FAILURE otherwise
+ */
+uint8_t PPU_Init(PPU *self);
 
 /**
  * \fn PPU_Execute
@@ -77,6 +88,47 @@ uint8_t PPU_CheckRegister(PPU *self);
  * \return EXIT_SUCCESS if succeed, EXIT_FAILURE otherwise
  */
 uint8_t PPU_ManageTiming(PPU *self, Stack *taskList);
+
+/**
+ * \fn PPU_ClearFlag
+ * \brief Clear Vertical Blank and Sprite 0 flag
+ *
+ * \param self instance of PPU
+ *
+ * \return EXIT_SUCCESS if succeed, EXIT_FAILURE otherwise
+ */
+uint8_t PPU_ClearFlag(PPU *self);
+
+/**
+ * \fn PPU_SetFlag
+ * \brief Set Vertical Blank flag
+ *
+ * \param self instance of PPU
+ *
+ * \return EXIT_SUCCESS if succeed, EXIT_FAILURE otherwise
+ */
+uint8_t PPU_SetFlag(PPU *self);
+
+/**
+ * \fn PPU_ManageV
+ * \brief Manage increment and boundaries of VRAM.v
+ *
+ * \param self instance of PPU
+ *
+ * \return EXIT_SUCCESS if succeed, EXIT_FAILURE otherwise
+ */
+uint8_t PPU_ManageV(PPU *self);
+
+
+/**
+ * \fn PPU_ClearSecondaryOAM
+ * \brief Clear Secondary OAM
+ *
+ * \param self instance of PPU
+ *
+ * \return EXIT_SUCCESS if succeed, EXIT_FAILURE otherwise
+ */
+uint8_t PPU_ClearSecondaryOAM(PPU *self);
 
 /**
  * \fn PPU_RefreshRegister
