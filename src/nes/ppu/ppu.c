@@ -37,6 +37,32 @@ PPU* PPU_Create(Mapper *mapper) {
 	return self;
 }
 
+uint8_t PPU_Init(PPU *self) {
+	int i;
+
+	/* Init registers */
+	self->scanline = -1;
+	self->cycle = 0;
+	self->vram.w = 0;
+	self->vram.x = 0;
+	self->vram.v = 0;
+	self->vram.t = 0;
+	self->PPUADDR = 0;
+	self->PPUDATA = 0;
+	self->PPUCTRL = 0;
+	self->PPUMASK = 0;
+	self->PPUSTATUS = 0;
+	self->OAMADDR = 0;
+	self->OAMDATA = 0;
+	self->PPUSCROLL = 0;
+	self->nbFrame = 0;
+
+	for (i = 0; i < 256; i++)
+		self->OAM[i] = 0;
+
+	return EXIT_SUCCESS;
+}
+
 char* RenderColorPalette(void) {
 	/* Copy Color Palette to a new array */
 	uint32_t *tab = (uint32_t*) malloc(64 * sizeof(uint32_t));
@@ -125,6 +151,82 @@ uint8_t PPU_CheckRegister(PPU *self) {
 
 	return EXIT_SUCCESS;
 }
+
+uint8_t PPU_ManageTiming(PPU *self, Stack *taskList) {
+
+	/* Pre-render and visible scanlines */
+	if (VALUE_IN(self->scanline, -1, 239)) {
+		/* Skip cycle if odd frame and rendering enable */
+		if ((self->scanline == 0) && (self->cycle == 0)) {
+			if ((self->nbFrame % 2) && ((self->PPUMASK & 0x18) != 0)) {
+				self->cycle++;
+			}
+			self->nbFrame++;  
+		}
+		/* Visible dot part */
+		if (VALUE_IN(self->cycle, 1, 256)) {
+			/* Increment hori(v) every 8's clock */
+			if ((self->cycle % 8) == 0) {
+				Stack_Push(taskList, (void*) PPU_ManageV);
+			}
+			/* Clear Vertical Blank flag and Sprite 0 hit 
+			 * when we are in the second cycle of pre-render line */
+			if ((self->scanline == -1) && (self->cycle == 1)) {
+				Stack_Push(taskList, (void*) PPU_ClearFlag);
+			}
+			/* Clean Secondary OAM */
+			if (VALUE_IN(self->cycle, 1, 64)) {
+				Stack_Push(taskList, (void*) PPU_ClearSecondaryOAM);
+			/* Sprite Evaluation */
+			} else if (VALUE_IN(self->cycle, 65, 256)) {
+				Stack_Push(taskList, (void*) PPU_SpriteEvaluation);
+			}
+			/* Draw pixel */
+			if (VALUE_IN(self->scanline, 0, 239))
+				Stack_Push(taskList, (void*) PPU_Draw);
+			/* Fetch Tile at every cycle */
+			Stack_Push(taskList, (void*) PPU_FetchTile);
+		/* Fetch Sprite part */
+		} else if (VALUE_IN(self->cycle, 257, 320)) { 
+			/* Affect hori(t) to hori(v) 
+			 * or vert(t) to vert(v) */
+			if ((self->cycle == 257) || 
+				(VALUE_IN(self->cycle, 280, 304) && (self->scanline == -1))) {
+				Stack_Push(taskList, (void*) PPU_ManageV);
+			}
+			/* Fetch Sprite at every cycle */
+			Stack_Push(taskList, (void*) PPU_FetchSprite);
+		/* Fetch Tile for next scanline */
+		} else if (VALUE_IN(self->cycle, 321, 336)) {
+			/* Increment hori(v) every 8's clock */
+			if ((self->cycle % 8) == 0) {
+				Stack_Push(taskList, (void*) PPU_ManageV);
+			}
+			/* Fetch tile at every cycle */
+			Stack_Push(taskList, (void*) PPU_FetchTile);
+		}
+	/* Set Vertical Blank flag */
+	} else if ((self->scanline == 241) && (self->cycle == 1)) {
+		Stack_Push(taskList, (void*) PPU_SetFlag);
+	}
+
+	return EXIT_SUCCESS;
+}
+
+uint8_t PPU_SetFlag(PPU *self) { return EXIT_SUCCESS; }
+
+uint8_t PPU_ClearFlag(PPU *self) {
+	self->PPUSTATUS &= ~0xE0;
+	return EXIT_SUCCESS;
+}
+
+uint8_t PPU_ManageV(PPU *self) { return EXIT_SUCCESS; }
+uint8_t PPU_ClearSecondaryOAM(PPU *self) { return EXIT_SUCCESS; }
+uint8_t PPU_FetchTile(PPU *self) { return EXIT_SUCCESS; }
+uint8_t PPU_FetchSprite(PPU *self) { return EXIT_SUCCESS; }
+uint8_t PPU_SpriteEvaluation(PPU *self) { return EXIT_SUCCESS; }
+uint8_t PPU_Draw(PPU *self) { return EXIT_SUCCESS; }
+
 
 uint8_t PPU_Execute(PPU* self, uint8_t *context, uint8_t clock) {
 

@@ -50,11 +50,11 @@ uint8_t* IOReg_Get(IOReg *self, uint8_t accessType, uint16_t address) {
 		return NULL;
 
 	/* If address is in 0x2000-0x3FFF */
-	if (ADDRESS_IN(address, 0x2000, 0x3FFF)) {
+	if (VALUE_IN(address, 0x2000, 0x3FFF)) {
 		self->acknowledge[address & 0x0007] = accessType;
 		return self->bank1[address % 8];
 	/* If address is in 0x4000-0x4019 */
-	} else if (ADDRESS_IN(address, 0x4000, 0x401F)) {
+	} else if (VALUE_IN(address, 0x4000, 0x401F)) {
 		self->acknowledge[(address & 0x001F) + 8] = accessType;
 		return self->bank2[address & 0x001F];
 	}
@@ -68,11 +68,11 @@ uint8_t IOReg_Ack(IOReg *self, uint16_t address) {
 
 	uint8_t result = 0;
 	/* If address is in 0x2000-0x3FFF */
-	if (ADDRESS_IN(address, 0x2000, 0x3FFF)) {
+	if (VALUE_IN(address, 0x2000, 0x3FFF)) {
 		result = self->acknowledge[address % 8];
 		self->acknowledge[address % 8] = AC_NO;
 	/* If address is in 0x4000-0x4019 */
-	} else if (ADDRESS_IN(address, 0x4000, 0x401F)) {
+	} else if (VALUE_IN(address, 0x4000, 0x401F)) {
 		result = self->acknowledge[(address & 0x001F) + 8];
 		self->acknowledge[(address & 0x001F) + 8] = AC_NO;
 	}
