@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#define IS_RENDERING_ON() ((self->PPUMASK & 0x18) != 0)
+
 static uint32_t colorPalette[64] = {
 	0x007C7C7C, 0x000000FC, 0x000000BC, 0x004428BC, 
 	0x00940084, 0x00A80020, 0x00A81000, 0x00881400, 
@@ -74,7 +76,7 @@ uint8_t PPU_CheckRegister(PPU *self) {
 	uint8_t ack = 0;
 
 	/* PPUCTRL behavior:
-	 * Write	->	Update VRAM.t */
+	 * Write	->	Update VRAM.t with nametable content */
 	if (Mapper_Ack(self->mapper, 0x2000) & AC_WR) {
 		/* t: ...BA.. ........ = d: ......BA */
 		self->vram.t &= ~0x0C00;
@@ -137,15 +139,26 @@ uint8_t PPU_CheckRegister(PPU *self) {
 	}
 
 	/* PPUDATA behavior:
-	 * R/W		->	Update Mapper[VRAM] with given value and VRAM++ */
+	 * R/W		->	Update Mapper[VRAM] with given value and update VRAM.v */
 	if ((ack = Mapper_Ack(self->mapper, 0x2007))) {
-		if (ack & AC_WR)
-			*Mapper_Get(self->mapper, AS_PPU, self->vram.v) = self->PPUDATA;
 
-		if (self->PPUCTRL & 0x04)
-			self->vram.v += 32;
-		else
-			self->vram.v++;
+		uint8_t *vram = Mapper_Get(self->mapper, AS_PPU, self->vram.v);
+		/* Set value in VRAM correspondly to value of PPUDATA */
+		if (ack & AC_WR)
+			*vram = self->PPUDATA;
+		/* Place in PPUDATA the desired data from VRAM */
+		else if (ack & AC_RD)
+			self->PPUDATA = *vram;
+
+		/* Depending of the state of rendering, 
+		 * increment is acting differently */
+		if (VALUE_IN(self->scanline, -1, 239) && IS_RENDERING_ON()) {
+			PPU_IncrementCorseX(self);
+			PPU_IncrementY(self);
+		/* If not rendering, increment linearly */
+		} else {
+			self->vram.v += (self->PPUCTRL & 0x04) ? 32 : 1;
+		}
 		return EXIT_SUCCESS;
 	}
 
@@ -158,7 +171,7 @@ uint8_t PPU_ManageTiming(PPU *self, Stack *taskList) {
 	if (VALUE_IN(self->scanline, -1, 239)) {
 		/* Skip cycle if odd frame and rendering enable */
 		if ((self->scanline == 0) && (self->cycle == 0)) {
-			if ((self->nbFrame % 2) && ((self->PPUMASK & 0x18) != 0)) {
+			if ((self->nbFrame % 2) && IS_RENDERING_ON()) {
 				self->cycle++;
 			}
 			self->nbFrame++;  
@@ -166,7 +179,7 @@ uint8_t PPU_ManageTiming(PPU *self, Stack *taskList) {
 		/* Visible dot part */
 		if (VALUE_IN(self->cycle, 1, 256)) {
 			/* Increment hori(v) every 8's clock */
-			if ((self->cycle % 8) == 0) {
+			if (((self->cycle % 8) == 0) && IS_RENDERING_ON()) {
 				Stack_Push(taskList, (void*) PPU_ManageV);
 			}
 			/* Clear Vertical Blank flag and Sprite 0 hit 
@@ -175,19 +188,20 @@ uint8_t PPU_ManageTiming(PPU *self, Stack *taskList) {
 				Stack_Push(taskList, (void*) PPU_ClearFlag);
 			}
 			/* Clean Secondary OAM */
-			if (VALUE_IN(self->cycle, 1, 64)) {
+			if (VALUE_IN(self->cycle, 1, 64) && IS_RENDERING_ON()) {
 				Stack_Push(taskList, (void*) PPU_ClearSecondaryOAM);
 			/* Sprite Evaluation */
-			} else if (VALUE_IN(self->cycle, 65, 256)) {
+			} else if (VALUE_IN(self->cycle, 65, 256) && IS_RENDERING_ON()) {
 				Stack_Push(taskList, (void*) PPU_SpriteEvaluation);
 			}
 			/* Draw pixel */
-			if (VALUE_IN(self->scanline, 0, 239))
+			if (VALUE_IN(self->scanline, 0, 239) && IS_RENDERING_ON())
 				Stack_Push(taskList, (void*) PPU_Draw);
 			/* Fetch Tile at every cycle */
-			Stack_Push(taskList, (void*) PPU_FetchTile);
+			if (IS_RENDERING_ON())
+				Stack_Push(taskList, (void*) PPU_FetchTile);
 		/* Fetch Sprite part */
-		} else if (VALUE_IN(self->cycle, 257, 320)) { 
+		} else if (VALUE_IN(self->cycle, 257, 320) && IS_RENDERING_ON()) { 
 			/* Affect hori(t) to hori(v) 
 			 * or vert(t) to vert(v) */
 			if ((self->cycle == 257) || 
@@ -197,7 +211,7 @@ uint8_t PPU_ManageTiming(PPU *self, Stack *taskList) {
 			/* Fetch Sprite at every cycle */
 			Stack_Push(taskList, (void*) PPU_FetchSprite);
 		/* Fetch Tile for next scanline */
-		} else if (VALUE_IN(self->cycle, 321, 336)) {
+		} else if (VALUE_IN(self->cycle, 321, 336) && IS_RENDERING_ON()) {
 			/* Increment hori(v) every 8's clock */
 			if ((self->cycle % 8) == 0) {
 				Stack_Push(taskList, (void*) PPU_ManageV);
@@ -213,14 +227,76 @@ uint8_t PPU_ManageTiming(PPU *self, Stack *taskList) {
 	return EXIT_SUCCESS;
 }
 
-uint8_t PPU_SetFlag(PPU *self) { return EXIT_SUCCESS; }
+uint8_t PPU_SetFlag(PPU *self) { 
+	/* Set Vertical Blank bit */
+	self->PPUSTATUS |= 0x80;	
+	return EXIT_SUCCESS; 
+}
 
 uint8_t PPU_ClearFlag(PPU *self) {
+	/* Clear Vertical Blank, Sprite 0 and Sprite Overflow bits */
 	self->PPUSTATUS &= ~0xE0;
 	return EXIT_SUCCESS;
 }
 
-uint8_t PPU_ManageV(PPU *self) { return EXIT_SUCCESS; }
+uint8_t PPU_IncrementCorseX(PPU *self) {
+	/* If VRAM.v Corse X is going to overflow, switch nametable */
+	if ((self->vram.v & 0x001F) == 31) {
+		self->vram.v &= ~0x001F;
+		self->vram.v ^= 0x0400;
+	/* Else increment Corse X */
+	} else
+		self->vram.v++;
+	return EXIT_SUCCESS;
+}
+
+uint8_t PPU_IncrementY(PPU *self) {
+	/* If Fine Y is not going to overflow, increment it */
+	if ((self->vram.v & 0x7000) != 0x7000) {
+		self->vram.v += 0x1000;             
+	/* Else manage Corse Y component */
+	} else {
+		/* Reset Fine Y component because it has overflowed */
+		self->vram.v &= ~0x7000;            
+		/* var y correspond to Corse Y component */
+		int y = (self->vram.v & 0x03E0) >> 5;
+		/* If Corse Y achieved the last tile, reset it and switch nametable */
+		if (y == 29) {
+			y = 0;                    
+			self->vram.v ^= 0x0800;    
+		/* If Corse Y is going to overflow, reset it and do not switch NT */
+		} else if (y == 31)
+			y = 0;                      
+		/* Else increment Corse Y component */
+		else
+			y++;
+		/* Insert y into VRAM.v */
+		self->vram.v = (self->vram.v & ~0x03E0) | (y << 5);
+	}
+	return EXIT_SUCCESS;
+}
+
+uint8_t PPU_ManageV(PPU *self) { 
+	/* Dot 8 to 248 (every 8) : Increment Corse X */
+	if (VALUE_IN(self->cycle, 8, 248)) {
+		PPU_IncrementCorseX(self);
+	/* Dot 256 : Increment Y */
+	} else if (self->cycle == 256) {
+		PPU_IncrementY(self);
+	/* Dot 257 : Horizontal component of t set to v */
+	} else if (self->cycle == 257) {
+		/* hori(v) = hori(t) */
+		self->vram.v &= ~0x041F;
+		self->vram.v |= self->vram.t & 0x041F;
+	/* Dot 280 to 304 : Vertical component of t set to v */
+	} else if (VALUE_IN(self->cycle, 280, 304)) {
+		/* vert(v) = vert(t) */
+		self->vram.v &= ~0x7BE0;
+		self->vram.v |= self->vram.t & 0x7BE0;
+	}
+	return EXIT_SUCCESS;
+}
+
 uint8_t PPU_ClearSecondaryOAM(PPU *self) { return EXIT_SUCCESS; }
 uint8_t PPU_FetchTile(PPU *self) { return EXIT_SUCCESS; }
 uint8_t PPU_FetchSprite(PPU *self) { return EXIT_SUCCESS; }
