@@ -110,6 +110,26 @@ uint8_t PPU_ClearFlag(PPU *self);
 uint8_t PPU_SetFlag(PPU *self);
 
 /**
+ * \fn PPU_IncrementCorseX
+ * \brief Increment Corse X component in VRAM.v
+ *
+ * \param self instance of PPU
+ *
+ * \return EXIT_SUCCESS if succeed, EXIT_FAILURE otherwise
+ */
+uint8_t PPU_IncrementCorseX(PPU *self);
+
+/**
+ * \fn PPU_IncrementY
+ * \brief Increment Y component in VRAM.v
+ *
+ * \param self instance of PPU
+ *
+ * \return EXIT_SUCCESS if succeed, EXIT_FAILURE otherwise
+ */
+uint8_t PPU_IncrementY(PPU *self);
+
+/**
  * \fn PPU_ManageV
  * \brief Manage increment and boundaries of VRAM.v
  *
@@ -118,7 +138,6 @@ uint8_t PPU_SetFlag(PPU *self);
  * \return EXIT_SUCCESS if succeed, EXIT_FAILURE otherwise
  */
 uint8_t PPU_ManageV(PPU *self);
-
 
 /**
  * \fn PPU_ClearSecondaryOAM
