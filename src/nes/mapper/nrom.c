@@ -53,7 +53,7 @@ Mapper* MapNROM_Create(Header * header) {
 	mapperData->ppu.nametable = (uint8_t*) malloc(2048);
 
 	/*	Allocation of palette space */
-	mapperData->ppu.palette = (uint8_t*) malloc(32);
+	mapperData->ppu.palette = (uint8_t*) malloc(256);
 
 
 	/*	Test if allocation failed */

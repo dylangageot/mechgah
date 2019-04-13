@@ -163,6 +163,46 @@ static void test_PPU_CheckRegister_PPUDATA(void **state) {
 
 }
 
+
+static void test_PPU_RefreshRegister_OAMDATA(void **state) {
+	PPU *self = (PPU*) *state;
+	PPU_Init(self);
+	self->OAMADDR = 0xAA;
+	self->OAM[0xAA] = 0xBB;
+	self->OAMDATA = 0xCC;
+	assert_int_equal(PPU_RefreshRegister(self, NULL), EXIT_SUCCESS);
+	assert_int_equal(self->OAMDATA, 0xBB);
+}
+
+static void test_PPU_RefreshRegister_PPUDATA(void **state) {
+	PPU *self = (PPU*) *state;
+	PPU_Init(self);
+	int i;
+	self->vram.v = 0x3F00;
+	for (i = 0; i < 256; i++) {
+		*Mapper_Get(self->mapper, AS_PPU, self->vram.v) = i;
+		assert_int_equal(PPU_RefreshRegister(self, NULL), EXIT_SUCCESS);
+		assert_int_equal(self->PPUDATA, 
+				*Mapper_Get(self->mapper, AS_PPU, self->vram.v));
+		self->vram.v++;
+	}
+}
+
+static void test_PPU_RefreshRegister_NMI(void **state) {
+	PPU *self = (PPU*) *state;
+	PPU_Init(self);
+	uint8_t context = 0;
+	self->nmiSent = 0;
+	self->PPUSTATUS = 0x80;
+	assert_int_equal(PPU_RefreshRegister(self, &context), EXIT_SUCCESS);
+	assert_int_equal(self->nmiSent, 1);
+	assert_int_equal(context, 0x02);
+	context = 0;
+	assert_int_equal(PPU_RefreshRegister(self, &context), EXIT_SUCCESS);
+	assert_int_equal(self->nmiSent, 1);
+	assert_int_equal(context, 0x00);
+}
+
 static void test_PPU_ManageTiming_Prerender(void **state) {
 	PPU *self = (PPU*) *state;
 	Stack s;	
@@ -474,6 +514,11 @@ int run_UTppu(void) {
 		cmocka_unit_test(test_PPU_CheckRegister_PPUADDR),
 		cmocka_unit_test(test_PPU_CheckRegister_PPUDATA),
 	};
+	const struct CMUnitTest test_PPU_RefreshRegister[] = {
+		cmocka_unit_test(test_PPU_RefreshRegister_OAMDATA),
+		cmocka_unit_test(test_PPU_RefreshRegister_PPUDATA),
+		cmocka_unit_test(test_PPU_RefreshRegister_NMI),
+	};
 	const struct CMUnitTest test_PPU_ManageTiming[] = {
 		cmocka_unit_test(test_PPU_ManageTiming_Prerender),
 		cmocka_unit_test(test_PPU_ManageTiming_Prerender_RenderOFF),
@@ -488,6 +533,7 @@ int run_UTppu(void) {
 	};
 	int out = 0;
 	out += cmocka_run_group_tests(test_PPU_CheckRegister, setup_PPU, teardown_PPU);
+	out += cmocka_run_group_tests(test_PPU_RefreshRegister, setup_PPU, teardown_PPU);
 	out += cmocka_run_group_tests(test_PPU_ManageTiming, setup_PPU, teardown_PPU);
 	out += cmocka_run_group_tests(test_PPU_ManageVRAMAddr, setup_PPU, teardown_PPU);
 	return out;

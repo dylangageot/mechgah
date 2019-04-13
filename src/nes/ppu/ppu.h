@@ -35,6 +35,7 @@ typedef struct {
 	uint16_t cycle;
 	int16_t scanline;
 	uint8_t nbFrame;
+	uint8_t nmiSent;
 	Mapper *mapper;
 } PPU;
 
@@ -156,7 +157,7 @@ uint8_t PPU_ClearSecondaryOAM(PPU *self);
  *
  * \return EXIT_SUCCESS if succeed, EXIT_FAILURE otherwise
  */
-uint8_t PPU_RefreshRegister(PPU *self);
+uint8_t PPU_RefreshRegister(PPU *self, uint8_t *context);
 
 /**
  * \fn PPU_FetchTile

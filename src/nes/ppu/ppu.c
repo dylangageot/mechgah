@@ -58,6 +58,7 @@ uint8_t PPU_Init(PPU *self) {
 	self->OAMDATA = 0;
 	self->PPUSCROLL = 0;
 	self->nbFrame = 0;
+	self->nmiSent = 0;
 
 	for (i = 0; i < 256; i++)
 		self->OAM[i] = 0;
@@ -236,6 +237,7 @@ uint8_t PPU_SetFlag(PPU *self) {
 uint8_t PPU_ClearFlag(PPU *self) {
 	/* Clear Vertical Blank, Sprite 0 and Sprite Overflow bits */
 	self->PPUSTATUS &= ~0xE0;
+	self->nmiSent = 0;
 	return EXIT_SUCCESS;
 }
 
@@ -297,6 +299,25 @@ uint8_t PPU_ManageV(PPU *self) {
 	return EXIT_SUCCESS;
 }
 
+uint8_t PPU_RefreshRegister(PPU *self, uint8_t *context) {
+	
+	/* OAMDATA read behavior */
+	self->OAMDATA = self->OAM[self->OAMADDR];
+
+	/* PPUDATA read behavior when address looking at Color Palette */
+	if (VALUE_IN(self->vram.v, 0x3F00, 0x3FFF)) {
+		self->PPUDATA = *Mapper_Get(self->mapper, AS_PPU, self->vram.v);
+	}
+
+	/* NMI Interrupt Generator */
+	if (!self->nmiSent && ((self->PPUSTATUS & 0x80) != 0)) {
+		*context |= 0x02;
+		self->nmiSent = 1;
+	}
+	
+	return EXIT_SUCCESS;
+}
+
 uint8_t PPU_ClearSecondaryOAM(PPU *self) { return EXIT_SUCCESS; }
 uint8_t PPU_FetchTile(PPU *self) { return EXIT_SUCCESS; }
 uint8_t PPU_FetchSprite(PPU *self) { return EXIT_SUCCESS; }
@@ -305,8 +326,21 @@ uint8_t PPU_Draw(PPU *self) { return EXIT_SUCCESS; }
 
 
 uint8_t PPU_Execute(PPU* self, uint8_t *context, uint8_t clock) {
+	Stack taskList;
+	uint8_t (*task)(PPU *self) = NULL;
 
 	PPU_CheckRegister(self);
+	while (clock) {
+		Stack_Init(&taskList);
+		PPU_ManageTiming(self, &taskList); 
+		while (!Stack_IsEmpty(&taskList)) {
+			/* Execute task */
+			task = Stack_Pop(&taskList);
+			task(self);
+		}
+		clock--;
+	}
+	PPU_RefreshRegister(self, context);
 
 	return EXIT_SUCCESS;
 }
