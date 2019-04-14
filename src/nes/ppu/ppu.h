@@ -42,6 +42,16 @@ typedef struct {
 char* RenderColorPalette(void);
 
 /**
+ * \fn PPU_RenderNametable
+ * \brief Draw a specified nametable into an array
+ *
+ * \param self instance of PPU
+ * \param image array to draw in
+ * \param index specified nametable
+ */
+void PPU_RenderNametable(PPU *self, uint32_t *image, uint8_t index);
+
+/**
  * \fn PPU_Create
  *
  * \param mapper instance of Mapper
@@ -70,6 +80,17 @@ uint8_t PPU_Init(PPU *self);
  * \return EXIT_SUCCESS if succeed, EXIT_FAILURE otherwise
  */
 uint8_t PPU_Execute(PPU *self, uint8_t *context, uint8_t clock);
+
+
+/**
+ * \fn PPU_UpdateCycle
+ * \brief Increment cycle and scanline
+ *
+ * \param self instance of PPU
+ *
+ * \return EXIT_SUCCESS if succeed, EXIT_FAILURE otherwise
+ */
+uint8_t PPU_UpdateCycle(PPU *self);
 
 /**
  * \fn PPU_CheckRegister 
