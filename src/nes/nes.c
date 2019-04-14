@@ -23,6 +23,8 @@ NES* NES_Create(char *filename) {
 		IOReg_Connect(IOReg_Extract(self->mapper), self->cpu, self->ppu);
 		/* Init CPU */
 		CPU_Init(self->cpu);
+		/* Init PPU */
+		PPU_Init(self->ppu);
 		/* Set to zero clock counter */
 		self->clockCount = 0;
 	} else

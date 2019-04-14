@@ -194,12 +194,19 @@ static void test_PPU_RefreshRegister_NMI(void **state) {
 	uint8_t context = 0;
 	self->nmiSent = 0;
 	self->PPUSTATUS = 0x80;
+	self->PPUCTRL = 0x80;
 	assert_int_equal(PPU_RefreshRegister(self, &context), EXIT_SUCCESS);
 	assert_int_equal(self->nmiSent, 1);
 	assert_int_equal(context, 0x02);
 	context = 0;
 	assert_int_equal(PPU_RefreshRegister(self, &context), EXIT_SUCCESS);
 	assert_int_equal(self->nmiSent, 1);
+	assert_int_equal(context, 0x00);
+	self->nmiSent = 0;
+	self->PPUSTATUS = 0x80;
+	self->PPUCTRL = 0;
+	assert_int_equal(PPU_RefreshRegister(self, &context), EXIT_SUCCESS);
+	assert_int_equal(self->nmiSent, 0);
 	assert_int_equal(context, 0x00);
 }
 
