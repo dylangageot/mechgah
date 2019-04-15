@@ -85,6 +85,15 @@ uint8_t PPU_Execute(PPU *self, uint8_t *context, uint8_t clock);
 void PPU_RenderNametable(PPU *self, uint32_t *image, uint8_t index);
 
 /**
+ * \fn PPU_RenderSprites
+ * \brief Draw sprite into an array
+ *
+ * \param self instance of PPU
+ * \param image array to draw in
+ */
+void PPU_RenderSprites(PPU *self, uint32_t *image);
+
+/**
  * \fn PPU_PictureDrawn
  * \brief Does the picture has been drawn by the component ?
  *
