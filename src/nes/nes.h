@@ -23,6 +23,7 @@ typedef struct {
 	PPU *ppu;
 	Mapper *mapper;
 	uint32_t clockCount;
+	uint8_t context;
 } NES;
 
 /**
@@ -37,11 +38,11 @@ NES* NES_Create(char *filename);
 
 /**
  * \fn NES_NextFrame
- * \brief Execute the system for one frame and render it
+ * \brief Execute the system for one frame
  *
- * \return pixel map
+ * \return EXIT_SUCCESS
  */
-/* SDL_Surface NES_NextFrame(void); */
+uint8_t NES_NextFrame(NES *self);
 
 /**
  * \brief Update event for the controller

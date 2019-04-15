@@ -30,26 +30,19 @@ typedef struct {
 	uint8_t PPUADDR;
 	uint8_t PPUDATA;
 	/* Internal Register */
+	Mapper *mapper;
 	VRAM vram;
-	uint8_t OAM[256];
 	uint16_t cycle;
 	int16_t scanline;
+	uint8_t OAM[256];
 	uint8_t nbFrame;
 	uint8_t nmiSent;
-	Mapper *mapper;
+	uint8_t pictureDrawn;
+	/* Graphic memory */
+	uint32_t *image;
 } PPU;
 
 char* RenderColorPalette(void);
-
-/**
- * \fn PPU_RenderNametable
- * \brief Draw a specified nametable into an array
- *
- * \param self instance of PPU
- * \param image array to draw in
- * \param index specified nametable
- */
-void PPU_RenderNametable(PPU *self, uint32_t *image, uint8_t index);
 
 /**
  * \fn PPU_Create
@@ -81,6 +74,25 @@ uint8_t PPU_Init(PPU *self);
  */
 uint8_t PPU_Execute(PPU *self, uint8_t *context, uint8_t clock);
 
+/**
+ * \fn PPU_RenderNametable
+ * \brief Draw a specified nametable into an array
+ *
+ * \param self instance of PPU
+ * \param image array to draw in
+ * \param index specified nametable
+ */
+void PPU_RenderNametable(PPU *self, uint32_t *image, uint8_t index);
+
+/**
+ * \fn PPU_PictureDrawn
+ * \brief Does the picture has been drawn by the component ?
+ *
+ * \param self instance of PPU
+ *
+ * \return 1 if picture is availaible, 0 otherwise
+ */
+uint8_t PPU_PictureDrawn(PPU *self);
 
 /**
  * \fn PPU_UpdateCycle

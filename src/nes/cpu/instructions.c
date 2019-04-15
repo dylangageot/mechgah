@@ -84,7 +84,7 @@ Opcode Opcode_Get(uint8_t index) {
 }
 
 /* Macros used by instructions */
-
+#define SET_SIGN(x)		cpu->P = (*x & 0x80) ? cpu->P | 0x80 : cpu->P & (~0x80)
 void _SET_SIGN(CPU *cpu, uint8_t *src) {
 	if (*src & 0x80)
 		cpu->P |= 0x80;
@@ -92,6 +92,7 @@ void _SET_SIGN(CPU *cpu, uint8_t *src) {
 		cpu->P &= ~0x80;
 }
 
+#define SET_ZERO(x)		cpu->P = (*x == 0) ? cpu->P | 0x02 : cpu->P & (~0x02)
 void _SET_ZERO(CPU *cpu, uint8_t *src) {
 	if (*src == 0)
 		cpu->P |= 0x02;
@@ -99,6 +100,7 @@ void _SET_ZERO(CPU *cpu, uint8_t *src) {
 		cpu->P &= ~0x02;
 }
 
+#define SET_CARRY(x)	cpu->P = (x) ? cpu->P | 0x01 : cpu->P & (~0x01)   
 void _SET_CARRY(CPU *cpu, uint8_t cond) {
 	if (cond)
 		cpu->P |= 0x01;
@@ -106,6 +108,7 @@ void _SET_CARRY(CPU *cpu, uint8_t cond) {
 		cpu->P &= ~0x01;
 }
 
+#define SET_OVERFLOW(x)	cpu->P = (x) ? cpu->P | 0x40 : cpu->P & (~0x40)  
 void _SET_OVERFLOW(CPU *cpu, uint8_t cond) {
 	if (cond)
 		cpu->P |= 0x40;
@@ -113,66 +116,82 @@ void _SET_OVERFLOW(CPU *cpu, uint8_t cond) {
 		cpu->P &= ~0x40;
 }
 
+#define SET_INTERRUPT(x)	cpu->P |= 0x04   
 void _SET_INTERRUPT(CPU *cpu) {
 	cpu->P |= 0x04;
 }
 
+#define SET_BREAK(x)		cpu->P |= 0x10   
 void _SET_BREAK(CPU *cpu) {
 	cpu->P |= 0x10;
 }
 
+#define REL_ADDR(x) (cpu->PC + (int16_t) *x)
 uint16_t _REL_ADDR(CPU *cpu, int8_t *src) {
 	return cpu->PC + (int16_t) *src;
 }
 
+#define SET_SR(x)	cpu->P = *x
 void _SET_SR(CPU *cpu, uint8_t *src) {
 	cpu->P = *src;
 }
 
+#define GET_SR()	(cpu->P)
 uint8_t _GET_SR(CPU *cpu) {
 	return cpu->P;
 }
 
+#define PULL()		(*Mapper_Get(cpu->mapper, AS_CPU, 0x0100 | (++cpu->SP)))
 uint8_t _PULL(CPU *cpu) {
 	return *Mapper_Get(cpu->mapper, AS_CPU, 0x0100 | (++cpu->SP));
 }
 
+#define	PUSH(x)		*(Mapper_Get(cpu->mapper, AS_CPU, 0x0100 | (cpu->SP--))) = *x
 void _PUSH(CPU *cpu, uint8_t *src) {
 	*(Mapper_Get(cpu->mapper, AS_CPU, 0x0100 | (cpu->SP--))) = *src;
 }
 
+#define LOAD(x)		Mapper_Get(cpu->mapper, AC_RD | AS_CPU, x)
 uint8_t* _LOAD(CPU *cpu, uint16_t address) {
 	return Mapper_Get(cpu->mapper, AC_RD | AS_CPU, address);
 }
 
+#define STORE(x,y)	*(Mapper_Get(cpu->mapper, AC_WR | AS_CPU, x)) = *y
 void _STORE(CPU *cpu, uint16_t address, uint8_t *src) {
 	*(Mapper_Get(cpu->mapper, AC_WR | AS_CPU, address)) = *src;
 }
 
+#define SET_WR(x)	Mapper_Get(cpu->mapper, AC_WR | AS_CPU, x)
 void _SET_WR(CPU *cpu, uint16_t address) {
 	Mapper_Get(cpu->mapper, AC_WR | AS_CPU, address);
 }
 
+#define IF_CARRY()	((cpu->P & 0x01) == 0x01)
 uint8_t _IF_CARRY(CPU *cpu) {
 	return (cpu->P & 0x01) == 0x01;
 }
 
+#define IF_OVERFLOW()	((cpu->P & 0x40) == 0x40)
 uint8_t _IF_OVERFLOW(CPU *cpu) {
 	return (cpu->P & 0x40) == 0x40;
 }
 
+#define IF_SIGN()	((cpu->P & 0x80) == 0x80)
 uint8_t _IF_SIGN(CPU *cpu) {
 	return (cpu->P & 0x80) == 0x80;
 }
 
+#define IF_ZERO()	((cpu->P & 0x02) == 0x02)
 uint8_t _IF_ZERO(CPU *cpu) {
 	return (cpu->P & 0x02) == 0x02;
 }
 
+#define IF_INTERRUPT()	((cpu->P & 0x04) == 0x04)
 uint8_t _IF_INTERRUPT(CPU *cpu) {
 	return (cpu->P & 0x04) == 0x04;
 }
 
+#define IF_BREAK()	((cpu->P & 0x10) == 0x10)
 uint8_t _IF_BREAK(CPU *cpu) {
 	return (cpu->P & 0x10) == 0x10;
 }
@@ -181,7 +200,7 @@ uint8_t _BRANCH(CPU* cpu, Instruction *arg, uint8_t cond) {
 	uint16_t newPC;
 	if (cond) {
 		/* Compute address to jump on */
-		newPC = _REL_ADDR(cpu, (int8_t*) arg->dataMem);
+		newPC = REL_ADDR((int8_t*) arg->dataMem);
 		/* Check if the branch occurs to same page */
 		arg->opcode.cycle += ((cpu->PC & 0xFF00) != (newPC & 0xFF00) ? 2 : 1);
 		cpu->PC = newPC;
@@ -211,8 +230,8 @@ uint8_t Instruction_DMA(Instruction *self, CPU *cpu, uint32_t *clockCycle) {
 		self->pageCrossed = 0;
 		self->opcode.inst = _NOP;
 		/* Load and store */
-		data = *(_LOAD(cpu, self->dataAddr));
-		_STORE(cpu, 0x2004, &data); 
+		data = *(LOAD(self->dataAddr));
+		STORE(0x2004, &data); 
 		/* Increment DMA counter */
 		cpu->cntDMA++;
 		return DMA_ON;
@@ -226,7 +245,7 @@ uint8_t Instruction_DMA(Instruction *self, CPU *cpu, uint32_t *clockCycle) {
 
 uint8_t Instruction_Fetch(Instruction *self, CPU *cpu) {
 	/* Fetch data in memory space with PC value */
-	uint8_t *opc = _LOAD(cpu, cpu->PC);
+	uint8_t *opc = LOAD(cpu->PC);
 	/* Save information before fetching */
 	self->rawOpcode = *opc;
 	self->lastPC = cpu->PC++;
@@ -274,31 +293,31 @@ uint8_t Instruction_Resolve(Instruction *self, CPU *cpu) {
 
 		case ZEX :
 			address = (self->opcodeArg[0] + cpu->X) & 0xFF;
-			self->dataMem = _LOAD(cpu, address);
+			self->dataMem = LOAD(address);
 			break;
 
 		case ZEY :
 			address = (self->opcodeArg[0] + cpu->Y) & 0xFF;
-			self->dataMem = _LOAD(cpu, address);
+			self->dataMem = LOAD(address);
 			break;
 
 		case INX :
 			address = (self->opcodeArg[0] + cpu->X) & 0xFF;
-			lWeight = *(_LOAD(cpu, address));
-			hWeight = *(_LOAD(cpu, (address + 1) & 0xFF));
+			lWeight = *(LOAD(address));
+			hWeight = *(LOAD((address + 1) & 0xFF));
 			address = (hWeight << 8) + lWeight;
-			self->dataMem = _LOAD(cpu, address);
+			self->dataMem = LOAD(address);
 			break;
 
 		case INY :
 			address = self->opcodeArg[0] & 0xFF;
-			lWeight = *(_LOAD(cpu, address));
-			hWeight = *(_LOAD(cpu, (address + 1) & 0xFF));
+			lWeight = *(LOAD(address));
+			hWeight = *(LOAD((address + 1) & 0xFF));
 			address = (hWeight << 8) + lWeight;
 			if ((address & 0xFF00) != ((address + cpu->Y) & 0xFF00))
 				self->pageCrossed = 1;
 			address = (hWeight <<8 ) + lWeight + cpu->Y;
-			self->dataMem = _LOAD(cpu, address);
+			self->dataMem = LOAD(address);
 			break;
 
 		case IMM :
@@ -307,7 +326,7 @@ uint8_t Instruction_Resolve(Instruction *self, CPU *cpu) {
 
 		case ZER :
 			address = self->opcodeArg[0] & 0xFF;
-			self->dataMem = _LOAD(cpu, address);
+			self->dataMem = LOAD(address);
 			break;
 
 		case REL :
@@ -316,7 +335,7 @@ uint8_t Instruction_Resolve(Instruction *self, CPU *cpu) {
 
 		case ABS :
 			address = (self->opcodeArg[1] << 8) + self->opcodeArg[0];
-			self->dataMem = _LOAD(cpu, address);
+			self->dataMem = LOAD(address);
 			break;
 
 		case ABX :
@@ -324,7 +343,7 @@ uint8_t Instruction_Resolve(Instruction *self, CPU *cpu) {
 			if ((address & 0xFF00) != ((address + cpu->X) & 0xFF00))
 				self->pageCrossed = 1;
 			address = (self->opcodeArg[1] << 8) + self->opcodeArg[0] + cpu->X;
-			self->dataMem = _LOAD(cpu, address);
+			self->dataMem = LOAD(address);
 			break;
 
 		case ABY :
@@ -332,15 +351,15 @@ uint8_t Instruction_Resolve(Instruction *self, CPU *cpu) {
 			if ((address & 0xFF00) != ((address + cpu->Y) & 0xFF00))
 				self->pageCrossed = 1;
 			address = (self->opcodeArg[1] << 8) + self->opcodeArg[0] + cpu->Y;
-			self->dataMem = _LOAD(cpu, address);
+			self->dataMem = LOAD(address);
 			break;
 
 		case ABI :
 			address = (self->opcodeArg[1] << 8) + self->opcodeArg[0];
-			lWeight = *(_LOAD(cpu, address));
-			hWeight = *(_LOAD(cpu, (address & 0xFF00) | ((address + 1) & 0xFF)));
+			lWeight = *(LOAD(address));
+			hWeight = *(LOAD((address & 0xFF00) | ((address + 1) & 0xFF)));
 			address = (hWeight << 8) + lWeight;
-			self->dataMem = _LOAD(cpu, address);
+			self->dataMem = LOAD(address);
 			break;
 
 		default :
@@ -389,13 +408,12 @@ void Instruction_PrintLog(Instruction *self, CPU *cpu, uint32_t clockCycle) {
 uint8_t _ADC(CPU *cpu, Instruction *arg) {
 	/* If page crossed in ABX, ABY and INY, add +1 to cycle */
 	arg->opcode.cycle += arg->pageCrossed;
-	uint16_t temp = *arg->dataMem + cpu->A + (_IF_CARRY(cpu) ? 1 : 0);
+	uint16_t temp = *arg->dataMem + cpu->A + (IF_CARRY() ? 1 : 0);
 	/* Set bit flag */
-	_SET_ZERO(cpu, (uint8_t*) &temp);
-	_SET_SIGN(cpu, (uint8_t*) &temp);
-	_SET_OVERFLOW(cpu, !((cpu->A ^ *arg->dataMem) & 0x80) &&
-			((cpu->A ^ temp) & 0x80));
-	_SET_CARRY(cpu, temp > 0xFF);
+	SET_ZERO((uint8_t*) &temp);
+	SET_SIGN((uint8_t*) &temp);
+	SET_OVERFLOW(!((cpu->A ^ *arg->dataMem) & 0x80)&&((cpu->A ^ temp) & 0x80));
+	SET_CARRY(temp > 0xFF);
 	/* Save in Accumulator */
 	cpu->A = ((uint8_t) temp & 0xFF);
 	/* Manage CPU cycle */
@@ -407,76 +425,76 @@ uint8_t _AND(CPU *cpu, Instruction *arg){
 	arg->opcode.cycle += arg->pageCrossed;
 	uint8_t m = *(arg->dataMem);
 	m = (cpu->A)&m;
-	_SET_SIGN(cpu,&m);
-	_SET_ZERO(cpu,&m);
+	SET_SIGN(&m);
+	SET_ZERO(&m);
 	cpu->A = m;
 	return arg->opcode.cycle;
 }
 
 uint8_t _ASL(CPU *cpu, Instruction *arg) {
 	/* Execute */
-	_SET_CARRY(cpu, *arg->dataMem & 0x80);
+	SET_CARRY(*arg->dataMem & 0x80);
 	*arg->dataMem <<= 1;
-	_SET_WR(cpu, arg->dataAddr);
-	_SET_SIGN(cpu, arg->dataMem);
-	_SET_ZERO(cpu, arg->dataMem);
+	SET_WR(arg->dataAddr);
+	SET_SIGN(arg->dataMem);
+	SET_ZERO(arg->dataMem);
 	/* Manage CPU cycle */
 	return arg->opcode.cycle;
 }
 
 uint8_t _BCC(CPU *cpu, Instruction *arg) {
-	return _BRANCH(cpu, arg, !_IF_CARRY(cpu));
+	return _BRANCH(cpu, arg, !IF_CARRY());
 }
 
 uint8_t _BCS(CPU *cpu, Instruction *arg) {
-	return _BRANCH(cpu, arg, _IF_CARRY(cpu));
+	return _BRANCH(cpu, arg, IF_CARRY());
 }
 
 uint8_t _BEQ(CPU *cpu, Instruction *arg) {
-	return _BRANCH(cpu, arg, _IF_ZERO(cpu));
+	return _BRANCH(cpu, arg, IF_ZERO());
 }
 
 uint8_t _BIT(CPU *cpu, Instruction *arg) {
 	uint8_t temp = *arg->dataMem & cpu->A;
-	_SET_SIGN(cpu, arg->dataMem);
-	_SET_OVERFLOW(cpu, 0x40 & *arg->dataMem);
-	_SET_ZERO(cpu, &temp);
+	SET_SIGN(arg->dataMem);
+	SET_OVERFLOW(0x40 & *arg->dataMem);
+	SET_ZERO(&temp);
 	return arg->opcode.cycle;
 }
 
 uint8_t _BMI(CPU *cpu, Instruction *arg) {
-	return _BRANCH(cpu, arg, _IF_SIGN(cpu));
+	return _BRANCH(cpu, arg, IF_SIGN());
 }
 
 uint8_t _BNE(CPU *cpu, Instruction *arg) {
-	return _BRANCH(cpu, arg, !_IF_ZERO(cpu));
+	return _BRANCH(cpu, arg, !IF_ZERO());
 }
 
 uint8_t _BPL(CPU *cpu, Instruction *arg) {
-	return _BRANCH(cpu, arg, !_IF_SIGN(cpu));
+	return _BRANCH(cpu, arg, !IF_SIGN());
 }
 
 uint8_t _BRK(CPU *cpu, Instruction *arg) {
 	cpu->PC++; /* Increment PC */
 	/* Push return address to stack */
 	uint8_t temp = (cpu->PC >> 8) & 0xFF;
-	_PUSH(cpu, &temp);
+	PUSH(&temp);
 	temp = cpu->PC & 0xFF;
-	_PUSH(cpu, &temp);
+	PUSH(&temp);
 	temp = cpu->P | 0x10;
-	_PUSH(cpu, &temp);
-	_SET_INTERRUPT(cpu);
+	PUSH(&temp);
+	SET_INTERRUPT();
 	/* Set program counter from memory */
-	cpu->PC = *(_LOAD(cpu, 0xFFFE)) | (*(_LOAD(cpu, 0xFFFF)) << 8);
+	cpu->PC = *(LOAD(0xFFFE)) | (*(LOAD(0xFFFF)) << 8);
 	return arg->opcode.cycle;
 }
 
 uint8_t _BVC(CPU *cpu, Instruction *arg) {
-	return _BRANCH(cpu, arg, !_IF_OVERFLOW(cpu));
+	return _BRANCH(cpu, arg, !IF_OVERFLOW());
 }
 
 uint8_t _BVS(CPU *cpu, Instruction *arg) {
-	return _BRANCH(cpu, arg, _IF_OVERFLOW(cpu));
+	return _BRANCH(cpu, arg, IF_OVERFLOW());
 }
 
 uint8_t _CLC(CPU *cpu, Instruction *arg){
@@ -508,9 +526,9 @@ uint8_t _CMP(CPU *cpu, Instruction *arg){
 	uint16_t temp = (uint16_t)*(arg->dataMem);
 	arg->opcode.cycle += arg->pageCrossed;
 	temp = cpu->A - temp;
-	_SET_CARRY(cpu, temp < 0x100);
-	_SET_SIGN(cpu,(uint8_t*)&temp);
-	_SET_ZERO(cpu,(uint8_t*)&temp);
+	SET_CARRY(temp < 0x100);
+	SET_SIGN((uint8_t*)&temp);
+	SET_ZERO((uint8_t*)&temp);
 	return arg->opcode.cycle;
 }
 
@@ -518,9 +536,9 @@ uint8_t _CPX(CPU *cpu, Instruction *arg){
 	/*CPX Compare Memory and Index X  */
 	uint16_t temp = (uint16_t)*(arg->dataMem);
 	temp = cpu->X - temp;
-	_SET_CARRY(cpu, temp < 0x100);
-	_SET_SIGN(cpu,(uint8_t*)&temp);
-	_SET_ZERO(cpu,(uint8_t*)&temp);
+	SET_CARRY(temp < 0x100);
+	SET_SIGN((uint8_t*)&temp);
+	SET_ZERO((uint8_t*)&temp);
 	return arg->opcode.cycle;
 }
 
@@ -528,9 +546,9 @@ uint8_t _CPY(CPU *cpu, Instruction *arg){
 	/*CPY Compare Memory and Index Y  */
 	uint16_t temp = (uint16_t)*(arg->dataMem);
 	temp = cpu->Y - temp;
-	_SET_CARRY(cpu, temp < 0x100);
-	_SET_SIGN(cpu,(uint8_t*)&temp);
-	_SET_ZERO(cpu,(uint8_t*)&temp);
+	SET_CARRY(temp < 0x100);
+	SET_SIGN((uint8_t*)&temp);
+	SET_ZERO((uint8_t*)&temp);
 	return arg->opcode.cycle;
 }
 
@@ -538,10 +556,10 @@ uint8_t _DEC(CPU *cpu, Instruction *arg){
 	/*DEC Decrement memory by one  */
 	uint8_t m = *(arg->dataMem);
 	m = (m -1)%256;
-	_SET_SIGN(cpu,&m);
-	_SET_ZERO(cpu,&m);
+	SET_SIGN(&m);
+	SET_ZERO(&m);
 	*(arg->dataMem) = m;
-	_SET_WR(cpu, arg->dataAddr);
+	SET_WR(arg->dataAddr);
 	return arg->opcode.cycle;
 }
 
@@ -549,8 +567,8 @@ uint8_t _DEX(CPU *cpu, Instruction *arg){
 	/*DEX Decrement index X by one */
 	uint8_t m = cpu->X;
 	m = (m -1)%256;
-	_SET_SIGN(cpu,&m);
-	_SET_ZERO(cpu,&m);
+	SET_SIGN(&m);
+	SET_ZERO(&m);
 	cpu->X = m;
 	return arg->opcode.cycle;
 }
@@ -559,8 +577,8 @@ uint8_t _DEY(CPU *cpu, Instruction *arg){
 	/*DEY Decrement index Y by one */
 	uint8_t m = cpu->Y;
 	m = (m -1)%256;
-	_SET_SIGN(cpu,&m);
-	_SET_ZERO(cpu,&m);
+	SET_SIGN(&m);
+	SET_ZERO(&m);
 	cpu->Y = m;
 	return arg->opcode.cycle;
 }
@@ -570,8 +588,8 @@ uint8_t _EOR(CPU *cpu, Instruction *arg){
 	arg->opcode.cycle += arg->pageCrossed;
 	uint8_t m = *(arg->dataMem);
 	m = (cpu->A)^m;
-	_SET_SIGN(cpu,&m);
-	_SET_ZERO(cpu,&m);
+	SET_SIGN(&m);
+	SET_ZERO(&m);
 	cpu->A = m;
 	return arg->opcode.cycle;
 }
@@ -580,10 +598,10 @@ uint8_t _INC(CPU *cpu, Instruction *arg){
 	/* INC Increment memory by one */
 	uint8_t m = *(arg->dataMem);
 	m = (m + 1)%256;
-	_SET_SIGN(cpu,&m);
-	_SET_ZERO(cpu,&m);
+	SET_SIGN(&m);
+	SET_ZERO(&m);
 	*(arg->dataMem) = m;
-	_SET_WR(cpu, arg->dataAddr);
+	SET_WR(arg->dataAddr);
 	return arg->opcode.cycle;
 }
 
@@ -591,8 +609,8 @@ uint8_t _INX(CPU *cpu, Instruction *arg){
 	/*INX increment index X by one */
 	uint8_t m = cpu->X;
 	m = (m +1)%256;
-	_SET_SIGN(cpu,&m);
-	_SET_ZERO(cpu,&m);
+	SET_SIGN(&m);
+	SET_ZERO(&m);
 	cpu->X = m;
 	return arg->opcode.cycle;
 }
@@ -601,8 +619,8 @@ uint8_t _INY(CPU *cpu, Instruction *arg){
 	/*INY increment index Y by one */
 	uint8_t m = cpu->Y;
 	m = (m +1)%256;
-	_SET_SIGN(cpu,&m);
-	_SET_ZERO(cpu,&m);
+	SET_SIGN(&m);
+	SET_ZERO(&m);
 	cpu->Y = m;
 	return arg->opcode.cycle;
 }
@@ -617,41 +635,41 @@ uint8_t _JSR(CPU *cpu, Instruction *arg) {
 	cpu->PC--; /* Decrement PC */
 	/* Push return address to stack */
 	uint8_t temp = (cpu->PC >> 8) & 0xFF;
-	_PUSH(cpu, &temp);
+	PUSH(&temp);
 	temp = cpu->PC & 0xFF;
-	_PUSH(cpu, &temp);
+	PUSH(&temp);
 	/* Set program counter from memory */
 	cpu->PC = arg->dataAddr;
 	return arg->opcode.cycle;
 }
 
 uint8_t _LDA(CPU *cpu, Instruction *arg){
-	_SET_SIGN(cpu,arg->dataMem);
-	_SET_ZERO(cpu,arg->dataMem);
+	SET_SIGN(arg->dataMem);
+	SET_ZERO(arg->dataMem);
 	cpu->A = *(arg->dataMem);
 	return arg->opcode.cycle + arg->pageCrossed;
 }
 
 uint8_t _LDX(CPU *cpu, Instruction *arg){
-	_SET_SIGN(cpu,arg->dataMem);
-	_SET_ZERO(cpu,arg->dataMem);
+	SET_SIGN(arg->dataMem);
+	SET_ZERO(arg->dataMem);
 	cpu->X = *(arg->dataMem);
 	return arg->opcode.cycle + arg->pageCrossed;
 }
 
 uint8_t _LDY(CPU *cpu, Instruction *arg){
-	_SET_SIGN(cpu,arg->dataMem);
-	_SET_ZERO(cpu,arg->dataMem);
+	SET_SIGN(arg->dataMem);
+	SET_ZERO(arg->dataMem);
 	cpu->Y = *(arg->dataMem);
 	return arg->opcode.cycle + arg->pageCrossed;
 }
 
 uint8_t _LSR(CPU *cpu, Instruction *arg){
-	_SET_CARRY(cpu, (*(arg->dataMem) & 0x01));
+	SET_CARRY((*(arg->dataMem) & 0x01));
 	*arg->dataMem >>= 1;
-	_SET_WR(cpu, arg->dataAddr);
-	_SET_SIGN(cpu,arg->dataMem);
-	_SET_ZERO(cpu,arg->dataMem);
+	SET_WR(arg->dataAddr);
+	SET_SIGN(arg->dataMem);
+	SET_ZERO(arg->dataMem);
 	return arg->opcode.cycle;
 }
 
@@ -662,91 +680,91 @@ uint8_t _NOP(CPU *cpu, Instruction *arg){
 
 uint8_t _ORA(CPU *cpu, Instruction *arg){
 	cpu->A = cpu->A | *arg->dataMem;
-	_SET_SIGN(cpu,&cpu->A);
-	_SET_ZERO(cpu,&cpu->A);
+	SET_SIGN(&cpu->A);
+	SET_ZERO(&cpu->A);
 	return arg->opcode.cycle + arg->pageCrossed;
 }
 
 uint8_t _PHA(CPU *cpu, Instruction *arg) {
 	uint8_t src = cpu->A;
-	_PUSH(cpu, &src);
+	PUSH(&src);
 	return arg->opcode.cycle;
 }
 
 uint8_t _PHP(CPU *cpu, Instruction *arg) {
-	uint8_t src = _GET_SR(cpu) | 0x30;
-	_PUSH(cpu, &src);
+	uint8_t src = GET_SR() | 0x30;
+	PUSH(&src);
 	return arg->opcode.cycle;
 }
 
 uint8_t _PLA(CPU *cpu, Instruction *arg) {
-	uint8_t src = _PULL(cpu);
+	uint8_t src = PULL();
 	cpu->A = src;
-	_SET_SIGN(cpu, &src);
-	_SET_ZERO(cpu, &src);
+	SET_SIGN(&src);
+	SET_ZERO(&src);
 	return arg->opcode.cycle;
 }
 
 uint8_t _PLP(CPU *cpu, Instruction *arg) {
-	uint8_t src = (_PULL(cpu) | 0x20) & ~0x10;
-	_SET_SR(cpu, &src);
+	uint8_t src = (PULL() | 0x20) & ~0x10;
+	SET_SR(&src);
 	return arg->opcode.cycle;
 }
 uint8_t _ROL(CPU *cpu, Instruction *arg){
 	uint8_t newCarry = *arg->dataMem & 0x80;
 	*arg->dataMem <<= 1;
-	if (_IF_CARRY(cpu)){
+	if (IF_CARRY()){
 		*arg->dataMem |= 0x1;
 	}
-	_SET_WR(cpu, arg->dataAddr);
-	_SET_CARRY(cpu, newCarry == 0x80);
-	_SET_SIGN(cpu, arg->dataMem);
-	_SET_ZERO(cpu, arg->dataMem);
+	SET_WR(arg->dataAddr);
+	SET_CARRY(newCarry == 0x80);
+	SET_SIGN(arg->dataMem);
+	SET_ZERO(arg->dataMem);
 	return arg->opcode.cycle;
 }
 
 uint8_t _ROR(CPU *cpu, Instruction *arg){
 	uint8_t newCarry = *arg->dataMem & 0x01;
 	*arg->dataMem >>= 1;
-	if (_IF_CARRY(cpu)){
+	if (IF_CARRY()){
 		*arg->dataMem |= 0x80;
 	}
-	_SET_WR(cpu, arg->dataAddr);
-	_SET_CARRY(cpu, newCarry == 0x01);
-	_SET_SIGN(cpu, arg->dataMem);
-	_SET_ZERO(cpu, arg->dataMem);
+	SET_WR(arg->dataAddr);
+	SET_CARRY(newCarry == 0x01);
+	SET_SIGN(arg->dataMem);
+	SET_ZERO(arg->dataMem);
 	return arg->opcode.cycle;
 }
 
 uint8_t _RTI(CPU *cpu, Instruction *arg) {
-	uint8_t temp = (_PULL(cpu) | 0x20) & ~0x10;
-	_SET_SR(cpu, &temp);
+	uint8_t temp = (PULL() | 0x20) & ~0x10;
+	SET_SR(&temp);
 
-	uint16_t pc = _PULL(cpu);
-	pc |= (_PULL(cpu) << 8);
+	uint16_t pc = PULL();
+	pc |= (PULL() << 8);
 
 	cpu->PC = pc;
 	return arg->opcode.cycle;
 }
 uint8_t _RTS(CPU *cpu, Instruction *arg) {
-	uint16_t pc = _PULL(cpu);
-	pc |= ((_PULL(cpu) << 8));
+	uint16_t pc = PULL();
+	pc |= ((PULL() << 8));
 	cpu->PC = pc + 1;
 	return arg->opcode.cycle;
 }
 
 uint8_t _SBC(CPU *cpu, Instruction *arg){
-	uint16_t temp = cpu->A - *arg->dataMem - (_IF_CARRY(cpu) ? 0 : 1);
-	_SET_SIGN(cpu, (uint8_t*) &temp);
-	_SET_ZERO(cpu, (uint8_t*) &temp);
-	_SET_OVERFLOW(cpu, ((cpu->A ^ temp) & 0x80) && ((cpu->A ^ *arg->dataMem) & 0x80));
-	_SET_CARRY(cpu, temp < 0x100);
+	uint16_t temp = cpu->A - *arg->dataMem - (IF_CARRY() ? 0 : 1);
+	SET_SIGN((uint8_t*) &temp);
+	SET_ZERO((uint8_t*) &temp);
+	SET_OVERFLOW(((cpu->A ^ temp) & 0x80) && ((cpu->A ^ *arg->dataMem) & 0x80));
+	SET_CARRY(temp < 0x100);
 	cpu->A = (uint8_t)(temp & 0xff);
 	return arg->opcode.cycle + arg->pageCrossed;
 }
 
 uint8_t _SEC(CPU *cpu, Instruction *arg){
-	_SET_CARRY(cpu, 1);
+	SET_CARRY(1);
 	return arg->opcode.cycle;
 }
 
@@ -756,57 +774,57 @@ uint8_t _SED(CPU *cpu, Instruction *arg){
 }
 
 uint8_t _SEI(CPU *cpu, Instruction *arg) {
-	_SET_INTERRUPT(cpu);
+	SET_INTERRUPT();
 	return arg->opcode.cycle;
 }
 
 uint8_t _STA(CPU *cpu, Instruction *arg){
 	*(arg->dataMem) = cpu->A;
-	_SET_WR(cpu, arg->dataAddr);
+	SET_WR(arg->dataAddr);
 	return arg->opcode.cycle;
 }
 
 uint8_t _STX(CPU *cpu, Instruction *arg){
 	*(arg->dataMem) = cpu->X;
-	_SET_WR(cpu, arg->dataAddr);
+	SET_WR(arg->dataAddr);
 	return arg->opcode.cycle;
 }
 
 uint8_t _STY(CPU *cpu, Instruction *arg){
 	*(arg->dataMem) = cpu->Y;
-	_SET_WR(cpu, arg->dataAddr);
+	SET_WR(arg->dataAddr);
 	return arg->opcode.cycle;
 }
 
 uint8_t _TAX(CPU *cpu, Instruction *arg) {
 	uint8_t src = cpu->A;
-	_SET_SIGN(cpu, &src);
-	_SET_ZERO(cpu, &src);
+	SET_SIGN(&src);
+	SET_ZERO(&src);
 	cpu->X = src;
 	return arg->opcode.cycle;
 }
 
 uint8_t _TAY(CPU *cpu, Instruction *arg) {
 	uint8_t src = cpu->A;
-	_SET_SIGN(cpu, &src);
-	_SET_ZERO(cpu, &src);
+	SET_SIGN(&src);
+	SET_ZERO(&src);
 	cpu->Y = src;
 	return arg->opcode.cycle;
 }
 
 uint8_t _TSX(CPU *cpu, Instruction *arg) {
 	uint8_t src = cpu->SP;
-	_SET_SIGN(cpu, &src);
-	_SET_ZERO(cpu, &src);
+	SET_SIGN(&src);
+	SET_ZERO(&src);
 	cpu->X = src;
 	return arg->opcode.cycle;
 }
 
 uint8_t _TXA(CPU *cpu, Instruction *arg) {
 	uint8_t src = cpu->X;
-	_SET_SIGN(cpu, &src);
-	_SET_SIGN(cpu, &src);
-	_SET_ZERO(cpu, &src);
+	SET_SIGN(&src);
+	SET_SIGN(&src);
+	SET_ZERO(&src);
 	cpu->A = src;
 	return arg->opcode.cycle;
 }
@@ -818,8 +836,8 @@ uint8_t _TXS(CPU *cpu, Instruction *arg) {
 
 uint8_t _TYA(CPU *cpu, Instruction *arg) {
 	uint8_t src = cpu->Y;
-	_SET_SIGN(cpu, &src);
-	_SET_ZERO(cpu, &src);
+	SET_SIGN(&src);
+	SET_ZERO(&src);
 	cpu->A = src;
 	return arg->opcode.cycle;
 }

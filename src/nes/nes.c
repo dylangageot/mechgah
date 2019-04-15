@@ -27,10 +27,24 @@ NES* NES_Create(char *filename) {
 		PPU_Init(self->ppu);
 		/* Set to zero clock counter */
 		self->clockCount = 0;
+		/* Set to RESET context */
+		self->context = 0x01;
+
 	} else
 		ERROR_MSG("can't allocate NES structure");
 
 	return self;
+}
+
+uint8_t NES_NextFrame(NES *self) {
+	uint32_t previousClockCount = self->clockCount;
+	while (PPU_PictureDrawn(self->ppu) == 0) {
+		CPU_Execute(self->cpu, &self->context, &self->clockCount);
+		PPU_Execute(self->ppu, &self->context, 
+				(self->clockCount - previousClockCount) * 3);
+		previousClockCount = self->clockCount;
+	}
+	return EXIT_SUCCESS;
 }
 
 void NES_Destroy(NES *self) {
