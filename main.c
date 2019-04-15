@@ -4,6 +4,21 @@
 #include <SDL/SDL_rotozoom.h>
 #include "src/nes/nes.h"
 
+#define TICK_INTERVAL 16
+
+static uint32_t next_time;
+
+uint32_t time_left(void)
+{
+    uint32_t now;
+
+    now = SDL_GetTicks();
+    if(next_time <= now)
+        return 0;
+    else
+        return next_time - now;
+}
+
 int main(int argc, char **argv) {
 
 	if (argc == 1)
@@ -19,25 +34,17 @@ int main(int argc, char **argv) {
 	}
 
 	SDL_Surface *ecran = SDL_SetVideoMode(256*2, 240*2, 32, SDL_HWSURFACE |
-																SDL_DOUBLEBUF);	
+																SDL_DOUBLEBUF);
     SDL_WM_SetCaption("NES Emulator", NULL);
 
     int continuer = 1;
     SDL_Event event;
-
-	int channels = 4; // for a RGB image
-	unsigned int i, j;
-	uint32_t *image = (uint32_t*) malloc(256 * 240 * sizeof(uint32_t));
-	for (i = 0; i < 240*256; i++)
-		image[i] = 0x00FFFFFF;
-	SDL_Surface *surface = NULL;
+	SDL_Surface *surface = NULL, *scaled = NULL;
 	SDL_Rect srcdest;
 	srcdest.x = 0;
 	srcdest.y = 0;
 
-	uint8_t context = 0x01;
-	uint32_t clockPrev = 0;
-
+	next_time = SDL_GetTicks() + TICK_INTERVAL;
     while (continuer)
     {
         SDL_PollEvent(&event);
@@ -47,14 +54,10 @@ int main(int argc, char **argv) {
                 continuer = 0;
         }
 
-		
-		CPU_Execute(nes->cpu, &context, &(nes->clockCount));
-		PPU_Execute(nes->ppu, &context, (nes->clockCount - clockPrev) * 3);
-		clockPrev = nes->clockCount;
-		if (context == 0x02) {
-			PPU_RenderNametable(nes->ppu, image, 0);
-			SDL_FillRect(ecran, NULL, 0x000000);
-			surface = SDL_CreateRGBSurfaceFrom((void*) image,
+		NES_NextFrame(nes);
+
+		PPU_RenderNametable(nes->ppu, nes->ppu->image, 0);
+		surface = SDL_CreateRGBSurfaceFrom((void*) nes->ppu->image,
 					256,
 					240,
 					sizeof(uint32_t) * 8,			// bits per pixel = 24
@@ -63,15 +66,17 @@ int main(int argc, char **argv) {
 					0x0000FF00,             // green mask
 					0x000000FF,             // blue mask
 				    0x00000000);            // alpha mask (none)
-			surface = rotozoomSurface(surface, 0, 2, SMOOTHING_OFF);  
-			SDL_BlitSurface(surface, NULL, ecran, &srcdest);
-			SDL_Flip(ecran);
-			SDL_Delay(5);
-		}
-
+		scaled = rotozoomSurface(surface, 0, 2, SMOOTHING_OFF);  
+		SDL_FillRect(ecran, NULL, 0x000000);
+		SDL_BlitSurface(scaled, NULL, ecran, &srcdest);
+		SDL_Delay(time_left());
+	 	SDL_Flip(ecran);
+		SDL_FreeSurface(surface);
+		SDL_FreeSurface(scaled);
+        next_time += TICK_INTERVAL;
     }
 
 	SDL_Quit();
-	free(image);
+	NES_Destroy(nes);
 	return EXIT_SUCCESS;
 }

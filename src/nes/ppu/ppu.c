@@ -72,6 +72,13 @@ PPU* PPU_Create(Mapper *mapper) {
 		return NULL;
 	}
 
+	self->image = (uint32_t*) malloc(256 * 240 * sizeof(uint32_t));
+	if (self->image == NULL) {
+		ERROR_MSG("can't allocate memory for graphics array in PPU");
+		PPU_Destroy(self);
+		return NULL;
+	}
+
 	/* Connect mapper to PPU */
 	self->mapper = mapper;
 	return self;
@@ -97,6 +104,7 @@ uint8_t PPU_Init(PPU *self) {
 	self->PPUSCROLL = 0;
 	self->nbFrame = 0;
 	self->nmiSent = 0;
+	self->pictureDrawn = 0;
 
 	for (i = 0; i < 256; i++)
 		self->OAM[i] = 0;
@@ -304,6 +312,7 @@ uint8_t PPU_ManageTiming(PPU *self, Stack *taskList) {
 uint8_t PPU_SetFlag(PPU *self) { 
 	/* Set Vertical Blank bit */
 	self->PPUSTATUS |= 0x80;	
+	self->pictureDrawn = 1;
 	return EXIT_SUCCESS; 
 }
 
@@ -433,8 +442,17 @@ uint8_t PPU_Execute(PPU* self, uint8_t *context, uint8_t clock) {
 	return EXIT_SUCCESS;
 }
 
+uint8_t PPU_PictureDrawn(PPU *self) {
+	/* Retrieve information and acknowledge it */
+	uint8_t result = self->pictureDrawn;
+	self->pictureDrawn = 0;
+	return result;
+}
+
 void PPU_Destroy(PPU *self) {
 	if (self == NULL)
 		return;
+	if (self->image != NULL)
+		free(self->image);
 	free(self);
 }
