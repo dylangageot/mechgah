@@ -57,6 +57,7 @@ int main(int argc, char **argv) {
 		NES_NextFrame(nes);
 
 		PPU_RenderNametable(nes->ppu, nes->ppu->image, 0);
+		PPU_RenderSprites(nes->ppu, nes->ppu->image);
 		surface = SDL_CreateRGBSurfaceFrom((void*) nes->ppu->image,
 					256,
 					240,

@@ -124,7 +124,8 @@ void PPU_RenderNametable(PPU *self, uint32_t *image, uint8_t index) {
 									0x2000 | (index << 10));
 	uint8_t *attribute = nametable + 0x3C0;
 	uint8_t *palette = Mapper_Get(self->mapper, AS_PPU, 0x3F00);
-	uint8_t *pattern = Mapper_Get(self->mapper, AS_LDR, LDR_CHR);
+	uint8_t *pattern = Mapper_Get(self->mapper, AS_LDR, LDR_CHR) +
+	                   ((self->PPUCTRL & 0x10) ? 0x1000 : 0);	
 	uint8_t *tile = NULL, *color = NULL;
 	uint8_t temp = 0, shift = 0;
 	uint32_t index_image = 0;
@@ -134,7 +135,6 @@ void PPU_RenderNametable(PPU *self, uint32_t *image, uint8_t index) {
 		for (x = 0; x < 32; x++) {
 			/* Tile to get pixels data from */
 			tile = pattern + (nametable[x + (y << 5)] << 4);
-			tile += (self->PPUCTRL & 0x10) ? 0x1000 : 0;
 			/* Retrieve attribute and decode */
 			temp = attribute[(x >> 2) + ((y & 0xFC) << 1)];
 			shift = (x & 0x02) | ((y & 0x02) << 1);
@@ -149,6 +149,54 @@ void PPU_RenderNametable(PPU *self, uint32_t *image, uint8_t index) {
 					index_image = (x << 3) + (y << 11) + (j << 8) + i; 
 					image[index_image] = colorPalette[color[temp]];
 				}
+			}
+		}
+	}
+}
+
+void PPU_RenderSprites(PPU *self, uint32_t *image) {
+	
+	if ((self->PPUMASK & 0x10) == 0) 
+		return;
+
+	uint8_t *palette = Mapper_Get(self->mapper, AS_PPU, 0x3F00);
+	uint8_t *pattern = Mapper_Get(self->mapper, AS_LDR, LDR_CHR) +
+					   ((self->PPUCTRL & 0x08) ? 0x1000 : 0);
+	uint8_t *tile = NULL, *color = NULL;
+	uint8_t temp = 0;
+	int oamaddr, x, y, x_start, y_start, attribute;
+	uint32_t index_image = 0;
+
+	/* Evaluate sprite per sprite */
+	for (oamaddr = 0; oamaddr < 0x100; oamaddr += 0x4) {
+		/* Tile to get pixels data from */
+		tile = pattern + (self->OAM[oamaddr + 1] << 4);
+		x_start = self->OAM[oamaddr + 3];
+		y_start = self->OAM[oamaddr] + 1;
+		attribute = self->OAM[oamaddr + 2];
+		color = palette + ((attribute & 0x03) << 2) + 0x10;
+		for (y = 0; y < 8; y++) {
+			for (x = 0; x < 8; x++) {
+				/* Flip both orientation */
+				if ((attribute & 0xC0) == 0xC0) {
+					temp = (tile[7-y] >> x) & 0x01;
+					temp |= ((tile[(7-y) | 0x08] >> x) & 0x01) << 1;
+				/* Flip vertical */
+				} else if ((attribute & 0xC0) == 0x80) {
+					temp = (reverse_byte(tile[7-y]) >> x) & 0x01;
+					temp |= ((reverse_byte(tile[(7-y) | 0x08]) >> x) & 0x01) << 1;
+				/* Flip horizontal */
+				} else if ((attribute & 0xC0) == 0x40) {
+					temp = (tile[y] >> x) & 0x01;
+					temp |= ((tile[y | 0x08] >> x) & 0x01) << 1;
+				/* Don't flip */
+				} else {
+					temp = (reverse_byte(tile[y]) >> x) & 0x01;
+					temp |= ((reverse_byte(tile[y | 0x08]) >> x) & 0x01) << 1;
+				}
+				index_image = x_start + (y_start << 8) + (y << 8) + x; 
+				if ((temp & 0x3) != 0)
+					image[index_image] = colorPalette[color[temp]];
 			}
 		}
 	}
