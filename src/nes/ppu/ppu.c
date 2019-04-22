@@ -457,11 +457,11 @@ uint8_t PPU_Draw(PPU *self) { return EXIT_SUCCESS; }
 
 uint8_t PPU_UpdateCycle(PPU *self) {
 	/* Increment cycle and scanline if it has overflow */
-	if (self->cycle < 341)
+	if (self->cycle < 340)
 		self->cycle++;
 	else {
 		self->cycle = 0;
-		if (self->scanline < 262)
+		if (self->scanline < 261)
 			self->scanline++;
 		else
 			self->scanline = -1;
