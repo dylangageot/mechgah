@@ -108,7 +108,7 @@ int main(int argc, char **argv) {
 					0x0000FF00,             // green mask
 					0x000000FF,             // blue mask
 				    0x00000000);            // alpha mask (none)
-		scaled = rotozoomSurface(surface, 0, 2, SMOOTHING_OFF);
+		scaled = rotozoomSurface(surface, 0, scale_value, SMOOTHING_OFF);
 		SDL_FillRect(ecran, NULL, 0x000000);
 		SDL_BlitSurface(scaled, NULL, ecran, &srcdest);
 		SDL_Delay(time_left());
