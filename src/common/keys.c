@@ -47,3 +47,19 @@ int writeFileKeys(char * nameFile, uint16_t * keysSelect){
     fclose(pFile);
 	return 1;
 }
+
+int readFileKeys(char * nameFile, uint16_t * keysSelect){
+    FILE * pFile = NULL;
+    char temp[30];
+    char key[10];
+    char buf[10];
+    int i;
+    pFile = fopen(nameFile,"r");
+	if (pFile == NULL) return 0;
+    while (fgets(temp,30,pFile)) {
+        sscanf(temp,"%s : %d : %s",buf,&i,key);
+        keysSelect[i]=charToSdlk(key);
+    }
+    fclose(pFile);
+    return 1;
+}
