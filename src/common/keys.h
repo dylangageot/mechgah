@@ -16,20 +16,20 @@ char * SdlkToChar(int sdlk);
    Input : int sdlk :  SDLK code for a key
    Output :  string */
 
-int writeFileKeys(char * nameFile, int * keysSelect);
+int writeFileKeys(char * nameFile, uint16_t * keysSelect);
 /* Writes the key configuration to a file
    Input : char * nameFile :  name of the file
            int * keysSelect : Table containing the SDLK keys
    Output : 1 or 0*/
 
-int readFileKeys(char * nameFile, int * keysSelect);
+int readFileKeys(char * nameFile, uint16_t * keysSelect);
 /* Read the key configuration to a file
    Input : char * nameFile :  name of the file
            int * keysSelect : Table containing the SDLK keys
    Output : 1 or 0*/
 
 
-int eventKeys(int * keysSelect);
+int eventKeys(uint16_t * keysSelect);
 /* detect a event
     Input :  int * keysSelect : Table containing the SDLK keys
     Ouput : a value in 1 byte*/
