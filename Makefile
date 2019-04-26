@@ -25,6 +25,7 @@ SRC  		= $(NESDIR)/mapper/nrom.c \
 			  $(UTESTDIR)/UTcpu.c \
 			  $(UTESTDIR)/UTstack.c \
 			  $(UTESTDIR)/UTppu.c \
+			  $(COMMONDIR)/keys.c \
 
 # use gcc
 CC			= gcc

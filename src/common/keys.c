@@ -31,3 +31,19 @@ char * SdlkToChar(int sdlk){
     }
     return 0;
 }
+
+int writeFileKeys(char * nameFile, uint16_t * keysSelect){
+    FILE * pFile = NULL;
+    pFile = fopen(nameFile,"w");
+	if (pFile == NULL) return 0;
+    fprintf(pFile,"A      : 0 : %s\n",SdlkToChar(keysSelect[0]));  //A
+    fprintf(pFile,"B      : 1 : %s\n",SdlkToChar(keysSelect[1]));  //A
+    fprintf(pFile,"SELECT : 2 : %s\n",SdlkToChar(keysSelect[2]));  //A
+    fprintf(pFile,"START  : 3 : %s\n",SdlkToChar(keysSelect[3]));  //A
+    fprintf(pFile,"UP     : 4 : %s\n",SdlkToChar(keysSelect[4]));  //A
+    fprintf(pFile,"DOWN   : 5 : %s\n",SdlkToChar(keysSelect[5]));  //A
+    fprintf(pFile,"LEFT   : 6 : %s\n",SdlkToChar(keysSelect[6]));  //A
+    fprintf(pFile,"RIGHT  : 7 : %s\n",SdlkToChar(keysSelect[7]));  //A
+    fclose(pFile);
+	return 1;
+}
