@@ -63,3 +63,25 @@ int readFileKeys(char * nameFile, uint16_t * keysSelect){
     fclose(pFile);
     return 1;
 }
+
+int eventKeys(uint16_t * keysSelect){
+	SDL_Event event;
+	SDL_PollEvent(&event);
+    if(event.key.keysym.sym == keysSelect[0])
+	   return 0x1;
+	if(event.key.keysym.sym == keysSelect[1])
+	   return 0x2;
+	if(event.key.keysym.sym == keysSelect[2])
+	   return 0x4;
+	if(event.key.keysym.sym == keysSelect[3])
+	   return 0x8;
+	if(event.key.keysym.sym == keysSelect[4])
+	   return 0x10;
+	if(event.key.keysym.sym == keysSelect[5])
+	   return 0x20;
+	if(event.key.keysym.sym == keysSelect[6])
+	   return 0x40;
+	if(event.key.keysym.sym == keysSelect[7])
+	   return 0x80;
+    return 0b00000000;
+}
