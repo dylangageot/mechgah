@@ -22,3 +22,12 @@ int charToSdlk(char * key){
     }
     return 0;
 }
+
+char * SdlkToChar(int sdlk){
+    int i=0;
+    for(i=0;i<30;i++){
+        if(keys[i].SDLK == sdlk)
+            return keys[i].keyName;
+    }
+    return 0;
+}
