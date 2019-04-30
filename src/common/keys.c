@@ -14,7 +14,7 @@ static Keys keys[30]={{"A",SDLK_a},{"B",SDLK_b},{"C",SDLK_c},{"D",SDLK_d},
                       {"Y",SDLK_y},{"Z",SDLK_z},
                       {"UP",SDLK_UP},{"DOWN",SDLK_DOWN},{"RIGHT",SDLK_RIGHT},{"LEFT",SDLK_LEFT}};
 
-int charToSdlk(char * key){
+uint16_t charToSdlk(char * key){
     int i=0;
     for(i=0;i<30;i++){
         if(!strcmp(keys[i].keyName,key))
@@ -23,7 +23,7 @@ int charToSdlk(char * key){
     return 0;
 }
 
-char * SdlkToChar(int sdlk){
+char * SdlkToChar(uint16_t sdlk){
     int i=0;
     for(i=0;i<30;i++){
         if(keys[i].SDLK == sdlk)
@@ -64,24 +64,27 @@ int readFileKeys(char * nameFile, uint16_t * keysSelect){
     return 1;
 }
 
-int eventKeys(uint16_t * keysSelect){
-	SDL_Event event;
-	SDL_PollEvent(&event);
-    if(event.key.keysym.sym == keysSelect[0])
-	   return 0x1;
-	if(event.key.keysym.sym == keysSelect[1])
-	   return 0x2;
-	if(event.key.keysym.sym == keysSelect[2])
-	   return 0x4;
-	if(event.key.keysym.sym == keysSelect[3])
-	   return 0x8;
-	if(event.key.keysym.sym == keysSelect[4])
-	   return 0x10;
-	if(event.key.keysym.sym == keysSelect[5])
-	   return 0x20;
-	if(event.key.keysym.sym == keysSelect[6])
-	   return 0x40;
-	if(event.key.keysym.sym == keysSelect[7])
-	   return 0x80;
-    return 0b00000000;
+uint8_t eventKeys(uint16_t * keysSelect){
+	static SDL_Event event;
+    uint8_t keys;
+	while(SDL_PollEvent(&event))
+    {
+        if(event.key.keysym.sym == keysSelect[0])
+    	   keys |= 0x01;
+    	if(event.key.keysym.sym == keysSelect[1])
+    	   keys |= 0x02;
+    	if(event.key.keysym.sym == keysSelect[2])
+    	   keys |= 0x04;
+    	if(event.key.keysym.sym == keysSelect[3])
+    	   keys |= 0x08;
+    	if(event.key.keysym.sym == keysSelect[4])
+    	   keys |= 0x10;
+    	if(event.key.keysym.sym == keysSelect[5])
+    	   keys |= 0x20;
+    	if(event.key.keysym.sym == keysSelect[6])
+    	   keys |= 0x40;
+    	if(event.key.keysym.sym == keysSelect[7])
+    	   keys |= 0x80;
+    }
+    return keys;
 }
