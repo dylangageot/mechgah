@@ -29,7 +29,7 @@ int readFileKeys(char * nameFile, uint16_t * keysSelect);
    Output : 1 or 0*/
 
 
-uint8_t eventKeys(uint16_t * keysSelect);
+uint16_t eventKeys(uint16_t * keysSelect);
 /* detect a event
     Input :  int * keysSelect : Table containing the SDLK keys
     Ouput : a value in 1 byte*/
