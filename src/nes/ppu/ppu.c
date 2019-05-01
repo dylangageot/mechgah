@@ -145,8 +145,8 @@ void PPU_RenderNametable(PPU *self, uint32_t *image, uint8_t index) {
 			for (j = 0; j < 8; j++) {
 				for (i = 0; i < 8; i++) {
 					temp = (reverse_byte(tile[j]) >> i) & 0x01;
-					temp |= ((reverse_byte(tile[j | 0x08]) >> i) & 0x01) << 1;
-					index_image = (x << 3) + (y << 11) + (j << 8) + i; 
+					temp |= ((reverse_byte(tile[j | 0x08 ]) >> i) & 0x01) << 1;
+					index_image = (x << 3) + (y << 11) + (j << 8) + i;
 					image[index_image] = colorPalette[color[temp]];
 				}
 			}
@@ -180,21 +180,21 @@ void PPU_RenderSprites(PPU *self, uint32_t *image) {
 				/* Flip both orientation */
 				if ((attribute & 0xC0) == 0xC0) {
 					temp = (tile[7-y] >> x) & 0x01;
-					temp |= ((tile[(7-y) | 0x08] >> x) & 0x01) << 1;
+					temp |= ((tile[(7-y) | 0x08 ] >> x) & 0x01) << 1;
 				/* Flip vertical */
 				} else if ((attribute & 0xC0) == 0x80) {
 					temp = (reverse_byte(tile[7-y]) >> x) & 0x01;
-					temp |= ((reverse_byte(tile[(7-y) | 0x08]) >> x) & 0x01) << 1;
+					temp |= ((reverse_byte(tile[(7-y) | 0x08 ]) >> x) & 0x01) << 1;
 				/* Flip horizontal */
 				} else if ((attribute & 0xC0) == 0x40) {
 					temp = (tile[y] >> x) & 0x01;
-					temp |= ((tile[y | 0x08] >> x) & 0x01) << 1;
+					temp |= ((tile[y | 0x08 ] >> x) & 0x01) << 1;
 				/* Don't flip */
 				} else {
 					temp = (reverse_byte(tile[y]) >> x) & 0x01;
-					temp |= ((reverse_byte(tile[y | 0x08]) >> x) & 0x01) << 1;
+					temp |= ((reverse_byte(tile[y | 0x08 ]) >> x) & 0x01) << 1;
 				}
-				index_image = x_start + (y_start << 8) + (y << 8) + x; 
+				index_image = x_start + (y_start << 8) + (y << 8) + x;
 				if ((temp & 0x3) != 0)
 					image[index_image] = colorPalette[color[temp]];
 			}
