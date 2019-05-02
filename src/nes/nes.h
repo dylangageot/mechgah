@@ -42,7 +42,7 @@ NES* NES_Create(char *filename);
  *
  * \return EXIT_SUCCESS
  */
-uint8_t NES_NextFrame(NES *self);
+uint8_t NES_NextFrame(NES *self, uint16_t * keysSelect);
 
 /**
  * \brief Update event for the controller

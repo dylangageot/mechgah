@@ -5,6 +5,7 @@
 #include <SDL/SDL.h>
 #include <SDL/SDL_rotozoom.h>
 #include "src/nes/nes.h"
+#include "src/common/keys.h"
 
 #define TICK_INTERVAL 16
 
@@ -66,11 +67,13 @@ int main(int argc, char **argv) {
   }
 
 	NES *nes = NES_Create(romFileName);
-	if (nes == NULL)
+	if (nes == NULL){
 		return EXIT_FAILURE;
+  }
 
 	if (SDL_Init(SDL_INIT_VIDEO) == -1) {
 		fprintf(stderr, "Error: Can't initialize SDL (%s)\n", SDL_GetError());
+  	NES_Destroy(nes);
 		return EXIT_FAILURE;
 	}
 
@@ -84,18 +87,35 @@ int main(int argc, char **argv) {
 	SDL_Rect srcdest;
 	srcdest.x = 0;
 	srcdest.y = 0;
+  uint16_t keysSelect[8];
+
+  long cnt;
+
+    if( readFileKeys("KeysConfig.txt", keysSelect) == 0){
+      fprintf(stderr, "Error: KeysConfig.txt is missing\n");
+      SDL_Quit();
+    	NES_Destroy(nes);
+  		return EXIT_FAILURE;
+    }
 
 	next_time = SDL_GetTicks() + TICK_INTERVAL;
     while (continuer)
     {
+
+      if(cnt > 1200){
+        continuer = 0;
+      }
+      cnt++;
+      /*
         SDL_PollEvent(&event);
         switch(event.type)
         {
             case SDL_QUIT:
                 continuer = 0;
         }
+      */
 
-		NES_NextFrame(nes);
+		NES_NextFrame(nes, keysSelect);
 
 		PPU_RenderNametable(nes->ppu, nes->ppu->image, 0);
 		PPU_RenderSprites(nes->ppu, nes->ppu->image);

@@ -66,25 +66,44 @@ int readFileKeys(char * nameFile, uint16_t * keysSelect){
 
 uint8_t eventKeys(uint16_t * keysSelect){
 	static SDL_Event event;
-    uint8_t keys;
+  static uint8_t keys;
 	while(SDL_PollEvent(&event))
-    {
-        if(event.key.keysym.sym == keysSelect[0])
-    	   keys |= 0x01;
-    	if(event.key.keysym.sym == keysSelect[1])
-    	   keys |= 0x02;
-    	if(event.key.keysym.sym == keysSelect[2])
-    	   keys |= 0x04;
-    	if(event.key.keysym.sym == keysSelect[3])
-    	   keys |= 0x08;
-    	if(event.key.keysym.sym == keysSelect[4])
-    	   keys |= 0x10;
-    	if(event.key.keysym.sym == keysSelect[5])
-    	   keys |= 0x20;
-    	if(event.key.keysym.sym == keysSelect[6])
-    	   keys |= 0x40;
-    	if(event.key.keysym.sym == keysSelect[7])
-    	   keys |= 0x80;
-    }
-    return keys;
+  {
+      if(event.type == SDL_KEYDOWN){
+          if(event.key.keysym.sym == keysSelect[0])
+        	   keys |= 0x01;
+        	if(event.key.keysym.sym == keysSelect[1])
+        	   keys |= 0x02;
+        	if(event.key.keysym.sym == keysSelect[2])
+        	   keys |= 0x04;
+        	if(event.key.keysym.sym == keysSelect[3])
+        	   keys |= 0x08;
+        	if(event.key.keysym.sym == keysSelect[4])
+        	   keys |= 0x10;
+        	if(event.key.keysym.sym == keysSelect[5])
+        	   keys |= 0x20;
+        	if(event.key.keysym.sym == keysSelect[6])
+        	   keys |= 0x40;
+        	if(event.key.keysym.sym == keysSelect[7])
+        	   keys |= 0x80;
+      }else if(event.type == SDL_KEYUP){
+          if(event.key.keysym.sym == keysSelect[0])
+        	   keys &= ~0x01;
+        	if(event.key.keysym.sym == keysSelect[1])
+        	   keys &= ~0x02;
+        	if(event.key.keysym.sym == keysSelect[2])
+        	   keys &= ~0x04;
+        	if(event.key.keysym.sym == keysSelect[3])
+        	   keys &= ~0x08;
+        	if(event.key.keysym.sym == keysSelect[4])
+        	   keys &= ~0x10;
+        	if(event.key.keysym.sym == keysSelect[5])
+        	   keys &= ~0x20;
+        	if(event.key.keysym.sym == keysSelect[6])
+        	   keys &= ~0x40;
+        	if(event.key.keysym.sym == keysSelect[7])
+        	   keys &= ~0x80;
+      }
+  }
+  return keys;
 }

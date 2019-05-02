@@ -18,6 +18,7 @@ SRC  		= $(NESDIR)/mapper/nrom.c \
 			  $(NESDIR)/cpu/cpu.c \
 			  $(NESDIR)/ppu/ppu.c \
 			  $(NESDIR)/nes.c \
+				$(NESDIR)/controller/controller.c \
 			  $(COMMONDIR)/stack.c \
 			  $(UTESTDIR)/UTnrom.c \
 			  $(UTESTDIR)/UTinstruction.c \

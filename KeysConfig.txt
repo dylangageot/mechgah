@@ -1,7 +1,7 @@
-A      : 0 : E
+A      : 0 : Z
 B      : 1 : A
-SELECT : 2 : P
-START  : 3 : I
+SELECT : 2 : S
+START  : 3 : Q
 UP     : 4 : UP
 DOWN   : 5 : DOWN
 LEFT   : 6 : LEFT
