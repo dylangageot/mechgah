@@ -36,14 +36,22 @@ int writeFileKeys(char * nameFile, uint16_t * keysSelect){
     FILE * pFile = NULL;
     pFile = fopen(nameFile,"w");
 	if (pFile == NULL) return 0;
-    fprintf(pFile,"A      : 0 : %s\n",SdlkToChar(keysSelect[0]));  //A
-    fprintf(pFile,"B      : 1 : %s\n",SdlkToChar(keysSelect[1]));  //A
-    fprintf(pFile,"SELECT : 2 : %s\n",SdlkToChar(keysSelect[2]));  //A
-    fprintf(pFile,"START  : 3 : %s\n",SdlkToChar(keysSelect[3]));  //A
-    fprintf(pFile,"UP     : 4 : %s\n",SdlkToChar(keysSelect[4]));  //A
-    fprintf(pFile,"DOWN   : 5 : %s\n",SdlkToChar(keysSelect[5]));  //A
-    fprintf(pFile,"LEFT   : 6 : %s\n",SdlkToChar(keysSelect[6]));  //A
-    fprintf(pFile,"RIGHT  : 7 : %s\n",SdlkToChar(keysSelect[7]));  //A
+    fprintf(pFile,"P1_A      : 0 : %s\n",SdlkToChar(keysSelect[0]));  //A
+    fprintf(pFile,"P1_B      : 1 : %s\n",SdlkToChar(keysSelect[1]));  //B
+    fprintf(pFile,"P1_SELECT : 2 : %s\n",SdlkToChar(keysSelect[2]));  //SELECT
+    fprintf(pFile,"P1_START  : 3 : %s\n",SdlkToChar(keysSelect[3]));  //START
+    fprintf(pFile,"P1_UP     : 4 : %s\n",SdlkToChar(keysSelect[4]));  //UP
+    fprintf(pFile,"P1_DOWN   : 5 : %s\n",SdlkToChar(keysSelect[5]));  //DOWN
+    fprintf(pFile,"P1_LEFT   : 6 : %s\n",SdlkToChar(keysSelect[6]));  //LEFT
+    fprintf(pFile,"P1_RIGHT  : 7 : %s\n",SdlkToChar(keysSelect[7]));  //RIGHT
+    fprintf(pFile,"P2_A      : 8 : %s\n",SdlkToChar(keysSelect[8]));  //A
+    fprintf(pFile,"P2_B      : 9 : %s\n",SdlkToChar(keysSelect[9]));  //B
+    fprintf(pFile,"P2_SELECT : 10 : %s\n",SdlkToChar(keysSelect[10]));  //SELECT
+    fprintf(pFile,"P2_START  : 11 : %s\n",SdlkToChar(keysSelect[11]));  //START
+    fprintf(pFile,"P2_UP     : 12 : %s\n",SdlkToChar(keysSelect[12]));  //UP
+    fprintf(pFile,"P2_DOWN   : 13 : %s\n",SdlkToChar(keysSelect[13]));  //DOWN
+    fprintf(pFile,"P2_LEFT   : 14 : %s\n",SdlkToChar(keysSelect[14]));  //LEFT
+    fprintf(pFile,"P2_RIGHT  : 15 : %s\n",SdlkToChar(keysSelect[15]));  //RIGHT
     fclose(pFile);
 	return 1;
 }
@@ -64,46 +72,43 @@ int readFileKeys(char * nameFile, uint16_t * keysSelect){
     return 1;
 }
 
-uint8_t eventKeys(uint16_t * keysSelect){
+uint16_t eventKeys(uint16_t * keysSelect){
 	static SDL_Event event;
-  static uint8_t keys;
+    uint16_t keys;
 	while(SDL_PollEvent(&event))
-  {
-      if(event.type == SDL_KEYDOWN){
-          if(event.key.keysym.sym == keysSelect[0])
-        	   keys |= 0x01;
-        	if(event.key.keysym.sym == keysSelect[1])
-        	   keys |= 0x02;
-        	if(event.key.keysym.sym == keysSelect[2])
-        	   keys |= 0x04;
-        	if(event.key.keysym.sym == keysSelect[3])
-        	   keys |= 0x08;
-        	if(event.key.keysym.sym == keysSelect[4])
-        	   keys |= 0x10;
-        	if(event.key.keysym.sym == keysSelect[5])
-        	   keys |= 0x20;
-        	if(event.key.keysym.sym == keysSelect[6])
-        	   keys |= 0x40;
-        	if(event.key.keysym.sym == keysSelect[7])
-        	   keys |= 0x80;
-      }else if(event.type == SDL_KEYUP){
-          if(event.key.keysym.sym == keysSelect[0])
-        	   keys &= ~0x01;
-        	if(event.key.keysym.sym == keysSelect[1])
-        	   keys &= ~0x02;
-        	if(event.key.keysym.sym == keysSelect[2])
-        	   keys &= ~0x04;
-        	if(event.key.keysym.sym == keysSelect[3])
-        	   keys &= ~0x08;
-        	if(event.key.keysym.sym == keysSelect[4])
-        	   keys &= ~0x10;
-        	if(event.key.keysym.sym == keysSelect[5])
-        	   keys &= ~0x20;
-        	if(event.key.keysym.sym == keysSelect[6])
-        	   keys &= ~0x40;
-        	if(event.key.keysym.sym == keysSelect[7])
-        	   keys &= ~0x80;
-      }
-  }
-  return keys;
+    {
+        if(event.key.keysym.sym == keysSelect[0])
+    	   keys |= 0x0001;
+    	if(event.key.keysym.sym == keysSelect[1])
+    	   keys |= 0x0002;
+    	if(event.key.keysym.sym == keysSelect[2])
+    	   keys |= 0x0004;
+    	if(event.key.keysym.sym == keysSelect[3])
+    	   keys |= 0x0008;
+    	if(event.key.keysym.sym == keysSelect[4])
+    	   keys |= 0x0010;
+    	if(event.key.keysym.sym == keysSelect[5])
+    	   keys |= 0x0020;
+    	if(event.key.keysym.sym == keysSelect[6])
+    	   keys |= 0x0040;
+    	if(event.key.keysym.sym == keysSelect[7])
+    	   keys |= 0x0080;
+        if(event.key.keysym.sym == keysSelect[8])
+       	   keys |= 0x0100;
+       	if(event.key.keysym.sym == keysSelect[9])
+       	   keys |= 0x0200;
+       	if(event.key.keysym.sym == keysSelect[10])
+       	   keys |= 0x0400;
+       	if(event.key.keysym.sym == keysSelect[11])
+       	   keys |= 0x0800;
+       	if(event.key.keysym.sym == keysSelect[12])
+       	   keys |= 0x1000;
+       	if(event.key.keysym.sym == keysSelect[13])
+       	   keys |= 0x2000;
+       	if(event.key.keysym.sym == keysSelect[14])
+       	   keys |= 0x4000;
+       	if(event.key.keysym.sym == keysSelect[15])
+       	   keys |= 0x8000;
+    }
+    return keys;
 }
