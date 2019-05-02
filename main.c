@@ -87,7 +87,7 @@ int main(int argc, char **argv) {
 	SDL_Rect srcdest;
 	srcdest.x = 0;
 	srcdest.y = 0;
-  uint16_t keysSelect[8];
+  uint16_t keysSelect[16];
 
   long cnt;
 

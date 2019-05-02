@@ -1,9 +1,16 @@
-A      : 0 : Z
-B      : 1 : A
-SELECT : 2 : S
-START  : 3 : Q
-UP     : 4 : UP
-DOWN   : 5 : DOWN
-LEFT   : 6 : LEFT
-RIGHT  : 7 : RIGHT
-
+P1_A      : 0 : Z
+P1_B      : 1 : A
+P1_SELECT : 2 : S
+P1_START  : 3 : Q
+P1_UP     : 4 : UP
+P1_DOWN   : 5 : DOWN
+P1_LEFT   : 6 : LEFT
+P1_RIGHT  : 7 : RIGHT
+P2_A      : 8 : U
+P2_B      : 9 : Y
+P2_SELECT : 10 : J
+P2_START  : 11 : H
+P2_UP     : 12 : O
+P2_DOWN   : 13 : L
+P2_LEFT   : 14 : K
+P2_RIGHT  : 15 : M
