@@ -72,79 +72,79 @@ int readFileKeys(char * nameFile, uint16_t * keysSelect){
     return 1;
 }
 
-uint16_t eventKeys(uint16_t * keysSelect){
-	static SDL_Event event;
-  static uint16_t keys;
-	while(SDL_PollEvent(&event))
+int handleKeys(uint16_t * keysSelect, uint16_t * keysPressed, SDL_Event * event){
+	while(SDL_PollEvent(event))
     {
-      if(event.type == SDL_KEYDOWN){
-            if(event.key.keysym.sym == keysSelect[0])
-               keys |= 0x0001;
-            if(event.key.keysym.sym == keysSelect[1])
-               keys |= 0x0002;
-            if(event.key.keysym.sym == keysSelect[2])
-               keys |= 0x0004;
-            if(event.key.keysym.sym == keysSelect[3])
-               keys |= 0x0008;
-            if(event.key.keysym.sym == keysSelect[4])
-               keys |= 0x0010;
-            if(event.key.keysym.sym == keysSelect[5])
-               keys |= 0x0020;
-            if(event.key.keysym.sym == keysSelect[6])
-               keys |= 0x0040;
-            if(event.key.keysym.sym == keysSelect[7])
-               keys |= 0x0080;
-            if(event.key.keysym.sym == keysSelect[8])
-               keys |= 0x0100;
-            if(event.key.keysym.sym == keysSelect[9])
-               keys |= 0x0200;
-            if(event.key.keysym.sym == keysSelect[10])
-               keys |= 0x0400;
-            if(event.key.keysym.sym == keysSelect[11])
-               keys |= 0x0800;
-            if(event.key.keysym.sym == keysSelect[12])
-               keys |= 0x1000;
-            if(event.key.keysym.sym == keysSelect[13])
-               keys |= 0x2000;
-            if(event.key.keysym.sym == keysSelect[14])
-               keys |= 0x4000;
-            if(event.key.keysym.sym == keysSelect[15])
-               keys |= 0x8000;
+      if(event->type == SDL_KEYDOWN){
+            if(event->key.keysym.sym == keysSelect[0])
+               *keysPressed |= 0x0001;
+            if(event->key.keysym.sym == keysSelect[1])
+               *keysPressed |= 0x0002;
+            if(event->key.keysym.sym == keysSelect[2])
+               *keysPressed |= 0x0004;
+            if(event->key.keysym.sym == keysSelect[3])
+               *keysPressed |= 0x0008;
+            if(event->key.keysym.sym == keysSelect[4])
+               *keysPressed |= 0x0010;
+            if(event->key.keysym.sym == keysSelect[5])
+               *keysPressed |= 0x0020;
+            if(event->key.keysym.sym == keysSelect[6])
+               *keysPressed |= 0x0040;
+            if(event->key.keysym.sym == keysSelect[7])
+               *keysPressed |= 0x0080;
+            if(event->key.keysym.sym == keysSelect[8])
+               *keysPressed |= 0x0100;
+            if(event->key.keysym.sym == keysSelect[9])
+               *keysPressed |= 0x0200;
+            if(event->key.keysym.sym == keysSelect[10])
+               *keysPressed |= 0x0400;
+            if(event->key.keysym.sym == keysSelect[11])
+               *keysPressed |= 0x0800;
+            if(event->key.keysym.sym == keysSelect[12])
+               *keysPressed |= 0x1000;
+            if(event->key.keysym.sym == keysSelect[13])
+               *keysPressed |= 0x2000;
+            if(event->key.keysym.sym == keysSelect[14])
+               *keysPressed |= 0x4000;
+            if(event->key.keysym.sym == keysSelect[15])
+               *keysPressed |= 0x8000;
       }
-      else if(event.type == SDL_KEYUP){
-            if(event.key.keysym.sym == keysSelect[0])
-               keys &= ~0x0001;
-            if(event.key.keysym.sym == keysSelect[1])
-               keys &= ~0x0002;
-            if(event.key.keysym.sym == keysSelect[2])
-               keys &= ~0x0004;
-            if(event.key.keysym.sym == keysSelect[3])
-               keys &= ~0x0008;
-            if(event.key.keysym.sym == keysSelect[4])
-               keys &= ~0x0010;
-            if(event.key.keysym.sym == keysSelect[5])
-               keys &= ~0x0020;
-            if(event.key.keysym.sym == keysSelect[6])
-               keys &= ~0x0040;
-            if(event.key.keysym.sym == keysSelect[7])
-               keys &= ~0x0080;
-            if(event.key.keysym.sym == keysSelect[8])
-               keys &= ~0x0100;
-            if(event.key.keysym.sym == keysSelect[9])
-               keys &= ~0x0200;
-            if(event.key.keysym.sym == keysSelect[10])
-               keys &= ~0x0400;
-            if(event.key.keysym.sym == keysSelect[11])
-               keys &= ~0x0800;
-            if(event.key.keysym.sym == keysSelect[12])
-               keys &= ~0x1000;
-            if(event.key.keysym.sym == keysSelect[13])
-               keys &= ~0x2000;
-            if(event.key.keysym.sym == keysSelect[14])
-               keys &= ~0x4000;
-            if(event.key.keysym.sym == keysSelect[15])
-               keys &= ~0x8000;
+      else if(event->type == SDL_KEYUP){
+            if(event->key.keysym.sym == keysSelect[0])
+               *keysPressed &= ~0x0001;
+            if(event->key.keysym.sym == keysSelect[1])
+               *keysPressed &= ~0x0002;
+            if(event->key.keysym.sym == keysSelect[2])
+               *keysPressed &= ~0x0004;
+            if(event->key.keysym.sym == keysSelect[3])
+               *keysPressed &= ~0x0008;
+            if(event->key.keysym.sym == keysSelect[4])
+               *keysPressed &= ~0x0010;
+            if(event->key.keysym.sym == keysSelect[5])
+               *keysPressed &= ~0x0020;
+            if(event->key.keysym.sym == keysSelect[6])
+               *keysPressed &= ~0x0040;
+            if(event->key.keysym.sym == keysSelect[7])
+               *keysPressed &= ~0x0080;
+            if(event->key.keysym.sym == keysSelect[8])
+               *keysPressed &= ~0x0100;
+            if(event->key.keysym.sym == keysSelect[9])
+               *keysPressed &= ~0x0200;
+            if(event->key.keysym.sym == keysSelect[10])
+               *keysPressed &= ~0x0400;
+            if(event->key.keysym.sym == keysSelect[11])
+               *keysPressed &= ~0x0800;
+            if(event->key.keysym.sym == keysSelect[12])
+               *keysPressed &= ~0x1000;
+            if(event->key.keysym.sym == keysSelect[13])
+               *keysPressed &= ~0x2000;
+            if(event->key.keysym.sym == keysSelect[14])
+               *keysPressed &= ~0x4000;
+            if(event->key.keysym.sym == keysSelect[15])
+               *keysPressed &= ~0x8000;
+      }else if(event->type == SDL_QUIT){
+        return 0;
       }
     }
-    return keys;
+    return 1;
 }

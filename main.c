@@ -79,43 +79,30 @@ int main(int argc, char **argv) {
 
 	SDL_Surface *ecran = SDL_SetVideoMode(256*scale_value, 240*scale_value, 32, SDL_HWSURFACE |
 																SDL_DOUBLEBUF);
-    SDL_WM_SetCaption("NES Emulator", NULL);
+  SDL_WM_SetCaption("NES Emulator", NULL);
 
-    int continuer = 1;
-    SDL_Event event;
+  int continuer = 1;
+  SDL_Event event;
 	SDL_Surface *surface = NULL, *scaled = NULL;
 	SDL_Rect srcdest;
 	srcdest.x = 0;
 	srcdest.y = 0;
-  uint16_t keysSelect[16];
+  uint16_t keysPressed; /* Bit representation */
+  uint16_t keysConfig[16]; /* SDL constants array */
 
-  long cnt;
-
-    if( readFileKeys("KeysConfig.txt", keysSelect) == 0){
-      fprintf(stderr, "Error: KeysConfig.txt is missing\n");
-      SDL_Quit();
-    	NES_Destroy(nes);
-  		return EXIT_FAILURE;
-    }
+  if( readFileKeys("KeysConfig.txt", keysConfig) == 0){
+    fprintf(stderr, "Error: KeysConfig.txt is missing\n");
+    SDL_Quit();
+  	NES_Destroy(nes);
+    return EXIT_FAILURE;
+  }
 
 	next_time = SDL_GetTicks() + TICK_INTERVAL;
-    while (continuer)
-    {
+  while (continuer)
+  {
+    continuer = handleKeys(keysConfig, &keysPressed, &event);
 
-      if(cnt > 1200){
-        continuer = 0;
-      }
-      cnt++;
-      /*
-        SDL_PollEvent(&event);
-        switch(event.type)
-        {
-            case SDL_QUIT:
-                continuer = 0;
-        }
-      */
-
-		NES_NextFrame(nes, keysSelect);
+		NES_NextFrame(nes, keysPressed);
 
 		PPU_RenderNametable(nes->ppu, nes->ppu->image, 0);
 		PPU_RenderSprites(nes->ppu, nes->ppu->image);
@@ -135,8 +122,8 @@ int main(int argc, char **argv) {
 	 	SDL_Flip(ecran);
 		SDL_FreeSurface(surface);
 		SDL_FreeSurface(scaled);
-        next_time += TICK_INTERVAL;
-    }
+    next_time += TICK_INTERVAL;
+  }
 
 	SDL_Quit();
 	NES_Destroy(nes);
