@@ -1,5 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
+#include <ctype.h>
 #include <SDL/SDL.h>
 #include <SDL/SDL_rotozoom.h>
 #include "src/nes/nes.h"
@@ -21,10 +23,49 @@ uint32_t time_left(void)
 
 int main(int argc, char **argv) {
 
-	if (argc == 1)
+  int scale_value = 2;
+  int opt;
+
+  opterr = 0; /* In order to return '?' if there is an error */
+
+  while((opt = getopt(argc, argv, "s:")) != -1){
+    switch(opt){
+      case 's':
+        if(isdigit(*optarg)){
+          scale_value = strtol(optarg, NULL, 10);
+        }else{
+          fprintf (stderr,"%c is not a valid scaling value.\n", *optarg);
+          return EXIT_FAILURE;
+        }
+        break;
+      case '?':
+        if (optopt == 's')
+          fprintf (stderr, "Option -%c requires an argument.\n", optopt);
+        else if (isprint (optopt))
+          fprintf (stderr, "Unknown option `-%c'.\n", optopt);
+        else
+          fprintf (stderr,
+                   "Unknown option character `\\x%x'.\n",
+                   optopt);
+        return EXIT_FAILURE;
+       default:
+        fprintf (stderr,"Emulator requires a ROM to run on.\n");
+        return EXIT_FAILURE;
+    }
+  }
+
+  if(optind == argc){
+    fprintf (stderr,"Emulator requires a ROM to run on.\n");
+    return EXIT_FAILURE;
+  }
+  char *romFileName = argv[optind];
+
+  if(scale_value < 1 || scale_value > 15){
+    fprintf(stderr, "Error: Scaling value %d is out of range.\n", scale_value);
 		return EXIT_FAILURE;
-	
-	NES *nes = NES_Create(argv[1]);
+  }
+
+	NES *nes = NES_Create(romFileName);
 	if (nes == NULL)
 		return EXIT_FAILURE;
 
@@ -33,7 +74,7 @@ int main(int argc, char **argv) {
 		return EXIT_FAILURE;
 	}
 
-	SDL_Surface *ecran = SDL_SetVideoMode(256*2, 240*2, 32, SDL_HWSURFACE |
+	SDL_Surface *ecran = SDL_SetVideoMode(256*scale_value, 240*scale_value, 32, SDL_HWSURFACE |
 																SDL_DOUBLEBUF);
     SDL_WM_SetCaption("NES Emulator", NULL);
 
@@ -67,7 +108,7 @@ int main(int argc, char **argv) {
 					0x0000FF00,             // green mask
 					0x000000FF,             // blue mask
 				    0x00000000);            // alpha mask (none)
-		scaled = rotozoomSurface(surface, 0, 2, SMOOTHING_OFF);  
+		scaled = rotozoomSurface(surface, 0, scale_value, SMOOTHING_OFF);
 		SDL_FillRect(ecran, NULL, 0x000000);
 		SDL_BlitSurface(scaled, NULL, ecran, &srcdest);
 		SDL_Delay(time_left());
