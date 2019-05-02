@@ -2,8 +2,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include "controller.h"
-#include "../../common/keys.h"
-#include "../mapper/mapper.h"
+#include "../../common/macro.h"
 #include "../mapper/ioreg.h"
 
 /* Useful documentation : http://nesdev.parodius.com/ndox200.zip
@@ -26,46 +25,57 @@
     8 = RIGHT
 */
 
-void controllerPollInputs(NES *self, uint16_t * keysSelect){
-  static int lastState = -1;
-  static int shiftState = 1;
-  static int polling = 0;
-  static uint8_t keys = 0;
-  uint8_t ack;
+Controller* Controller_Create(Mapper *mapper){
+  Controller * self = (Controller*)malloc(sizeof(Controller));
+  if(self != NULL){
+    self->mapper = mapper;
+    /* Reset variables */
+    self->lastState = -1;
+    self->shiftState = 1;
+    self->polling = 0;
+    self->keys = 0;
+  }else{
+    ERROR_MSG("can't allocate Controller structure");
+  }
+  return self;
+}
 
-  ack = Mapper_Ack(self->mapper, 0x4016);
-
+void Controller_Execute(Controller *self, uint16_t keys){
+  uint8_t ack = Mapper_Ack(self->mapper, 0x4016);
   if(ack & AC_WR){
     if( (*Mapper_Get(self->mapper, AS_CPU, 0x4016) & 0x01) == 0){
-      if(lastState == 1){
-        polling=1;
-        shiftState = 1;
-        keys = eventKeys(keysSelect);
-        //if(keys != 0)
-        //  printf("%d\n", keys);
-        *(Mapper_Get(self->mapper, AS_CPU, 0x4016)) |= (keys & 0x01);
-        shiftState++;
-        keys = keys >> 1;
+      if(self->lastState == 1){
+        self->polling=1;
+        self->shiftState = 1;
+        self->keys = keys;
+        *(Mapper_Get(self->mapper, AS_CPU, 0x4016)) |= (self->keys & 0x01);
+        self->shiftState++;
+        self->keys = self->keys >> 1;
       }
     }else{
-      lastState = 1;
+      self->lastState = 1;
     }
   }
-
-  if(polling && (ack & AC_RD)){
-    if(shiftState < 9){
+  if(self->polling && (ack & AC_RD)){
+    if(self->shiftState < 9){
       *(Mapper_Get(self->mapper, AS_CPU, 0x4016)) &= ~(0x01);
-      *(Mapper_Get(self->mapper, AS_CPU, 0x4016)) |= (keys & 0x01);
-      keys = keys >> 1;
-      shiftState++;
-    }else if(shiftState == 9){
+      *(Mapper_Get(self->mapper, AS_CPU, 0x4016)) |= (self->keys & 0x01);
+      self->keys = self->keys >> 1;
+      self->shiftState++;
+    }else if(self->shiftState == 9){
       *(Mapper_Get(self->mapper, AS_CPU, 0x4016)) |= 0x01;
-      shiftState++;
+      self->shiftState++;
     }else{ //shiftState == 10
-      shiftState = 1;
-      keys = 0;
-      polling = 0;
+      self->shiftState = 1;
+      self->keys = 0;
+      self->polling = 0;
       }
   }
+}
 
+void Controller_Destroy(Controller *self){
+  if(self == NULL){
+    return;
+  }
+  free(self);
 }

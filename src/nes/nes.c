@@ -2,7 +2,6 @@
 #include "loader/loader.h"
 #include "mapper/ioreg.h"
 #include "../common/macro.h"
-#include "controller/controller.h"
 
 NES* NES_Create(char *filename) {
 	NES *self = (NES*) malloc(sizeof(NES));
@@ -13,9 +12,11 @@ NES* NES_Create(char *filename) {
 		self->cpu = CPU_Create(self->mapper);
 		/* Create instance of PPU */
 		self->ppu = PPU_Create(self->mapper);
+		/* Create instance of Controller */
+		self->controller = Controller_Create(self->mapper);
 		/* If an allocation goes wrong, free everything */
 		if ((self->mapper == NULL) || (self->cpu == NULL) ||
-			(self->ppu == NULL)) {
+			(self->ppu == NULL) || (self->controller == NULL)) {
 			ERROR_MSG("can't allocate memory for NES");
 			NES_Destroy(self);
 			return NULL;
@@ -37,13 +38,13 @@ NES* NES_Create(char *filename) {
 	return self;
 }
 
-uint8_t NES_NextFrame(NES *self, uint16_t * keysSelect) {
+uint8_t NES_NextFrame(NES *self, uint16_t keysPressed) {
 	uint32_t previousClockCount = self->clockCount;
 	while (PPU_PictureDrawn(self->ppu) == 0) {
 		CPU_Execute(self->cpu, &self->context, &self->clockCount);
 		PPU_Execute(self->ppu, &self->context,
 				(self->clockCount - previousClockCount) * 3);
-		controllerPollInputs(self, keysSelect);
+		Controller_Execute(self->controller, keysPressed);
 		previousClockCount = self->clockCount;
 	}
 	return EXIT_SUCCESS;
@@ -52,8 +53,9 @@ uint8_t NES_NextFrame(NES *self, uint16_t * keysSelect) {
 void NES_Destroy(NES *self) {
 	if (self == NULL)
 		return;
-
 	CPU_Destroy(self->cpu);
+	PPU_Destroy(self->ppu);
+	Controller_Destroy(self->controller);
 	if (self->mapper != NULL) {
 		/* Free mapper data */
 		Mapper_Destroy(self->mapper);
