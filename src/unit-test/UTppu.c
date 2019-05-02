@@ -502,6 +502,26 @@ static void test_PPU_ManageV(void **state) {
 
 }
 
+static void test_PPU_ClearSecondaryOAM(void **state) {
+	PPU *self = (PPU*) *state;
+	int i;
+	/* Fill Secondary OAM will 0xAA */
+	for (i = 0; i < 32; i++) {
+		self->SOAM[i] = 0xAA;
+	}
+	for (i = 0; i < 64; i++) {
+		self->cycle = i + 1;
+		PPU_ClearSecondaryOAM(self);
+		if (i % 2)
+			assert_int_equal(0xFF, self->SOAM[i >> 1]);
+		else
+			assert_int_equal(0xAA, self->SOAM[i >> 1]);
+	}
+	
+
+}
+
+
 static int teardown_PPU(void **state) {
 	if (*state != NULL) {
 		PPU *self = (PPU*) *state;
@@ -538,10 +558,14 @@ int run_UTppu(void) {
 		cmocka_unit_test(test_PPU_IncrementY),
 		cmocka_unit_test(test_PPU_ManageV),
 	};
+	const struct CMUnitTest test_PPU_Sprite[] = {
+		cmocka_unit_test(test_PPU_ClearSecondaryOAM),
+	};
 	int out = 0;
 	out += cmocka_run_group_tests(test_PPU_CheckRegister, setup_PPU, teardown_PPU);
 	out += cmocka_run_group_tests(test_PPU_RefreshRegister, setup_PPU, teardown_PPU);
 	out += cmocka_run_group_tests(test_PPU_ManageTiming, setup_PPU, teardown_PPU);
 	out += cmocka_run_group_tests(test_PPU_ManageVRAMAddr, setup_PPU, teardown_PPU);
+	out += cmocka_run_group_tests(test_PPU_Sprite, setup_PPU, teardown_PPU);
 	return out;
 }

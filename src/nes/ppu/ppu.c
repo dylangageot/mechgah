@@ -449,10 +449,98 @@ uint8_t PPU_RefreshRegister(PPU *self, uint8_t *context) {
 	return EXIT_SUCCESS;
 }
 
-uint8_t PPU_ClearSecondaryOAM(PPU *self) { return EXIT_SUCCESS; }
+uint8_t PPU_ClearSecondaryOAM(PPU *self) { 
+	/* Clear Secondary OAM progressively */
+	if (!(self->cycle % 2)) {
+		self->SOAM[(self->cycle - 1) >> 1] = 0xFF;
+	}
+	return EXIT_SUCCESS; 
+}
+
+uint8_t PPU_SpriteEvaluation(PPU *self) { 
+	static uint8_t data, state;
+	
+	/* Is it cycle 65? Init variable then */		
+	if (self->cycle == 65) {
+		self->OAMADDR = self->SOAMADDR = 0;
+		state = STATE_COPY_Y;
+	}
+
+	/* Read or write cycle? */
+	if (self->cycle & 1 == 1) {
+		data = self->OAM[self->OAMADDR];
+	} else {
+		switch (state) {
+			case STATE_COPY_Y:
+				/* Copy Y value to secondary OAM */
+				self->SOAM[self->SOAMADDR] = data;
+				/* Test if scanline correspond to Y range */
+				if (((self->scanline + 1) >= data) &&
+						((self->scanline + 1) <= (data + 8))) {
+					state = STATE_COPY_REMAINING;	
+					/* Increment primary and secondary index */
+					self->SOAMADDR = 0x1F & (self->SOAMADDR + 1);
+					self->OAMADDR++;
+				} else {
+					self->OAMADDR += 0x04;
+					/* All 64 sprites has been evaluated? */
+					if (self->OAMADDR == 0) {
+						state = STATE_WAIT;
+					}
+				}
+				break;
+			case STATE_COPY_REMAINING:
+				/* Copy value of primary OAM to secondary OAM */
+				self->SOAM[self->SOAMADDR] = data;
+				/* Increment primary and secondary index */
+				self->SOAMADDR = 0x1F & (self->SOAMADDR + 1);
+				self->OAMADDR++;
+				if ((self->SOAMADDR & 0x3) == 0) {
+					if (self->OAMADDR == 0) {
+						state = STATE_WAIT;
+					} else if (self->SOAMADDR == 0) {
+						state = STATE_OVERFLOW;
+					} else {
+						state = STATE_COPY_Y; 
+					}
+				}
+				break;
+			case STATE_OVERFLOW:
+				if (((self->scanline + 1) >= data) &&
+						((self->scanline + 1) <= (data + 8))) {
+					self->PPUSTATUS |= 0x20;	
+					self->SOAMADDR = 0x1F & (self->SOAMADDR + 1);
+					self->OAMADDR++;
+					state = STATE_OVERFLOW_FILL;
+				} else {
+					self->OAMADDR += ((self->OAMADDR & 0x3) == 3) ? 1 : 5;
+					if (self->OAMADDR & 0xFC) {
+						state = STATE_OVERFLOW;
+					} else {
+						state = STATE_WAIT;
+					}
+				}
+				break;
+			case STATE_OVERFLOW_FILL:
+				/* Increment primary and secondary index */
+				self->OAMADDR++;
+				if ((self->SOAMADDR & 0x3) == 0) {
+					state = STATE_OVERFLOW;
+				}
+				break;
+			case STATE_WAIT:
+				self->OAMADDR += 0x04;
+				break;
+			default:
+				state = STATE_COPY_Y;
+		}
+	}
+
+	return EXIT_SUCCESS; 
+}
+
 uint8_t PPU_FetchTile(PPU *self) { return EXIT_SUCCESS; }
 uint8_t PPU_FetchSprite(PPU *self) { return EXIT_SUCCESS; }
-uint8_t PPU_SpriteEvaluation(PPU *self) { return EXIT_SUCCESS; }
 uint8_t PPU_Draw(PPU *self) { return EXIT_SUCCESS; }
 
 uint8_t PPU_UpdateCycle(PPU *self) {
