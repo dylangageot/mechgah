@@ -450,7 +450,56 @@ uint8_t PPU_RefreshRegister(PPU *self, uint8_t *context) {
 }
 
 uint8_t PPU_ClearSecondaryOAM(PPU *self) { return EXIT_SUCCESS; }
-uint8_t PPU_FetchTile(PPU *self) { return EXIT_SUCCESS; }
+
+uint8_t PPU_FetchTile(PPU *self) {
+
+	uint8_t* nametable = Mapper_Get(self->mapper, AS_PPU, 0x2000
+									| (self->vram.v & 0x0FFF));
+	uint8_t* attribute = Mapper_Get(self->mapper, AS_PPU,0x23C0 | (v & 0x0C00)
+									| ((v >> 4) & 0x38) | ((v >> 2) & 0x07));
+	uint8_t* palette = Mapper_Get(self->mapper, AS_PPU, 0x3F00);
+	uint8_t* pattern = Mapper_Get(self->mapper, AS_LDR, LDR_CHR) +
+	                   ((self->PPUCTRL & 0x10) ? 0x1000 : 0);
+
+	uint8_t attribute_value, shift;
+	/* coarse X */
+	uint8_t x = self->vram & 0x01F;
+	/* coarse Y */
+	uint8_t y = (self->vram >> 5) & 0x1F;
+	/* fine y */
+	uint8_t fine_y = self->vram.v>>12;
+
+	uint8_t* tile_pattern = pattern + (nametable[x + (y << 5)] << 4);
+
+	/* shift the attribute and bitmap registers */
+	self->bitmapL <<= 0x01;
+	self->bitmapH <<= 0x01;
+	self->attributeL <<= 0x01;
+	self->attributeH <<= 0x01;
+
+
+	if(self->cycle % 8 == 0) {
+		/* insert data from pattern table into shift registers */
+		self->bitmapL &=~ 0x00FF;
+		self->bitmapL |= tile_pattern[fine_y];
+
+		self->bitmapH &=~ 0x00FF;
+		self->bitmapH |= tile_pattern[fine_y | 0x08 ];
+
+		/* get and decode attribute */
+		attribute_value = attribute[(x >> 2) + ((y & 0xFC) << 1)];
+		shift = (x & 0x02) | ((y & 0x02) << 1);
+		attribute_value = (attribute_value >> shift) & 0x03;
+
+		/* set all the byte's bits to the value of the attribute bit */
+		self->attributeL &=~ 0x00FF;
+		self->attributeL |= ((attribute_value & 0x01)? 0x00FF : 0);
+
+		self->attributeH &=~ 0x00FF;
+		self->attributeH |= (((attribute_value >> 0x01) & 0x01)? 0x00FF : 0);
+	}
+}
+
 uint8_t PPU_FetchSprite(PPU *self) { return EXIT_SUCCESS; }
 uint8_t PPU_SpriteEvaluation(PPU *self) { return EXIT_SUCCESS; }
 uint8_t PPU_Draw(PPU *self) { return EXIT_SUCCESS; }

@@ -40,6 +40,13 @@ typedef struct {
 	uint8_t pictureDrawn;
 	/* Graphic memory */
 	uint32_t *image;
+	/* shift registers filled with values from the pattern table */
+	uint16_t bitmapL;
+	uint16_t bitmapH;
+	/* shift registers for nametable and attribute table values */
+	uint16_t attributeL;
+	uint16_t attributeH;
+
 } PPU;
 
 char* RenderColorPalette(void);
