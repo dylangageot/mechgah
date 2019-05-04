@@ -675,6 +675,7 @@ uint8_t _LSR(CPU *cpu, Instruction *arg){
 
 uint8_t _NOP(CPU *cpu, Instruction *arg){
 	/* Nothing to do */
+	(void) cpu;
 	return arg->opcode.cycle + arg->pageCrossed;
 }
 
