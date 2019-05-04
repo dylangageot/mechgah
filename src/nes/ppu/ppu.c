@@ -586,6 +586,7 @@ uint8_t PPU_FetchTile(PPU *self) {
 		self->attributeH &=~ 0x00FF;
 		self->attributeH |= (((attribute_value >> 0x01) & 0x01)? 0x00FF : 0);
 	}
+	return EXIT_SUCCESS;
 }
 
 uint8_t PPU_FetchSprite(PPU *self) { return EXIT_SUCCESS; }
