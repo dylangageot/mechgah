@@ -20,6 +20,13 @@ typedef struct {
 } VRAM;
 
 typedef struct {
+	uint8_t patternL;
+	uint8_t patternH;
+	uint8_t attribute;
+	uint8_t x;
+} Sprite;
+
+typedef struct {
 	/* IO Register */
 	uint8_t PPUCTRL;
 	uint8_t PPUMASK;
@@ -53,6 +60,8 @@ typedef struct {
 	/* shift registers for nametable and attribute table values */
 	uint16_t attributeL;
 	uint16_t attributeH;
+	/* Sprites array for rendering */
+	Sprite sprite[8];
 
 } PPU;
 
