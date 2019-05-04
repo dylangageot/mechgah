@@ -280,7 +280,7 @@ uint8_t PPU_CheckRegister(PPU *self) {
 		else if (ack & AC_RD)
 			self->PPUDATA = *vram;
 
-		/* Depending of the state of rendering, 
+		/* Depending of the self->spriteState of rendering, 
 		 * increment is acting differently */
 		if (VALUE_IN(self->scanline, -1, 239) && IS_RENDERING_ON()) {
 			PPU_IncrementCorseX(self);
@@ -458,81 +458,92 @@ uint8_t PPU_ClearSecondaryOAM(PPU *self) {
 }
 
 uint8_t PPU_SpriteEvaluation(PPU *self) { 
-	static uint8_t data, state;
-	
 	/* Is it cycle 65? Init variable then */		
 	if (self->cycle == 65) {
 		self->OAMADDR = self->SOAMADDR = 0;
-		state = STATE_COPY_Y;
+		self->spriteState = STATE_COPY_Y;
 	}
 
 	/* Read or write cycle? */
-	if (self->cycle & 1 == 1) {
-		data = self->OAM[self->OAMADDR];
+	if ((self->cycle & 1) == 1) {
+		self->spriteData = self->OAM[self->OAMADDR];
 	} else {
-		switch (state) {
+		switch (self->spriteState) {
+			/*  Copy Y coordonate in Secondary OAM */
 			case STATE_COPY_Y:
 				/* Copy Y value to secondary OAM */
-				self->SOAM[self->SOAMADDR] = data;
+				self->SOAM[self->SOAMADDR] = self->spriteData;
 				/* Test if scanline correspond to Y range */
-				if (((self->scanline + 1) >= data) &&
-						((self->scanline + 1) <= (data + 8))) {
-					state = STATE_COPY_REMAINING;	
+				if (((self->scanline + 1) >= self->spriteData) &&
+						((self->scanline + 1) <= (self->spriteData + 8))) {
+					self->spriteState = STATE_COPY_REMAINING;	
 					/* Increment primary and secondary index */
 					self->SOAMADDR = 0x1F & (self->SOAMADDR + 1);
 					self->OAMADDR++;
 				} else {
+					/* Go to the next sprite in OAM */
 					self->OAMADDR += 0x04;
 					/* All 64 sprites has been evaluated? */
 					if (self->OAMADDR == 0) {
-						state = STATE_WAIT;
+						self->spriteState = STATE_WAIT;
 					}
 				}
 				break;
+			/* Copy the three remaining byte from POAM to SOAM */
 			case STATE_COPY_REMAINING:
 				/* Copy value of primary OAM to secondary OAM */
-				self->SOAM[self->SOAMADDR] = data;
+				self->SOAM[self->SOAMADDR] = self->spriteData;
 				/* Increment primary and secondary index */
 				self->SOAMADDR = 0x1F & (self->SOAMADDR + 1);
 				self->OAMADDR++;
+				/* If we have copied all 3 bytes */
 				if ((self->SOAMADDR & 0x3) == 0) {
+					/* If all sprite in OAM has been evaluated */
 					if (self->OAMADDR == 0) {
-						state = STATE_WAIT;
+						self->spriteState = STATE_WAIT;
+					/* If there is no more space in secondary OAM */
 					} else if (self->SOAMADDR == 0) {
-						state = STATE_OVERFLOW;
+						self->spriteState = STATE_OVERFLOW;
+					/* If there is enough space for more sprites in SOAM */
 					} else {
-						state = STATE_COPY_Y; 
+						self->spriteState = STATE_COPY_Y; 
 					}
 				}
 				break;
+			/* No more space in Secondary OAM */
 			case STATE_OVERFLOW:
-				if (((self->scanline + 1) >= data) &&
-						((self->scanline + 1) <= (data + 8))) {
+				/* If sprite evaluated is in range, signal overflow */
+				if (((self->scanline + 1) >= self->spriteData) &&
+						((self->scanline + 1) <= (self->spriteData + 8))) {
+					/* Set Sprite Overflow bit to one */
 					self->PPUSTATUS |= 0x20;	
+					/* Increment primary and secondary index */
 					self->SOAMADDR = 0x1F & (self->SOAMADDR + 1);
 					self->OAMADDR++;
-					state = STATE_OVERFLOW_FILL;
+					self->spriteState = STATE_OVERFLOW_REMAINING;
 				} else {
 					self->OAMADDR += ((self->OAMADDR & 0x3) == 3) ? 1 : 5;
 					if (self->OAMADDR & 0xFC) {
-						state = STATE_OVERFLOW;
+						self->spriteState = STATE_OVERFLOW;
 					} else {
-						state = STATE_WAIT;
+						self->spriteState = STATE_WAIT;
 					}
 				}
 				break;
-			case STATE_OVERFLOW_FILL:
+			/* Increment three times */
+			case STATE_OVERFLOW_REMAINING:
 				/* Increment primary and secondary index */
 				self->OAMADDR++;
-				if ((self->SOAMADDR & 0x3) == 0) {
-					state = STATE_OVERFLOW;
+				if ((self->OAMADDR & 0x3) == 0) {
+					self->spriteState = STATE_WAIT;
 				}
 				break;
+			/* Wait for the end of sprite evaluation */
 			case STATE_WAIT:
 				self->OAMADDR += 0x04;
 				break;
 			default:
-				state = STATE_COPY_Y;
+				self->spriteState = STATE_COPY_Y;
 		}
 	}
 
