@@ -8,22 +8,22 @@
 #define IS_RENDERING_ON() ((self->PPUMASK & 0x18) != 0)
 
 static uint32_t colorPalette[64] = {
-	0x007C7C7C, 0x000000FC, 0x000000BC, 0x004428BC, 
-	0x00940084, 0x00A80020, 0x00A81000, 0x00881400, 
-	0x00503000, 0x00007800, 0x00006800, 0x00005800, 
-	0x00004058, 0x00000000, 0x00000000, 0x00000000, 
-	0x00BCBCBC, 0x000078F8, 0x000058F8, 0x006844FC, 
-	0x00D800CC, 0x00E40058, 0x00F83800, 0x00E45C10, 
-	0x00AC7C00, 0x0000B800, 0x0000A800, 0x0000A844, 
-	0x00008888, 0x00000000, 0x00000000, 0x00000000, 
-	0x00F8F8F8, 0x003CBCFC, 0x006888FC, 0x009878F8, 
-	0x00F878F8, 0x00F85898, 0x00F87858, 0x00FCA044, 
-	0x00F8B800, 0x00B8F818, 0x0058D854, 0x0058F898, 
-	0x0000E8D8, 0x00787878, 0x00000000, 0x00000000, 
-	0x00FCFCFC, 0x00A4E4FC, 0x00B8B8F8, 0x00D8B8F8, 
-	0x00F8B8F8, 0x00F8A4C0, 0x00F0D0B0, 0x00FCE0A8, 
+	0x007C7C7C, 0x000000FC, 0x000000BC, 0x004428BC,
+	0x00940084, 0x00A80020, 0x00A81000, 0x00881400,
+	0x00503000, 0x00007800, 0x00006800, 0x00005800,
+	0x00004058, 0x00000000, 0x00000000, 0x00000000,
+	0x00BCBCBC, 0x000078F8, 0x000058F8, 0x006844FC,
+	0x00D800CC, 0x00E40058, 0x00F83800, 0x00E45C10,
+	0x00AC7C00, 0x0000B800, 0x0000A800, 0x0000A844,
+	0x00008888, 0x00000000, 0x00000000, 0x00000000,
+	0x00F8F8F8, 0x003CBCFC, 0x006888FC, 0x009878F8,
+	0x00F878F8, 0x00F85898, 0x00F87858, 0x00FCA044,
+	0x00F8B800, 0x00B8F818, 0x0058D854, 0x0058F898,
+	0x0000E8D8, 0x00787878, 0x00000000, 0x00000000,
+	0x00FCFCFC, 0x00A4E4FC, 0x00B8B8F8, 0x00D8B8F8,
+	0x00F8B8F8, 0x00F8A4C0, 0x00F0D0B0, 0x00FCE0A8,
 	0x00F8D878, 0x00D8F878, 0x00B8F8B8, 0x00B8F8D8,
-	0x0000FCFC, 0x00F8D8F8, 0x00000000, 0x00000000 
+	0x0000FCFC, 0x00F8D8F8, 0x00000000, 0x00000000
 };
 
 static unsigned char reverse_byte(unsigned char x) {
@@ -120,12 +120,12 @@ char* RenderColorPalette(void) {
 }
 
 void PPU_RenderNametable(PPU *self, uint32_t *image, uint8_t index) {
-	uint8_t *nametable = Mapper_Get(self->mapper, AS_PPU, 
+	uint8_t *nametable = Mapper_Get(self->mapper, AS_PPU,
 									0x2000 | (index << 10));
 	uint8_t *attribute = nametable + 0x3C0;
 	uint8_t *palette = Mapper_Get(self->mapper, AS_PPU, 0x3F00);
 	uint8_t *pattern = Mapper_Get(self->mapper, AS_LDR, LDR_CHR) +
-	                   ((self->PPUCTRL & 0x10) ? 0x1000 : 0);	
+	                   ((self->PPUCTRL & 0x10) ? 0x1000 : 0);
 	uint8_t *tile = NULL, *color = NULL;
 	uint8_t temp = 0, shift = 0;
 	uint32_t index_image = 0;
@@ -145,8 +145,8 @@ void PPU_RenderNametable(PPU *self, uint32_t *image, uint8_t index) {
 			for (j = 0; j < 8; j++) {
 				for (i = 0; i < 8; i++) {
 					temp = (reverse_byte(tile[j]) >> i) & 0x01;
-					temp |= ((reverse_byte(tile[j | 0x08]) >> i) & 0x01) << 1;
-					index_image = (x << 3) + (y << 11) + (j << 8) + i; 
+					temp |= ((reverse_byte(tile[j | 0x08 ]) >> i) & 0x01) << 1;
+					index_image = (x << 3) + (y << 11) + (j << 8) + i;
 					image[index_image] = colorPalette[color[temp]];
 				}
 			}
@@ -155,8 +155,8 @@ void PPU_RenderNametable(PPU *self, uint32_t *image, uint8_t index) {
 }
 
 void PPU_RenderSprites(PPU *self, uint32_t *image) {
-	
-	if ((self->PPUMASK & 0x10) == 0) 
+
+	if ((self->PPUMASK & 0x10) == 0)
 		return;
 
 	uint8_t *palette = Mapper_Get(self->mapper, AS_PPU, 0x3F00);
@@ -180,21 +180,21 @@ void PPU_RenderSprites(PPU *self, uint32_t *image) {
 				/* Flip both orientation */
 				if ((attribute & 0xC0) == 0xC0) {
 					temp = (tile[7-y] >> x) & 0x01;
-					temp |= ((tile[(7-y) | 0x08] >> x) & 0x01) << 1;
+					temp |= ((tile[(7-y) | 0x08 ] >> x) & 0x01) << 1;
 				/* Flip vertical */
 				} else if ((attribute & 0xC0) == 0x80) {
 					temp = (reverse_byte(tile[7-y]) >> x) & 0x01;
-					temp |= ((reverse_byte(tile[(7-y) | 0x08]) >> x) & 0x01) << 1;
+					temp |= ((reverse_byte(tile[(7-y) | 0x08 ]) >> x) & 0x01) << 1;
 				/* Flip horizontal */
 				} else if ((attribute & 0xC0) == 0x40) {
 					temp = (tile[y] >> x) & 0x01;
-					temp |= ((tile[y | 0x08] >> x) & 0x01) << 1;
+					temp |= ((tile[y | 0x08 ] >> x) & 0x01) << 1;
 				/* Don't flip */
 				} else {
 					temp = (reverse_byte(tile[y]) >> x) & 0x01;
-					temp |= ((reverse_byte(tile[y | 0x08]) >> x) & 0x01) << 1;
+					temp |= ((reverse_byte(tile[y | 0x08 ]) >> x) & 0x01) << 1;
 				}
-				index_image = x_start + (y_start << 8) + (y << 8) + x; 
+				index_image = x_start + (y_start << 8) + (y << 8) + x;
 				if ((temp & 0x3) != 0)
 					image[index_image] = colorPalette[color[temp]];
 			}
@@ -217,7 +217,7 @@ uint8_t PPU_CheckRegister(PPU *self) {
 	/* PPUSTATUS behavior:
 	 * Read		->	Clear Vertical Blank Bit and VRAM.w latch */
 	if (Mapper_Ack(self->mapper, 0x2002)) {
-		self->PPUSTATUS &= ~0x80;	
+		self->PPUSTATUS &= ~0x80;
 		self->vram.w = 0;
 		return EXIT_SUCCESS;
 	}
@@ -244,7 +244,7 @@ uint8_t PPU_CheckRegister(PPU *self) {
 			self->vram.t &= ~0xE3E0;
 			self->vram.t |= (self->PPUSCROLL << 12) & 0x7FFF;
 			self->vram.t |= (self->PPUSCROLL & 0xF8) << 2;
-			self->vram.w = 0;	
+			self->vram.w = 0;
 		}
 		return EXIT_SUCCESS;
 	}
@@ -263,7 +263,7 @@ uint8_t PPU_CheckRegister(PPU *self) {
 			self->vram.t |= self->PPUADDR;
 			/* v = t */
 			self->vram.v = self->vram.t;
-			self->vram.w = 0;	
+			self->vram.w = 0;
 		}
 		return EXIT_SUCCESS;
 	}
@@ -304,7 +304,7 @@ uint8_t PPU_ManageTiming(PPU *self, Stack *taskList) {
 			if ((self->nbFrame % 2) && IS_RENDERING_ON()) {
 				self->cycle++;
 			}
-			self->nbFrame++;  
+			self->nbFrame++;
 		}
 		/* Visible dot part */
 		if (VALUE_IN(self->cycle, 1, 256)) {
@@ -312,7 +312,7 @@ uint8_t PPU_ManageTiming(PPU *self, Stack *taskList) {
 			if (((self->cycle % 8) == 0) && IS_RENDERING_ON()) {
 				Stack_Push(taskList, (void*) PPU_ManageV);
 			}
-			/* Clear Vertical Blank flag and Sprite 0 hit 
+			/* Clear Vertical Blank flag and Sprite 0 hit
 			 * when we are in the second cycle of pre-render line */
 			if ((self->scanline == -1) && (self->cycle == 1)) {
 				Stack_Push(taskList, (void*) PPU_ClearFlag);
@@ -331,10 +331,10 @@ uint8_t PPU_ManageTiming(PPU *self, Stack *taskList) {
 			if (IS_RENDERING_ON())
 				Stack_Push(taskList, (void*) PPU_FetchTile);
 		/* Fetch Sprite part */
-		} else if (VALUE_IN(self->cycle, 257, 320) && IS_RENDERING_ON()) { 
-			/* Affect hori(t) to hori(v) 
+		} else if (VALUE_IN(self->cycle, 257, 320) && IS_RENDERING_ON()) {
+			/* Affect hori(t) to hori(v)
 			 * or vert(t) to vert(v) */
-			if ((self->cycle == 257) || 
+			if ((self->cycle == 257) ||
 				(VALUE_IN(self->cycle, 280, 304) && (self->scanline == -1))) {
 				Stack_Push(taskList, (void*) PPU_ManageV);
 			}
@@ -357,11 +357,11 @@ uint8_t PPU_ManageTiming(PPU *self, Stack *taskList) {
 	return EXIT_SUCCESS;
 }
 
-uint8_t PPU_SetFlag(PPU *self) { 
+uint8_t PPU_SetFlag(PPU *self) {
 	/* Set Vertical Blank bit */
-	self->PPUSTATUS |= 0x80;	
+	self->PPUSTATUS |= 0x80;
 	self->pictureDrawn = 1;
-	return EXIT_SUCCESS; 
+	return EXIT_SUCCESS;
 }
 
 uint8_t PPU_ClearFlag(PPU *self) {
@@ -385,20 +385,20 @@ uint8_t PPU_IncrementCorseX(PPU *self) {
 uint8_t PPU_IncrementY(PPU *self) {
 	/* If Fine Y is not going to overflow, increment it */
 	if ((self->vram.v & 0x7000) != 0x7000) {
-		self->vram.v += 0x1000;             
+		self->vram.v += 0x1000;
 	/* Else manage Corse Y component */
 	} else {
 		/* Reset Fine Y component because it has overflowed */
-		self->vram.v &= ~0x7000;            
+		self->vram.v &= ~0x7000;
 		/* var y correspond to Corse Y component */
 		int y = (self->vram.v & 0x03E0) >> 5;
 		/* If Corse Y achieved the last tile, reset it and switch nametable */
 		if (y == 29) {
-			y = 0;                    
-			self->vram.v ^= 0x0800;    
+			y = 0;
+			self->vram.v ^= 0x0800;
 		/* If Corse Y is going to overflow, reset it and do not switch NT */
 		} else if (y == 31)
-			y = 0;                      
+			y = 0;
 		/* Else increment Corse Y component */
 		else
 			y++;
@@ -408,7 +408,7 @@ uint8_t PPU_IncrementY(PPU *self) {
 	return EXIT_SUCCESS;
 }
 
-uint8_t PPU_ManageV(PPU *self) { 
+uint8_t PPU_ManageV(PPU *self) {
 	/* Dot 8 to 248 (every 8) : Increment Corse X */
 	if (VALUE_IN(self->cycle, 8, 248)) {
 		PPU_IncrementCorseX(self);
@@ -430,7 +430,7 @@ uint8_t PPU_ManageV(PPU *self) {
 }
 
 uint8_t PPU_RefreshRegister(PPU *self, uint8_t *context) {
-	
+
 	/* OAMDATA read behavior */
 	self->OAMDATA = self->OAM[self->OAMADDR];
 
@@ -440,21 +440,21 @@ uint8_t PPU_RefreshRegister(PPU *self, uint8_t *context) {
 	}
 
 	/* NMI Interrupt Generator */
-	if (!self->nmiSent && ((self->PPUSTATUS & 0x80) != 0) && 
+	if (!self->nmiSent && ((self->PPUSTATUS & 0x80) != 0) &&
 			((self->PPUCTRL & 0x80) != 0)) {
 		*context |= 0x02;
 		self->nmiSent = 1;
 	}
-	
+
 	return EXIT_SUCCESS;
 }
 
-uint8_t PPU_ClearSecondaryOAM(PPU *self) { 
+uint8_t PPU_ClearSecondaryOAM(PPU *self) {
 	/* Clear Secondary OAM progressively */
 	if (!(self->cycle % 2)) {
 		self->SOAM[(self->cycle - 1) >> 1] = 0xFF;
 	}
-	return EXIT_SUCCESS; 
+	return EXIT_SUCCESS;
 }
 
 uint8_t PPU_SpriteEvaluation(PPU *self) { 
@@ -547,10 +547,59 @@ uint8_t PPU_SpriteEvaluation(PPU *self) {
 		}
 	}
 
-	return EXIT_SUCCESS; 
+	return EXIT_SUCCESS;
 }
 
-uint8_t PPU_FetchTile(PPU *self) { return EXIT_SUCCESS; }
+uint8_t PPU_FetchTile(PPU *self) {
+
+	uint8_t* pattern_address = Mapper_Get(self->mapper, AS_PPU, 0x2000
+										| (self->vram.v & 0x0FFF));
+	uint8_t* attribute = Mapper_Get(self->mapper, AS_PPU,0x23C0
+									| (self->vram.v & 0x0C00)
+									| ((self->vram.v >> 4) & 0x38)
+									| ((self->vram.v >> 2) & 0x07));
+	uint8_t* pattern = Mapper_Get(self->mapper, AS_LDR, LDR_CHR) +
+	                   			((self->PPUCTRL & 0x10) ? 0x1000 : 0);
+
+	uint8_t shift, attribute_value = *attribute;
+	/* coarse X */
+	uint8_t x = self->vram.v & 0x01F;
+	/* coarse Y */
+	uint8_t y = (self->vram.v >> 5) & 0x1F;
+	/* fine y */
+	uint8_t fine_y = self->vram.v>>12;
+
+	uint8_t* tile_pattern = pattern + ( *pattern_address << 4);
+
+	/* shift the attribute and bitmap registers */
+	self->bitmapL <<= 0x01;
+	self->bitmapH <<= 0x01;
+	self->attributeL <<= 0x01;
+	self->attributeH <<= 0x01;
+
+
+	if(self->cycle % 8 == 0) {
+		/* insert data from pattern table into shift registers */
+		self->bitmapL &=~ 0x00FF;
+		self->bitmapL |= tile_pattern[fine_y];
+
+		self->bitmapH &=~ 0x00FF;
+		self->bitmapH |= tile_pattern[fine_y | 0x08 ];
+
+		/* get and decode attribute */
+		shift = (x & 0x02) | ((y & 0x02) << 1);
+		attribute_value = (attribute_value >> shift) & 0x03;
+
+		/* set all the byte's bits to the value of the attribute bit */
+		self->attributeL &=~ 0x00FF;
+		self->attributeL |= ((attribute_value & 0x01)? 0x00FF : 0);
+
+		self->attributeH &=~ 0x00FF;
+		self->attributeH |= (((attribute_value >> 0x01) & 0x01)? 0x00FF : 0);
+	}
+	return EXIT_SUCCESS;
+}
+
 uint8_t PPU_FetchSprite(PPU *self) { return EXIT_SUCCESS; }
 uint8_t PPU_Draw(PPU *self) { return EXIT_SUCCESS; }
 
@@ -575,7 +624,7 @@ uint8_t PPU_Execute(PPU* self, uint8_t *context, uint8_t clock) {
 	Stack_Init(&taskList);
 	PPU_CheckRegister(self);
 	while (clock) {
-		PPU_ManageTiming(self, &taskList); 
+		PPU_ManageTiming(self, &taskList);
 		while (!Stack_IsEmpty(&taskList)) {
 			/* Execute task */
 			task = Stack_Pop(&taskList);
