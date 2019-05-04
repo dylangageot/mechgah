@@ -182,7 +182,7 @@ static void test_PPU_RefreshRegister_PPUDATA(void **state) {
 	for (i = 0; i < 256; i++) {
 		*Mapper_Get(self->mapper, AS_PPU, self->vram.v) = i;
 		assert_int_equal(PPU_RefreshRegister(self, NULL), EXIT_SUCCESS);
-		assert_int_equal(self->PPUDATA, 
+		assert_int_equal(self->PPUDATA,
 				*Mapper_Get(self->mapper, AS_PPU, self->vram.v));
 		self->vram.v++;
 	}
@@ -212,7 +212,7 @@ static void test_PPU_RefreshRegister_NMI(void **state) {
 
 static void test_PPU_ManageTiming_Prerender(void **state) {
 	PPU *self = (PPU*) *state;
-	Stack s;	
+	Stack s;
 	int i;
 
 	Stack_Init(&s);
@@ -224,7 +224,7 @@ static void test_PPU_ManageTiming_Prerender(void **state) {
 	self->cycle++;
 	/* Cycle 1 - 256 */
 	for (i = 1; i <= 256; i++) {
-		Stack_Init(&s);	
+		Stack_Init(&s);
 		PPU_ManageTiming(self, &s);
 		assert_ptr_equal(Stack_Pop(&s), (void*) PPU_FetchTile);
 		if (i < 65)
@@ -240,7 +240,7 @@ static void test_PPU_ManageTiming_Prerender(void **state) {
 	}
 	/* Cycle 257-320 */
 	for (i = 257; i <= 320; i++) {
-		Stack_Init(&s);	
+		Stack_Init(&s);
 		PPU_ManageTiming(self, &s);
 		assert_ptr_equal(Stack_Pop(&s), (void*) PPU_FetchSprite);
 		if ((i == 257) || VALUE_IN(i, 280, 304))
@@ -250,7 +250,7 @@ static void test_PPU_ManageTiming_Prerender(void **state) {
 	}
 	/* Cycle 321-336 */
 	for (i = 321; i <= 336; i++) {
-		Stack_Init(&s);	
+		Stack_Init(&s);
 		PPU_ManageTiming(self, &s);
 		assert_ptr_equal(Stack_Pop(&s), (void*) PPU_FetchTile);
 		if ((i % 8) == 0)
@@ -260,7 +260,7 @@ static void test_PPU_ManageTiming_Prerender(void **state) {
 	}
 	/* Cycle 337-340 */
 	for (i = 337; i <= 340; i++) {
-		Stack_Init(&s);	
+		Stack_Init(&s);
 		PPU_ManageTiming(self, &s);
 		assert_int_equal(Stack_IsEmpty(&s), 1);
 		self->cycle++;
@@ -270,7 +270,7 @@ static void test_PPU_ManageTiming_Prerender(void **state) {
 
 static void test_PPU_ManageTiming_Prerender_RenderOFF(void **state) {
 	PPU *self = (PPU*) *state;
-	Stack s;	
+	Stack s;
 	int i;
 
 	Stack_Init(&s);
@@ -282,7 +282,7 @@ static void test_PPU_ManageTiming_Prerender_RenderOFF(void **state) {
 	self->cycle++;
 	/* Cycle 1 - 256 */
 	for (i = 1; i <= 256; i++) {
-		Stack_Init(&s);	
+		Stack_Init(&s);
 		PPU_ManageTiming(self, &s);
 		if (i == 1)
 			assert_ptr_equal(Stack_Pop(&s), (void*) PPU_ClearFlag);
@@ -291,14 +291,14 @@ static void test_PPU_ManageTiming_Prerender_RenderOFF(void **state) {
 	}
 	/* Cycle 257-320 */
 	for (i = 257; i <= 320; i++) {
-		Stack_Init(&s);	
+		Stack_Init(&s);
 		PPU_ManageTiming(self, &s);
 		assert_int_equal(Stack_IsEmpty(&s), 1);
 		self->cycle++;
 	}
 	/* Cycle 321-340 */
 	for (i = 321; i <= 340; i++) {
-		Stack_Init(&s);	
+		Stack_Init(&s);
 		PPU_ManageTiming(self, &s);
 		assert_int_equal(Stack_IsEmpty(&s), 1);
 		self->cycle++;
@@ -308,7 +308,7 @@ static void test_PPU_ManageTiming_Prerender_RenderOFF(void **state) {
 
 static void test_PPU_ManageTiming_VisibleScanline(void **state) {
 	PPU *self = (PPU*) *state;
-	Stack s;	
+	Stack s;
 	int i, j;
 
 	Stack_Init(&s);
@@ -323,7 +323,7 @@ static void test_PPU_ManageTiming_VisibleScanline(void **state) {
 		self->cycle++;
 		/* Cycle 1 - 256 */
 		for (i = 1; i <= 256; i++) {
-			Stack_Init(&s);	
+			Stack_Init(&s);
 			PPU_ManageTiming(self, &s);
 			assert_ptr_equal(Stack_Pop(&s), (void*) PPU_FetchTile);
 			assert_ptr_equal(Stack_Pop(&s), (void*) PPU_Draw);
@@ -338,7 +338,7 @@ static void test_PPU_ManageTiming_VisibleScanline(void **state) {
 		}
 		/* Cycle 257-320 */
 		for (i = 257; i <= 320; i++) {
-			Stack_Init(&s);	
+			Stack_Init(&s);
 			PPU_ManageTiming(self, &s);
 			assert_ptr_equal(Stack_Pop(&s), (void*) PPU_FetchSprite);
 			if (i == 257)
@@ -348,7 +348,7 @@ static void test_PPU_ManageTiming_VisibleScanline(void **state) {
 		}
 		/* Cycle 321-336 */
 		for (i = 321; i <= 336; i++) {
-			Stack_Init(&s);	
+			Stack_Init(&s);
 			PPU_ManageTiming(self, &s);
 			assert_ptr_equal(Stack_Pop(&s), (void*) PPU_FetchTile);
 			if ((i % 8) == 0)
@@ -358,7 +358,7 @@ static void test_PPU_ManageTiming_VisibleScanline(void **state) {
 		}
 		/* Cycle 337-340 */
 		for (i = 337; i <= 340; i++) {
-			Stack_Init(&s);	
+			Stack_Init(&s);
 			PPU_ManageTiming(self, &s);
 			assert_int_equal(Stack_IsEmpty(&s), 1);
 			self->cycle++;
@@ -391,7 +391,7 @@ static void test_PPU_ManageTiming_VisibleScanline(void **state) {
 
 static void test_PPU_ManageTiming_VisibleScanline_RenderOFF(void **state) {
 	PPU *self = (PPU*) *state;
-	Stack s;	
+	Stack s;
 	int i, j;
 
 	Stack_Init(&s);
@@ -402,7 +402,7 @@ static void test_PPU_ManageTiming_VisibleScanline_RenderOFF(void **state) {
 		self->cycle = 0;
 		/* Cycle 0 - 340 */
 		for (i = 0; i <= 340; i++) {
-			Stack_Init(&s);	
+			Stack_Init(&s);
 			PPU_ManageTiming(self, &s);
 			assert_int_equal(Stack_IsEmpty(&s), 1);
 			self->cycle++;
@@ -414,7 +414,7 @@ static void test_PPU_ManageTiming_VisibleScanline_RenderOFF(void **state) {
 
 static void test_PPU_ManageTiming_IdleScanline(void **state) {
 	PPU *self = (PPU*) *state;
-	Stack s;	
+	Stack s;
 	int i, j;
 
 	Stack_Init(&s);
@@ -423,7 +423,7 @@ static void test_PPU_ManageTiming_IdleScanline(void **state) {
 	for (j = 240; j < 260; j++) {
 		self->cycle = 0;
 		for (i = 0; i <= 340; i++) {
-			Stack_Init(&s);	
+			Stack_Init(&s);
 			PPU_ManageTiming(self, &s);
 			if ((j == 241) && (i == 1))
 				assert_ptr_equal(Stack_Pop(&s), (void*) PPU_SetFlag);
@@ -437,15 +437,15 @@ static void test_PPU_ManageTiming_IdleScanline(void **state) {
 static void test_PPU_IncrementCorseX(void **state) {
 	PPU *self = (PPU*) *state;
 	/* Increment Corse X without overflow */
-	self->vram.v = 1;	
+	self->vram.v = 1;
 	assert_int_equal(PPU_IncrementCorseX(self), EXIT_SUCCESS);
 	assert_int_equal(self->vram.v, 2);
 	/* Increment Corse X with overflow */
-	self->vram.v = 31;	
+	self->vram.v = 31;
 	assert_int_equal(PPU_IncrementCorseX(self), EXIT_SUCCESS);
 	assert_int_equal(self->vram.v, 0x0400);
 	/* Increment Corse X with overflow and nametable already switched */
-	self->vram.v = 31 | 0x0400;	
+	self->vram.v = 31 | 0x0400;
 	assert_int_equal(PPU_IncrementCorseX(self), EXIT_SUCCESS);
 	assert_int_equal(self->vram.v, 0x0000);
 }
@@ -493,7 +493,7 @@ static void test_PPU_ManageV(void **state) {
 	self->cycle = 257;
 	assert_int_equal(PPU_ManageV(self), EXIT_SUCCESS);
 	assert_int_equal(self->vram.v, 0x1000);
-	/* Affect vert(t) to vert(v) at dot 280 to 304 */	
+	/* Affect vert(t) to vert(v) at dot 280 to 304 */
 	for (i = 280; i <= 304; i++) {
 		self->cycle = i;
 		assert_int_equal(PPU_ManageV(self), EXIT_SUCCESS);
@@ -501,6 +501,7 @@ static void test_PPU_ManageV(void **state) {
 	}
 
 }
+
 
 static void test_PPU_FetchTile_Shift(void **state) {
 	PPU* self = (PPU*) *state;
@@ -594,6 +595,24 @@ static void test_PPU_FetchTile_Filling(void **state) {
 	assert_int_equal(self->attributeH & 0x00FF, 0x00FF);
 }
 
+static void test_PPU_ClearSecondaryOAM(void **state) {
+	PPU *self = (PPU*) *state;
+	int i;
+	/* Fill Secondary OAM will 0xAA */
+	for (i = 0; i < 32; i++) {
+		self->SOAM[i] = 0xAA;
+	}
+	for (i = 0; i < 64; i++) {
+		self->cycle = i + 1;
+		PPU_ClearSecondaryOAM(self);
+		if (i % 2)
+			assert_int_equal(0xFF, self->SOAM[i >> 1]);
+		else
+			assert_int_equal(0xAA, self->SOAM[i >> 1]);
+	}
+
+}
+
 
 static int teardown_PPU(void **state) {
 	if (*state != NULL) {
@@ -631,9 +650,13 @@ int run_UTppu(void) {
 		cmocka_unit_test(test_PPU_IncrementY),
 		cmocka_unit_test(test_PPU_ManageV),
 	};
+
 	const struct CMUnitTest test_PPU_FetchTile[] = {
 		cmocka_unit_test(test_PPU_FetchTile_Shift),
 		cmocka_unit_test(test_PPU_FetchTile_Filling),
+	};
+	const struct CMUnitTest test_PPU_Sprite[] = {
+		cmocka_unit_test(test_PPU_ClearSecondaryOAM),
 	};
 	int out = 0;
 	out += cmocka_run_group_tests(test_PPU_CheckRegister, setup_PPU, teardown_PPU);
@@ -641,5 +664,7 @@ int run_UTppu(void) {
 	out += cmocka_run_group_tests(test_PPU_ManageTiming, setup_PPU, teardown_PPU);
 	out += cmocka_run_group_tests(test_PPU_ManageVRAMAddr, setup_PPU, teardown_PPU);
 	out += cmocka_run_group_tests(test_PPU_FetchTile, setup_PPU, teardown_PPU);
+	out += cmocka_run_group_tests(test_PPU_Sprite, setup_PPU, teardown_PPU);
+
 	return out;
 }
