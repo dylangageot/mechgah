@@ -35,6 +35,8 @@ typedef struct {
 	uint16_t cycle;
 	int16_t scanline;
 	uint8_t OAM[256];
+	uint8_t SOAM[32];
+	uint8_t SOAMADDR;
 	uint8_t nbFrame;
 	uint8_t nmiSent;
 	uint8_t pictureDrawn;
@@ -250,5 +252,18 @@ uint8_t PPU_Draw(PPU *self);
  * \param self instance of PPU
  */
 void PPU_Destroy(PPU *self);
+
+/**
+ * \enum StateSpriteEvaluation
+ * \brief State for Sprite Evaluation algorithm
+ */
+enum StateSpriteEvaluation {
+	STATE_COPY_Y = 0,
+	STATE_COPY_REMAINING,
+	STATE_WAIT,
+	STATE_OVERFLOW,
+	STATE_OVERFLOW_FILL,
+};
+
 
 #endif /* PPU_H */
