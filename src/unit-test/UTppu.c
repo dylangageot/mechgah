@@ -502,6 +502,99 @@ static void test_PPU_ManageV(void **state) {
 
 }
 
+static void test_PPU_FetchTile_Shift(void **state) {
+	PPU* self = (PPU*) *state;
+
+	uint16_t bl, bh, al, ah;
+	bl = 0x0FFF;
+	bh = 0x07FF;
+	al = 0x03FF;
+	ah = 0x01FF;
+
+	/* shift register shifting test */
+
+	self->cycle = 1;
+
+	self->bitmapL = bl;
+	self->bitmapH = bh;
+	self->attributeL = al;
+	self->attributeH = ah;
+
+	PPU_FetchTile(self);
+
+	assert_int_equal(self->bitmapL, bl << 0x01);
+	assert_int_equal(self->bitmapH, bh << 0x01);
+	assert_int_equal(self->attributeL, al << 0x01);
+	assert_int_equal(self->attributeH, ah << 0x01);
+}
+
+static void test_PPU_FetchTile_Filling(void **state) {
+	PPU* self = (PPU*) *state;
+
+	/* bitmapL, bitmapH, attributeL, attributeH */
+	uint16_t bl, bh, al, ah;
+
+	self->vram.v = 0;
+	 /* set coarse x to 28, coarse y to 22 and fine y to 3 */
+	self->vram.v |= ( 0x001C
+					| (0x0016 << 5)
+					| (0x0000 << 10)
+					| (0x0003 << 12));
+
+	uint8_t* pattern_address = Mapper_Get(self->mapper, AS_PPU, 0x2000
+											| (self->vram.v & 0x0FFF));
+	 /* initialize with a random pattern address */
+	*pattern_address = 0x85;
+
+	uint8_t* attribute = Mapper_Get(self->mapper, AS_PPU,0x23C0
+									| (self->vram.v & 0x0C00)
+									| ((self->vram.v >> 4) & 0x38)
+									| ((self->vram.v >> 2) & 0x07));
+
+	uint8_t* pattern = Mapper_Get(self->mapper, AS_LDR, LDR_CHR)
+								+ ((self->PPUCTRL & 0x10) ? 0x1000 : 0);
+
+	uint8_t* tile_pattern = pattern + ( *pattern_address << 4);
+
+	/* set pattern low bits */
+	tile_pattern[self->vram.v>>12] = 0xE1;
+	/* set pattern high bits */
+	tile_pattern[(self->vram.v>>12) | 0x08 ] = 0x2C;
+
+	/* set in accord with coarse x and coarse y */
+	/* attribute is set to 2 */
+	*attribute = 0x20;
+
+	/* data insertion test */
+	self->cycle = 8;
+
+	bl = 0xFEDC;
+	bh = 0x96D3;
+	al = 0x778A;
+	ah = 0xAE9F;
+
+	self->bitmapL = bl;
+	self->bitmapH = bh;
+	self->attributeL = al;
+	self->attributeH = ah;
+
+
+	PPU_FetchTile(self);
+
+	assert_int_equal(self->bitmapL & 0xFF00, (bl << 0x01) & 0xFF00);
+	assert_int_equal(self->bitmapL & 0x00FF, 0xE1);
+
+	assert_int_equal(self->bitmapH & 0xFF00, (bh << 0x01) & 0xFF00);
+	assert_int_equal(self->bitmapH & 0x00FF, 0x2C);
+
+	assert_int_equal(self->attributeL & 0xFF00, (al << 0x01) & 0xFF00);
+	assert_int_equal(self->attributeL & 0x00FF, 0);
+
+	assert_int_equal(self->attributeH & 0xFF00, (ah << 0x01) & 0xFF00);
+	assert_int_equal(self->attributeH & 0x00FF, 0x00FF);
+}
+
+
 static int teardown_PPU(void **state) {
 	if (*state != NULL) {
 		PPU *self = (PPU*) *state;
@@ -538,10 +631,15 @@ int run_UTppu(void) {
 		cmocka_unit_test(test_PPU_IncrementY),
 		cmocka_unit_test(test_PPU_ManageV),
 	};
+	const struct CMUnitTest test_PPU_FetchTile[] = {
+		cmocka_unit_test(test_PPU_FetchTile_Shift),
+		cmocka_unit_test(test_PPU_FetchTile_Filling),
+	};
 	int out = 0;
 	out += cmocka_run_group_tests(test_PPU_CheckRegister, setup_PPU, teardown_PPU);
 	out += cmocka_run_group_tests(test_PPU_RefreshRegister, setup_PPU, teardown_PPU);
 	out += cmocka_run_group_tests(test_PPU_ManageTiming, setup_PPU, teardown_PPU);
 	out += cmocka_run_group_tests(test_PPU_ManageVRAMAddr, setup_PPU, teardown_PPU);
+	out += cmocka_run_group_tests(test_PPU_FetchTile, setup_PPU, teardown_PPU);
 	return out;
 }
