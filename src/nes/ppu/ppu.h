@@ -32,14 +32,19 @@ typedef struct {
 	/* Internal Register */
 	Mapper *mapper;
 	VRAM vram;
+	/* Timing */
 	uint16_t cycle;
 	int16_t scanline;
-	uint8_t OAM[256];
-	uint8_t SOAM[32];
-	uint8_t SOAMADDR;
+	/* Flags and informations */
 	uint8_t nbFrame;
 	uint8_t nmiSent;
 	uint8_t pictureDrawn;
+	/* Sprite evaluation */
+	uint8_t OAM[256];
+	uint8_t SOAM[32];
+	uint8_t SOAMADDR;
+	uint8_t spriteState;
+	uint8_t spriteData;
 	/* Graphic memory */
 	uint32_t *image;
 } PPU;
@@ -253,9 +258,9 @@ void PPU_Destroy(PPU *self);
 enum StateSpriteEvaluation {
 	STATE_COPY_Y = 0,
 	STATE_COPY_REMAINING,
-	STATE_WAIT,
 	STATE_OVERFLOW,
-	STATE_OVERFLOW_FILL,
+	STATE_OVERFLOW_REMAINING,
+	STATE_WAIT,
 };
 
 

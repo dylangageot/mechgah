@@ -521,6 +521,161 @@ static void test_PPU_ClearSecondaryOAM(void **state) {
 
 }
 
+static void test_PPU_SpriteEvaluationNoOverflow(void **state) {
+	PPU *self = (PPU*) *state;
+
+	int i;
+	self->scanline = 10;
+	self->PPUSTATUS = 0;
+
+	/* Set value into OAM */ 
+	for (i = 0; i < 256; i++) {
+		self->OAM[i] = i;
+	}
+	/* Set to 0xFF every Y-coordonate */
+	for (i = 0; i < 64; i++) {
+		self->OAM[i << 2] = 0xAA;
+	}
+	/* Clear SOAM */
+	for (i = 0; i < 32; i++) {
+		self->SOAM[i] = 0xFF;
+	}
+	/* Set 4 sprites Y-coordonate in range 
+	 * Make every sprite spaced in memory to hard test the algorithm */
+	self->OAM[1 << 2] = self->scanline + 1;
+	self->OAM[3 << 2] = self->scanline + 1;
+	self->OAM[5 << 2] = self->scanline + 1;
+	self->OAM[7 << 2] = self->scanline + 1;
+	/* Evaluate */
+	for (self->cycle = 65; self->cycle < 257; self->cycle++) {
+		PPU_SpriteEvaluation(self);
+	}
+	/* Verify if 4 sprite has been copied */
+	for (i = 0; i < 4; i++) {
+		assert_int_equal(self->OAM[1 * 4 + i], self->SOAM[i]);
+		assert_int_equal(self->OAM[3 * 4 + i], self->SOAM[1 * 4 + i]);
+		assert_int_equal(self->OAM[5 * 4 + i], self->SOAM[2 * 4 + i]);
+		assert_int_equal(self->OAM[7 * 4 + i], self->SOAM[3 * 4 + i]);
+	}
+	/* Test the copied data for Y in range test */
+	assert_int_equal(0xAA, self->SOAM[16]);
+	for (i = 17; i < 32; i++) {
+		assert_int_equal(0xFF, self->SOAM[i]);
+	}
+
+	/* Verify that no overflow has been detected */
+	assert_int_equal(self->PPUSTATUS, 0);
+}
+
+static void test_PPU_SpriteEvaluationEight(void **state) {
+	PPU *self = (PPU*) *state;
+
+	int i;
+	self->scanline = 10;
+	self->PPUSTATUS = 0;
+
+	/* Set value into OAM */ 
+	for (i = 0; i < 256; i++) {
+		self->OAM[i] = i;
+	}
+	/* Set to 0xFF every Y-coordonate */
+	for (i = 0; i < 64; i++) {
+		self->OAM[i << 2] = 0xAA;
+	}
+	/* Clear SOAM */
+	for (i = 0; i < 32; i++) {
+		self->SOAM[i] = 0xFF;
+	}
+	/* Set 8 sprites Y-coordonate in range 
+	 * Make every sprite spaced in memory to hard test the algorithm */
+	for (i = 0; i < 8; i++) {
+		self->OAM[i << 2] = self->scanline + 1;
+	}
+	/* Evaluate */
+	for (self->cycle = 65; self->cycle < 257; self->cycle++) {
+		PPU_SpriteEvaluation(self);
+	}
+	/* Verify if 8 sprite has been copied */
+	for (i = 0; i < 32; i++) {
+		assert_int_equal(self->OAM[i], self->SOAM[i]);
+	}
+
+	/* Verify that no overflow has been detected */
+	assert_int_equal(self->PPUSTATUS, 0);
+}
+
+static void test_PPU_SpriteEvaluationOverflow(void **state) {
+	PPU *self = (PPU*) *state;
+
+	int i;
+	self->scanline = 10;
+	self->PPUSTATUS = 0;
+
+	/* Set value into OAM */ 
+	for (i = 0; i < 256; i++) {
+		self->OAM[i] = i;
+	}
+	/* Set to 0xFF every Y-coordonate */
+	for (i = 0; i < 64; i++) {
+		self->OAM[i << 2] = 0xAA;
+	}
+	/* Clear SOAM */
+	for (i = 0; i < 32; i++) {
+		self->SOAM[i] = 0xFF;
+	}
+	/* Set 9 sprites Y-coordonate in range 
+	 * Make every sprite spaced in memory to hard test the algorithm */
+	for (i = 0; i < 9; i++) {
+		self->OAM[i << 2] = self->scanline + 1;
+	}
+	/* Evaluate */
+	for (self->cycle = 65; self->cycle < 257; self->cycle++) {
+		PPU_SpriteEvaluation(self);
+	}
+	/* Verify if 8 sprite has been copied */
+	for (i = 0; i < 32; i++) {
+		assert_int_equal(self->OAM[i], self->SOAM[i]);
+	}
+
+	/* Verify that overflow has been detected */
+	assert_int_equal(self->PPUSTATUS, 0x20);
+}
+
+static void test_PPU_SpriteEvaluationZero(void **state) {
+	PPU *self = (PPU*) *state;
+
+	int i;
+	self->scanline = 10;
+	self->PPUSTATUS = 0;
+
+	/* Set value into OAM */ 
+	for (i = 0; i < 256; i++) {
+		self->OAM[i] = i;
+	}
+	/* Set to 0xFF every Y-coordonate */
+	for (i = 0; i < 64; i++) {
+		self->OAM[i << 2] = 0xAA;
+	}
+	/* Clear SOAM */
+	for (i = 0; i < 32; i++) {
+		self->SOAM[i] = 0xFF;
+	}
+	/* Evaluate */
+	for (self->cycle = 65; self->cycle < 257; self->cycle++) {
+		PPU_SpriteEvaluation(self);
+	}
+	/* Verify that SOAM is clear */
+	for (i = 1; i < 32; i++) {
+		assert_int_equal(0xFF, self->SOAM[i]);
+	}
+
+	/* Verify that no overflow has been detected */
+	assert_int_equal(self->PPUSTATUS, 0x00);
+}
+
+
+
+
 
 static int teardown_PPU(void **state) {
 	if (*state != NULL) {
@@ -560,6 +715,10 @@ int run_UTppu(void) {
 	};
 	const struct CMUnitTest test_PPU_Sprite[] = {
 		cmocka_unit_test(test_PPU_ClearSecondaryOAM),
+		cmocka_unit_test(test_PPU_SpriteEvaluationNoOverflow),
+		cmocka_unit_test(test_PPU_SpriteEvaluationOverflow),
+		cmocka_unit_test(test_PPU_SpriteEvaluationEight),
+		cmocka_unit_test(test_PPU_SpriteEvaluationZero),
 	};
 	int out = 0;
 	out += cmocka_run_group_tests(test_PPU_CheckRegister, setup_PPU, teardown_PPU);
