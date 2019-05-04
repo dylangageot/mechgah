@@ -600,7 +600,53 @@ uint8_t PPU_FetchTile(PPU *self) {
 	return EXIT_SUCCESS;
 }
 
-uint8_t PPU_FetchSprite(PPU *self) { return EXIT_SUCCESS; }
+uint8_t PPU_FetchSprite(PPU *self) { 
+	uint16_t cycle = self->cycle - 256;
+	uint8_t *pattern = Mapper_Get(self->mapper, AS_LDR, LDR_CHR) +
+					   ((self->PPUCTRL & 0x08) ? 0x1000 : 0);
+	uint8_t *tile = NULL;
+	uint8_t y, index;
+
+	/* Fill sprite array every 8's clock cycle */
+	if ((cycle % 8) == 0) {
+		index = cycle >> 3;
+		/* Empty slot? */
+		if ((self->SOAM[(cycle >> 1) + 1] == 0xFF) &&
+			(self->SOAM[(cycle >> 1) + 2] == 0xFF) &&	
+			(self->SOAM[(cycle >> 1) + 3] == 0xFF)) {
+			self->sprite[index].patternL = 0x00;
+			self->sprite[index].patternH = 0x00;
+			self->sprite[index].attribute = 0x00;
+			self->sprite[index].x = 0xFF;
+		/* Used slot? */
+		} else {
+			y = self->SOAM[cycle >> 1] - self->scanline;
+			tile = pattern + (self->SOAM[(cycle >> 1) + 1] << 4);
+			self->sprite[index].attribute = self->SOAM[(cycle >> 1) + 2];		
+			self->sprite[index].x = self->SOAM[(cycle >> 1) + 3];		
+			/* Flip both orientation */
+			if ((self->sprite[index].attribute & 0xC0) == 0xC0) {
+				self->sprite[index].patternL = reverse_byte(tile[7-y]);
+				self->sprite[index].patternH = reverse_byte(tile[(7-y) | 0x08]);
+			/* Flip vertical */
+			} else if ((self->sprite[index].attribute & 0xC0) == 0x80) {
+				self->sprite[index].patternL = tile[7-y];
+				self->sprite[index].patternH = tile[(7-y) | 0x08];
+			/* Flip horizontal */
+			} else if ((self->sprite[index].attribute & 0xC0) == 0x40) {
+				self->sprite[index].patternL = reverse_byte(tile[y]);
+				self->sprite[index].patternH = reverse_byte(tile[y | 0x08]);
+			/* Don't flip */
+			} else {
+				self->sprite[index].patternL = tile[y];
+				self->sprite[index].patternH = tile[y | 0x08];
+			}
+		}
+
+	}
+	return EXIT_SUCCESS;
+}
+
 uint8_t PPU_Draw(PPU *self) { return EXIT_SUCCESS; }
 
 uint8_t PPU_UpdateCycle(PPU *self) {
