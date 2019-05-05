@@ -13,6 +13,7 @@
 #include "ppu/ppu.h"
 #include "mapper/mapper.h"
 #include "loader/loader.h"
+#include "controller/controller.h"
 
 /**
  * \struct NES
@@ -21,6 +22,7 @@
 typedef struct {
 	CPU *cpu;
 	PPU *ppu;
+	Controller *controller;
 	Mapper *mapper;
 	uint32_t clockCount;
 	uint8_t context;
@@ -39,10 +41,11 @@ NES* NES_Create(char *filename);
 /**
  * \fn NES_NextFrame
  * \brief Execute the system for one frame
- *
+ * \param Self instance of the NES
+ * \param State of the keyboard keys
  * \return EXIT_SUCCESS
  */
-uint8_t NES_NextFrame(NES *self);
+uint8_t NES_NextFrame(NES *self, uint16_t keysPressed);
 
 /**
  * \fn NES_Render

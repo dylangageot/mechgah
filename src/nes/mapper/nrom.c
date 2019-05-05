@@ -168,7 +168,10 @@ void* MapNROM_Get(void* mapperData, uint8_t space, uint16_t address) {
 			}
 		/* 0x3F00 -> 0x3FFF : Palette */
 		} else if (VALUE_IN(address, 0x3F00, 0x3FFF)) {
-			return ppu->palette + (address & 0x00FF);
+			if ((address & 0x0003) != 0)
+				return ppu->palette + (address & 0x00FF);
+			else
+				return ppu->palette + (address & 0x000C);;
 		}
 
 	} else if (space == AS_LDR) {

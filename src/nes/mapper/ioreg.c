@@ -25,7 +25,7 @@ IOReg* IOReg_Create(void) {
 	return self;
 }
 
-uint8_t IOReg_Connect(IOReg *self, CPU *cpu, PPU* ppu) {
+uint8_t IOReg_Connect(IOReg *self, CPU *cpu, PPU *ppu, Controller *ctrl) {
 	if ((self == NULL) || (cpu == NULL) || (ppu == NULL))
 		return EXIT_FAILURE;
 	
@@ -41,6 +41,8 @@ uint8_t IOReg_Connect(IOReg *self, CPU *cpu, PPU* ppu) {
 
 	/* Bank 2 connection */
 	self->bank2[OAMDMA]		= &(cpu->OAMDMA);
+	self->bank2[JOY1]		= &(ctrl->JOY1);
+	self->bank2[JOY2]		= &(ctrl->JOY2);
 
 	return EXIT_SUCCESS;
 }

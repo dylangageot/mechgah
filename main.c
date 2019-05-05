@@ -5,6 +5,7 @@
 #include <SDL/SDL.h>
 #include <SDL/SDL_rotozoom.h>
 #include "src/nes/nes.h"
+#include "src/common/keys.h"
 
 #define TICK_INTERVAL 16
 
@@ -66,36 +67,42 @@ int main(int argc, char **argv) {
   }
 
 	NES *nes = NES_Create(romFileName);
-	if (nes == NULL)
+	if (nes == NULL){
 		return EXIT_FAILURE;
+  }
 
 	if (SDL_Init(SDL_INIT_VIDEO) == -1) {
 		fprintf(stderr, "Error: Can't initialize SDL (%s)\n", SDL_GetError());
+  	NES_Destroy(nes);
 		return EXIT_FAILURE;
 	}
 
 	SDL_Surface *ecran = SDL_SetVideoMode(256*scale_value, 240*scale_value, 32, SDL_HWSURFACE |
 																SDL_DOUBLEBUF);
-    SDL_WM_SetCaption("NES Emulator", NULL);
+  SDL_WM_SetCaption("NES Emulator", NULL);
 
-    int continuer = 1;
-    SDL_Event event;
+  int continuer = 1;
+  SDL_Event event;
 	SDL_Surface *surface = NULL, *scaled = NULL;
 	SDL_Rect srcdest;
 	srcdest.x = 0;
 	srcdest.y = 0;
+  uint16_t keysPressed; /* Bit representation */
+  uint16_t keysConfig[16]; /* SDL constants array */
+
+  if( readFileKeys("KeysConfig.txt", keysConfig) == 0){
+    fprintf(stderr, "Error: KeysConfig.txt is missing\n");
+    SDL_Quit();
+  	NES_Destroy(nes);
+    return EXIT_FAILURE;
+  }
 
 	next_time = SDL_GetTicks() + TICK_INTERVAL;
-    while (continuer)
-    {
-        SDL_PollEvent(&event);
-        switch(event.type)
-        {
-            case SDL_QUIT:
-                continuer = 0;
-        }
+  while (continuer)
+  {
+    continuer = handleKeys(keysConfig, &keysPressed, &event);
 
-		NES_NextFrame(nes);
+		NES_NextFrame(nes, keysPressed);
 /*
 		PPU_RenderNametable(nes->ppu, nes->ppu->image, 0);
 		PPU_RenderSprites(nes->ppu, nes->ppu->image);
@@ -116,8 +123,8 @@ int main(int argc, char **argv) {
 	 	SDL_Flip(ecran);
 		SDL_FreeSurface(surface);
 		SDL_FreeSurface(scaled);
-        next_time += TICK_INTERVAL;
-    }
+    next_time += TICK_INTERVAL;
+  }
 
 	SDL_Quit();
 	NES_Destroy(nes);
