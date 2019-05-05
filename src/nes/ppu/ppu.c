@@ -27,41 +27,41 @@ static uint32_t colorPalette[64] = {
 };
 
 static unsigned char reverse_byte(unsigned char x) {
-    static const unsigned char table[] = {
-        0x00, 0x80, 0x40, 0xc0, 0x20, 0xa0, 0x60, 0xe0,
-        0x10, 0x90, 0x50, 0xd0, 0x30, 0xb0, 0x70, 0xf0,
-        0x08, 0x88, 0x48, 0xc8, 0x28, 0xa8, 0x68, 0xe8,
-        0x18, 0x98, 0x58, 0xd8, 0x38, 0xb8, 0x78, 0xf8,
-        0x04, 0x84, 0x44, 0xc4, 0x24, 0xa4, 0x64, 0xe4,
-        0x14, 0x94, 0x54, 0xd4, 0x34, 0xb4, 0x74, 0xf4,
-        0x0c, 0x8c, 0x4c, 0xcc, 0x2c, 0xac, 0x6c, 0xec,
-        0x1c, 0x9c, 0x5c, 0xdc, 0x3c, 0xbc, 0x7c, 0xfc,
-        0x02, 0x82, 0x42, 0xc2, 0x22, 0xa2, 0x62, 0xe2,
-        0x12, 0x92, 0x52, 0xd2, 0x32, 0xb2, 0x72, 0xf2,
-        0x0a, 0x8a, 0x4a, 0xca, 0x2a, 0xaa, 0x6a, 0xea,
-        0x1a, 0x9a, 0x5a, 0xda, 0x3a, 0xba, 0x7a, 0xfa,
-        0x06, 0x86, 0x46, 0xc6, 0x26, 0xa6, 0x66, 0xe6,
-        0x16, 0x96, 0x56, 0xd6, 0x36, 0xb6, 0x76, 0xf6,
-        0x0e, 0x8e, 0x4e, 0xce, 0x2e, 0xae, 0x6e, 0xee,
-        0x1e, 0x9e, 0x5e, 0xde, 0x3e, 0xbe, 0x7e, 0xfe,
-        0x01, 0x81, 0x41, 0xc1, 0x21, 0xa1, 0x61, 0xe1,
-        0x11, 0x91, 0x51, 0xd1, 0x31, 0xb1, 0x71, 0xf1,
-        0x09, 0x89, 0x49, 0xc9, 0x29, 0xa9, 0x69, 0xe9,
-        0x19, 0x99, 0x59, 0xd9, 0x39, 0xb9, 0x79, 0xf9,
-        0x05, 0x85, 0x45, 0xc5, 0x25, 0xa5, 0x65, 0xe5,
-        0x15, 0x95, 0x55, 0xd5, 0x35, 0xb5, 0x75, 0xf5,
-        0x0d, 0x8d, 0x4d, 0xcd, 0x2d, 0xad, 0x6d, 0xed,
-        0x1d, 0x9d, 0x5d, 0xdd, 0x3d, 0xbd, 0x7d, 0xfd,
-        0x03, 0x83, 0x43, 0xc3, 0x23, 0xa3, 0x63, 0xe3,
-        0x13, 0x93, 0x53, 0xd3, 0x33, 0xb3, 0x73, 0xf3,
-        0x0b, 0x8b, 0x4b, 0xcb, 0x2b, 0xab, 0x6b, 0xeb,
-        0x1b, 0x9b, 0x5b, 0xdb, 0x3b, 0xbb, 0x7b, 0xfb,
-        0x07, 0x87, 0x47, 0xc7, 0x27, 0xa7, 0x67, 0xe7,
-        0x17, 0x97, 0x57, 0xd7, 0x37, 0xb7, 0x77, 0xf7,
-        0x0f, 0x8f, 0x4f, 0xcf, 0x2f, 0xaf, 0x6f, 0xef,
-        0x1f, 0x9f, 0x5f, 0xdf, 0x3f, 0xbf, 0x7f, 0xff,
-    };
-    return table[x];
+	static const unsigned char table[] = {
+		0x00, 0x80, 0x40, 0xc0, 0x20, 0xa0, 0x60, 0xe0,
+		0x10, 0x90, 0x50, 0xd0, 0x30, 0xb0, 0x70, 0xf0,
+		0x08, 0x88, 0x48, 0xc8, 0x28, 0xa8, 0x68, 0xe8,
+		0x18, 0x98, 0x58, 0xd8, 0x38, 0xb8, 0x78, 0xf8,
+		0x04, 0x84, 0x44, 0xc4, 0x24, 0xa4, 0x64, 0xe4,
+		0x14, 0x94, 0x54, 0xd4, 0x34, 0xb4, 0x74, 0xf4,
+		0x0c, 0x8c, 0x4c, 0xcc, 0x2c, 0xac, 0x6c, 0xec,
+		0x1c, 0x9c, 0x5c, 0xdc, 0x3c, 0xbc, 0x7c, 0xfc,
+		0x02, 0x82, 0x42, 0xc2, 0x22, 0xa2, 0x62, 0xe2,
+		0x12, 0x92, 0x52, 0xd2, 0x32, 0xb2, 0x72, 0xf2,
+		0x0a, 0x8a, 0x4a, 0xca, 0x2a, 0xaa, 0x6a, 0xea,
+		0x1a, 0x9a, 0x5a, 0xda, 0x3a, 0xba, 0x7a, 0xfa,
+		0x06, 0x86, 0x46, 0xc6, 0x26, 0xa6, 0x66, 0xe6,
+		0x16, 0x96, 0x56, 0xd6, 0x36, 0xb6, 0x76, 0xf6,
+		0x0e, 0x8e, 0x4e, 0xce, 0x2e, 0xae, 0x6e, 0xee,
+		0x1e, 0x9e, 0x5e, 0xde, 0x3e, 0xbe, 0x7e, 0xfe,
+		0x01, 0x81, 0x41, 0xc1, 0x21, 0xa1, 0x61, 0xe1,
+		0x11, 0x91, 0x51, 0xd1, 0x31, 0xb1, 0x71, 0xf1,
+		0x09, 0x89, 0x49, 0xc9, 0x29, 0xa9, 0x69, 0xe9,
+		0x19, 0x99, 0x59, 0xd9, 0x39, 0xb9, 0x79, 0xf9,
+		0x05, 0x85, 0x45, 0xc5, 0x25, 0xa5, 0x65, 0xe5,
+		0x15, 0x95, 0x55, 0xd5, 0x35, 0xb5, 0x75, 0xf5,
+		0x0d, 0x8d, 0x4d, 0xcd, 0x2d, 0xad, 0x6d, 0xed,
+		0x1d, 0x9d, 0x5d, 0xdd, 0x3d, 0xbd, 0x7d, 0xfd,
+		0x03, 0x83, 0x43, 0xc3, 0x23, 0xa3, 0x63, 0xe3,
+		0x13, 0x93, 0x53, 0xd3, 0x33, 0xb3, 0x73, 0xf3,
+		0x0b, 0x8b, 0x4b, 0xcb, 0x2b, 0xab, 0x6b, 0xeb,
+		0x1b, 0x9b, 0x5b, 0xdb, 0x3b, 0xbb, 0x7b, 0xfb,
+		0x07, 0x87, 0x47, 0xc7, 0x27, 0xa7, 0x67, 0xe7,
+		0x17, 0x97, 0x57, 0xd7, 0x37, 0xb7, 0x77, 0xf7,
+		0x0f, 0x8f, 0x4f, 0xcf, 0x2f, 0xaf, 0x6f, 0xef,
+		0x1f, 0x9f, 0x5f, 0xdf, 0x3f, 0xbf, 0x7f, 0xff,
+	};
+	return table[x];
 }
 
 PPU* PPU_Create(Mapper *mapper) {
@@ -121,11 +121,11 @@ char* RenderColorPalette(void) {
 
 void PPU_RenderNametable(PPU *self, uint32_t *image, uint8_t index) {
 	uint8_t *nametable = Mapper_Get(self->mapper, AS_PPU,
-									0x2000 | (index << 10));
+			0x2000 | (index << 10));
 	uint8_t *attribute = nametable + 0x3C0;
 	uint8_t *palette = Mapper_Get(self->mapper, AS_PPU, 0x3F00);
 	uint8_t *pattern = Mapper_Get(self->mapper, AS_LDR, LDR_CHR) +
-	                   ((self->PPUCTRL & 0x10) ? 0x1000 : 0);
+		((self->PPUCTRL & 0x10) ? 0x1000 : 0);
 	uint8_t *tile = NULL, *color = NULL;
 	uint8_t temp = 0, shift = 0;
 	uint32_t index_image = 0;
@@ -161,7 +161,7 @@ void PPU_RenderSprites(PPU *self, uint32_t *image) {
 
 	uint8_t *palette = Mapper_Get(self->mapper, AS_PPU, 0x3F00);
 	uint8_t *pattern = Mapper_Get(self->mapper, AS_LDR, LDR_CHR) +
-					   ((self->PPUCTRL & 0x08) ? 0x1000 : 0);
+		((self->PPUCTRL & 0x08) ? 0x1000 : 0);
 	uint8_t *tile = NULL, *color = NULL;
 	uint8_t temp = 0;
 	int oamaddr, x, y, x_start, y_start, attribute;
@@ -181,15 +181,15 @@ void PPU_RenderSprites(PPU *self, uint32_t *image) {
 				if ((attribute & 0xC0) == 0xC0) {
 					temp = (tile[7-y] >> x) & 0x01;
 					temp |= ((tile[(7-y) | 0x08 ] >> x) & 0x01) << 1;
-				/* Flip vertical */
+					/* Flip vertical */
 				} else if ((attribute & 0xC0) == 0x80) {
 					temp = (reverse_byte(tile[7-y]) >> x) & 0x01;
 					temp |= ((reverse_byte(tile[(7-y) | 0x08 ]) >> x) & 0x01) << 1;
-				/* Flip horizontal */
+					/* Flip horizontal */
 				} else if ((attribute & 0xC0) == 0x40) {
 					temp = (tile[y] >> x) & 0x01;
 					temp |= ((tile[y | 0x08 ] >> x) & 0x01) << 1;
-				/* Don't flip */
+					/* Don't flip */
 				} else {
 					temp = (reverse_byte(tile[y]) >> x) & 0x01;
 					temp |= ((reverse_byte(tile[y | 0x08 ]) >> x) & 0x01) << 1;
@@ -285,7 +285,7 @@ uint8_t PPU_CheckRegister(PPU *self) {
 		if (VALUE_IN(self->scanline, -1, 239) && IS_RENDERING_ON()) {
 			PPU_IncrementCorseX(self);
 			PPU_IncrementY(self);
-		/* If not rendering, increment linearly */
+			/* If not rendering, increment linearly */
 		} else {
 			self->vram.v += (self->PPUCTRL & 0x04) ? 32 : 1;
 		}
@@ -320,7 +320,7 @@ uint8_t PPU_ManageTiming(PPU *self, Stack *taskList) {
 			/* Clean Secondary OAM */
 			if (VALUE_IN(self->cycle, 1, 64) && IS_RENDERING_ON()) {
 				Stack_Push(taskList, (void*) PPU_ClearSecondaryOAM);
-			/* Sprite Evaluation */
+				/* Sprite Evaluation */
 			} else if (VALUE_IN(self->cycle, 65, 256) && IS_RENDERING_ON()) {
 				Stack_Push(taskList, (void*) PPU_SpriteEvaluation);
 			}
@@ -330,26 +330,27 @@ uint8_t PPU_ManageTiming(PPU *self, Stack *taskList) {
 			/* Fetch Tile at every cycle */
 			if (IS_RENDERING_ON())
 				Stack_Push(taskList, (void*) PPU_FetchTile);
-		/* Fetch Sprite part */
+			/* Fetch Sprite part */
 		} else if (VALUE_IN(self->cycle, 257, 320) && IS_RENDERING_ON()) {
 			/* Affect hori(t) to hori(v)
 			 * or vert(t) to vert(v) */
 			if ((self->cycle == 257) ||
-				(VALUE_IN(self->cycle, 280, 304) && (self->scanline == -1))) {
+					(VALUE_IN(self->cycle, 280, 304) && (self->scanline == -1))) {
 				Stack_Push(taskList, (void*) PPU_ManageV);
 			}
-			/* Fetch Sprite at every cycle */
-			Stack_Push(taskList, (void*) PPU_FetchSprite);
-		/* Fetch Tile for next scanline */
+			/* Fetch Sprite every 8's clock cycle */
+			if (((self->cycle - 256) % 8) == 0)
+				Stack_Push(taskList, (void*) PPU_FetchSprite);
+			/* Fetch Tile for next scanline */
 		} else if (VALUE_IN(self->cycle, 321, 336) && IS_RENDERING_ON()) {
-			/* Increment hori(v) every 8's clock */
+			/* Increment hori(v) every 8's clock cycle */
 			if ((self->cycle % 8) == 0) {
 				Stack_Push(taskList, (void*) PPU_ManageV);
 			}
 			/* Fetch tile at every cycle */
 			Stack_Push(taskList, (void*) PPU_FetchTile);
 		}
-	/* Set Vertical Blank flag */
+		/* Set Vertical Blank flag */
 	} else if ((self->scanline == 241) && (self->cycle == 1)) {
 		Stack_Push(taskList, (void*) PPU_SetFlag);
 	}
@@ -376,7 +377,7 @@ uint8_t PPU_IncrementCorseX(PPU *self) {
 	if ((self->vram.v & 0x001F) == 31) {
 		self->vram.v &= ~0x001F;
 		self->vram.v ^= 0x0400;
-	/* Else increment Corse X */
+		/* Else increment Corse X */
 	} else
 		self->vram.v++;
 	return EXIT_SUCCESS;
@@ -386,7 +387,7 @@ uint8_t PPU_IncrementY(PPU *self) {
 	/* If Fine Y is not going to overflow, increment it */
 	if ((self->vram.v & 0x7000) != 0x7000) {
 		self->vram.v += 0x1000;
-	/* Else manage Corse Y component */
+		/* Else manage Corse Y component */
 	} else {
 		/* Reset Fine Y component because it has overflowed */
 		self->vram.v &= ~0x7000;
@@ -396,7 +397,7 @@ uint8_t PPU_IncrementY(PPU *self) {
 		if (y == 29) {
 			y = 0;
 			self->vram.v ^= 0x0800;
-		/* If Corse Y is going to overflow, reset it and do not switch NT */
+			/* If Corse Y is going to overflow, reset it and do not switch NT */
 		} else if (y == 31)
 			y = 0;
 		/* Else increment Corse Y component */
@@ -412,15 +413,15 @@ uint8_t PPU_ManageV(PPU *self) {
 	/* Dot 8 to 248 (every 8) : Increment Corse X */
 	if (VALUE_IN(self->cycle, 8, 248)) {
 		PPU_IncrementCorseX(self);
-	/* Dot 256 : Increment Y */
+		/* Dot 256 : Increment Y */
 	} else if (self->cycle == 256) {
 		PPU_IncrementY(self);
-	/* Dot 257 : Horizontal component of t set to v */
+		/* Dot 257 : Horizontal component of t set to v */
 	} else if (self->cycle == 257) {
 		/* hori(v) = hori(t) */
 		self->vram.v &= ~0x041F;
 		self->vram.v |= self->vram.t & 0x041F;
-	/* Dot 280 to 304 : Vertical component of t set to v */
+		/* Dot 280 to 304 : Vertical component of t set to v */
 	} else if (VALUE_IN(self->cycle, 280, 304)) {
 		/* vert(v) = vert(t) */
 		self->vram.v &= ~0x7BE0;
@@ -489,7 +490,7 @@ uint8_t PPU_SpriteEvaluation(PPU *self) {
 					}
 				}
 				break;
-			/* Copy the three remaining byte from POAM to SOAM */
+				/* Copy the three remaining byte from POAM to SOAM */
 			case STATE_COPY_REMAINING:
 				/* Copy value of primary OAM to secondary OAM */
 				self->SOAM[self->SOAMADDR] = self->spriteData;
@@ -501,16 +502,16 @@ uint8_t PPU_SpriteEvaluation(PPU *self) {
 					/* If all sprite in OAM has been evaluated */
 					if (self->OAMADDR == 0) {
 						self->spriteState = STATE_WAIT;
-					/* If there is no more space in secondary OAM */
+						/* If there is no more space in secondary OAM */
 					} else if (self->SOAMADDR == 0) {
 						self->spriteState = STATE_OVERFLOW;
-					/* If there is enough space for more sprites in SOAM */
+						/* If there is enough space for more sprites in SOAM */
 					} else {
 						self->spriteState = STATE_COPY_Y; 
 					}
 				}
 				break;
-			/* No more space in Secondary OAM */
+				/* No more space in Secondary OAM */
 			case STATE_OVERFLOW:
 				/* If sprite evaluated is in range, signal overflow */
 				if (((self->scanline + 1) >= self->spriteData) &&
@@ -530,7 +531,7 @@ uint8_t PPU_SpriteEvaluation(PPU *self) {
 					}
 				}
 				break;
-			/* Increment three times */
+				/* Increment three times */
 			case STATE_OVERFLOW_REMAINING:
 				/* Increment primary and secondary index */
 				self->OAMADDR++;
@@ -538,7 +539,7 @@ uint8_t PPU_SpriteEvaluation(PPU *self) {
 					self->spriteState = STATE_WAIT;
 				}
 				break;
-			/* Wait for the end of sprite evaluation */
+				/* Wait for the end of sprite evaluation */
 			case STATE_WAIT:
 				self->OAMADDR += 0x04;
 				break;
@@ -553,13 +554,13 @@ uint8_t PPU_SpriteEvaluation(PPU *self) {
 uint8_t PPU_FetchTile(PPU *self) {
 
 	uint8_t* pattern_address = Mapper_Get(self->mapper, AS_PPU, 0x2000
-										| (self->vram.v & 0x0FFF));
+			| (self->vram.v & 0x0FFF));
 	uint8_t* attribute = Mapper_Get(self->mapper, AS_PPU,0x23C0
-									| (self->vram.v & 0x0C00)
-									| ((self->vram.v >> 4) & 0x38)
-									| ((self->vram.v >> 2) & 0x07));
+			| (self->vram.v & 0x0C00)
+			| ((self->vram.v >> 4) & 0x38)
+			| ((self->vram.v >> 2) & 0x07));
 	uint8_t* pattern = Mapper_Get(self->mapper, AS_LDR, LDR_CHR) +
-	                   			((self->PPUCTRL & 0x10) ? 0x1000 : 0);
+		((self->PPUCTRL & 0x10) ? 0x1000 : 0);
 
 	uint8_t shift, attribute_value = *attribute;
 	/* coarse X */
@@ -601,49 +602,51 @@ uint8_t PPU_FetchTile(PPU *self) {
 }
 
 uint8_t PPU_FetchSprite(PPU *self) { 
-	uint16_t cycle = self->cycle - 256;
 	uint8_t *pattern = Mapper_Get(self->mapper, AS_LDR, LDR_CHR) +
-					   ((self->PPUCTRL & 0x08) ? 0x1000 : 0);
+		((self->PPUCTRL & 0x08) ? 0x1000 : 0);
 	uint8_t *tile = NULL;
-	uint8_t y, index;
+	uint8_t y, index, soamIndex;
 
-	/* Fill sprite array every 8's clock cycle */
-	if ((cycle % 8) == 0) {
-		index = cycle >> 3;
-		/* Empty slot? */
-		if ((self->SOAM[(cycle >> 1) + 1] == 0xFF) &&
-			(self->SOAM[(cycle >> 1) + 2] == 0xFF) &&	
-			(self->SOAM[(cycle >> 1) + 3] == 0xFF)) {
-			self->sprite[index].patternL = 0x00;
-			self->sprite[index].patternH = 0x00;
-			self->sprite[index].attribute = 0x00;
-			self->sprite[index].x = 0xFF;
+	/* Which sprite number in SOAM are we going to process? */
+	index = (self->cycle - 257) >> 3;
+	soamIndex = (self->cycle - 257) >> 1;
+	/* Empty slot? */
+	if ((self->SOAM[soamIndex + 1] == 0xFF) &&
+		(self->SOAM[soamIndex + 2] == 0xFF) &&	
+		(self->SOAM[soamIndex + 3] == 0xFF)) {
+		/* Set to transparency */
+		self->sprite[index].patternL = 0x00;
+		self->sprite[index].patternH = 0x00;
+		self->sprite[index].attribute = 0x00;
+		self->sprite[index].x = 0xFF;
 		/* Used slot? */
-		} else {
-			y = self->SOAM[cycle >> 1] - self->scanline;
-			tile = pattern + (self->SOAM[(cycle >> 1) + 1] << 4);
-			self->sprite[index].attribute = self->SOAM[(cycle >> 1) + 2];		
-			self->sprite[index].x = self->SOAM[(cycle >> 1) + 3];		
-			/* Flip both orientation */
-			if ((self->sprite[index].attribute & 0xC0) == 0xC0) {
-				self->sprite[index].patternL = reverse_byte(tile[7-y]);
-				self->sprite[index].patternH = reverse_byte(tile[(7-y) | 0x08]);
+	} else {
+		/* Compute Fine Y coordonate */
+		y = self->SOAM[soamIndex] - self->scanline - 1;
+		/* Retrieve corresponding pattern address */
+		tile = pattern + (self->SOAM[soamIndex + 1] << 4);
+		/* Copy attributes and X coordonate */
+		self->sprite[index].attribute = self->SOAM[soamIndex + 2];		
+		self->sprite[index].x = self->SOAM[soamIndex + 3];		
+		/* Flip both orientation */
+		if ((self->sprite[index].attribute & 0xC0) == 0xC0) {
+			self->sprite[index].patternL = reverse_byte(tile[7-y]);
+			self->sprite[index].patternH = reverse_byte(tile[(7-y) | 0x08]);
 			/* Flip vertical */
-			} else if ((self->sprite[index].attribute & 0xC0) == 0x80) {
-				self->sprite[index].patternL = tile[7-y];
-				self->sprite[index].patternH = tile[(7-y) | 0x08];
+		} else if ((self->sprite[index].attribute & 0xC0) == 0x80) {
+			self->sprite[index].patternL = tile[7-y];
+			self->sprite[index].patternH = tile[(7-y) | 0x08];
 			/* Flip horizontal */
-			} else if ((self->sprite[index].attribute & 0xC0) == 0x40) {
-				self->sprite[index].patternL = reverse_byte(tile[y]);
-				self->sprite[index].patternH = reverse_byte(tile[y | 0x08]);
+		} else if ((self->sprite[index].attribute & 0xC0) == 0x40) {
+			self->sprite[index].patternL = reverse_byte(tile[y]);
+			self->sprite[index].patternH = reverse_byte(tile[y | 0x08]);
 			/* Don't flip */
-			} else {
-				self->sprite[index].patternL = tile[y];
-				self->sprite[index].patternH = tile[y | 0x08];
-			}
+		} else {
+			self->sprite[index].patternL = tile[y];
+			self->sprite[index].patternH = tile[y | 0x08];
 		}
-
 	}
+
 	return EXIT_SUCCESS;
 }
 

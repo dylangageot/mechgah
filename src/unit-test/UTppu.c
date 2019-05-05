@@ -242,7 +242,8 @@ static void test_PPU_ManageTiming_Prerender(void **state) {
 	for (i = 257; i <= 320; i++) {
 		Stack_Init(&s);
 		PPU_ManageTiming(self, &s);
-		assert_ptr_equal(Stack_Pop(&s), (void*) PPU_FetchSprite);
+		if (((i - 256) % 8) == 0)
+			assert_ptr_equal(Stack_Pop(&s), (void*) PPU_FetchSprite);
 		if ((i == 257) || VALUE_IN(i, 280, 304))
 			assert_ptr_equal(Stack_Pop(&s), (void*) PPU_ManageV);
 		assert_int_equal(Stack_IsEmpty(&s), 1);
@@ -340,7 +341,8 @@ static void test_PPU_ManageTiming_VisibleScanline(void **state) {
 		for (i = 257; i <= 320; i++) {
 			Stack_Init(&s);
 			PPU_ManageTiming(self, &s);
-			assert_ptr_equal(Stack_Pop(&s), (void*) PPU_FetchSprite);
+			if (((i - 256) % 8) == 0)
+				assert_ptr_equal(Stack_Pop(&s), (void*) PPU_FetchSprite);
 			if (i == 257)
 				assert_ptr_equal(Stack_Pop(&s), (void*) PPU_ManageV);
 			assert_int_equal(Stack_IsEmpty(&s), 1);
@@ -613,7 +615,7 @@ static void test_PPU_ClearSecondaryOAM(void **state) {
 
 }
 
-static void test_PPU_SpriteEvaluationNoOverflow(void **state) {
+static void test_PPU_SpriteEvaluation_NoOverflow(void **state) {
 	PPU *self = (PPU*) *state;
 
 	int i;
@@ -659,7 +661,7 @@ static void test_PPU_SpriteEvaluationNoOverflow(void **state) {
 	assert_int_equal(self->PPUSTATUS, 0);
 }
 
-static void test_PPU_SpriteEvaluationEight(void **state) {
+static void test_PPU_SpriteEvaluation_Eight(void **state) {
 	PPU *self = (PPU*) *state;
 
 	int i;
@@ -696,7 +698,7 @@ static void test_PPU_SpriteEvaluationEight(void **state) {
 	assert_int_equal(self->PPUSTATUS, 0);
 }
 
-static void test_PPU_SpriteEvaluationOverflow(void **state) {
+static void test_PPU_SpriteEvaluation_Overflow(void **state) {
 	PPU *self = (PPU*) *state;
 
 	int i;
@@ -733,7 +735,7 @@ static void test_PPU_SpriteEvaluationOverflow(void **state) {
 	assert_int_equal(self->PPUSTATUS, 0x20);
 }
 
-static void test_PPU_SpriteEvaluationZero(void **state) {
+static void test_PPU_SpriteEvaluation_Zero(void **state) {
 	PPU *self = (PPU*) *state;
 
 	int i;
@@ -765,7 +767,269 @@ static void test_PPU_SpriteEvaluationZero(void **state) {
 	assert_int_equal(self->PPUSTATUS, 0x00);
 }
 
+static void test_PPU_FetchSprite_NoFlip(void **state) {
+	PPU *self = (PPU*) *state;
 
+	uint8_t* pattern = Mapper_Get(self->mapper, AS_LDR, LDR_CHR);
+	uint8_t* tile_pattern = NULL;
+
+	int i;
+	self->scanline = 10;
+	self->PPUSTATUS = 0;
+
+	/* Clear SOAM */
+	for (i = 0; i < 32; i++) {
+		self->SOAM[i] = 0xFF;
+	}
+
+	/* Test only for two sprites */
+	/* Set first sprite found in OAM */
+	self->SOAM[0] = (self->scanline + 1) + 1;
+	self->SOAM[1] = 5; /* Set pattern n°6 as sprite */
+	self->SOAM[2] = 0x03;
+	self->SOAM[3] = 0xCC;
+	self->SOAM[4] = (self->scanline + 1) + 7;
+	self->SOAM[5] = 25; /* Set pattern n°26 as sprite */
+	self->SOAM[6] = 0x01;
+	self->SOAM[7] = 0xDD;
+	/* Initialize pattern table */
+	/* Pattern n°6 */
+	tile_pattern = pattern + (5 << 4);
+	for (i = 0; i < 16; i++) {
+		tile_pattern[i] = 0xFF;
+	}
+	tile_pattern[1] = 0xAA;
+	tile_pattern[1 | 0x8] = 0x55;
+	/* Pattern n°26 */
+	tile_pattern = pattern + (25 << 4);
+	for (i = 0; i < 16; i++) {
+		tile_pattern[i] = 0xFF;
+	}
+	tile_pattern[7] = 0x55;
+	tile_pattern[7 | 0x8] = 0xAA;
+
+	/* Execute Fetch sprite */
+	for (self->cycle = 257; self->cycle <= 320; self->cycle += 8) {
+		PPU_FetchSprite(self);
+	}
+
+	/* Test first sprite */
+	assert_int_equal(self->sprite[0].patternL, 0xAA);
+	assert_int_equal(self->sprite[0].patternH, 0x55);
+	assert_int_equal(self->sprite[0].attribute, self->SOAM[2]);
+	assert_int_equal(self->sprite[0].x, self->SOAM[3]);
+	/* Test seconde sprite */
+	assert_int_equal(self->sprite[1].patternL, 0x55);
+	assert_int_equal(self->sprite[1].patternH, 0xAA);
+	assert_int_equal(self->sprite[1].attribute, self->SOAM[6]);
+	assert_int_equal(self->sprite[1].x, self->SOAM[7]);
+	/* Test emptyness of following sprite */
+	for (i = 2; i < 8; i++) {
+		assert_int_equal(self->sprite[i].patternL, 0x00);
+		assert_int_equal(self->sprite[i].patternH, 0x00);
+		assert_int_equal(self->sprite[i].attribute, 0);
+		assert_int_equal(self->sprite[i].x, 0xFF);
+	}
+
+}
+
+static void test_PPU_FetchSprite_FlipHorizontal(void **state) {
+	PPU *self = (PPU*) *state;
+
+	uint8_t* pattern = Mapper_Get(self->mapper, AS_LDR, LDR_CHR);
+	uint8_t* tile_pattern = NULL;
+
+	int i;
+	self->scanline = 10;
+	self->PPUSTATUS = 0;
+
+	/* Clear SOAM */
+	for (i = 0; i < 32; i++) {
+		self->SOAM[i] = 0xFF;
+	}
+
+	/* Test only for two sprites */
+	/* Set first sprite found in OAM */
+	self->SOAM[0] = (self->scanline + 1) + 1;
+	self->SOAM[1] = 5; /* Set pattern n°6 as sprite */
+	self->SOAM[2] = 0x43;
+	self->SOAM[3] = 0xCC;
+	self->SOAM[4] = (self->scanline + 1) + 7;
+	self->SOAM[5] = 25; /* Set pattern n°26 as sprite */
+	self->SOAM[6] = 0x41;
+	self->SOAM[7] = 0xDD;
+	/* Initialize pattern table */
+	/* Pattern n°6 */
+	tile_pattern = pattern + (5 << 4);
+	for (i = 0; i < 16; i++) {
+		tile_pattern[i] = 0xFF;
+	}
+	tile_pattern[1] = 0xAA;
+	tile_pattern[1 | 0x8] = 0x55;
+	/* Pattern n°26 */
+	tile_pattern = pattern + (25 << 4);
+	for (i = 0; i < 16; i++) {
+		tile_pattern[i] = 0xFF;
+	}
+	tile_pattern[7] = 0x55;
+	tile_pattern[7 | 0x8] = 0xAA;
+
+	/* Execute Fetch sprite */
+	for (self->cycle = 257; self->cycle <= 320; self->cycle += 8) {
+		PPU_FetchSprite(self);
+	}
+
+	/* Test first sprite */
+	assert_int_equal(self->sprite[0].patternL, 0x55);
+	assert_int_equal(self->sprite[0].patternH, 0xAA);
+	assert_int_equal(self->sprite[0].attribute, self->SOAM[2]);
+	assert_int_equal(self->sprite[0].x, self->SOAM[3]);
+	/* Test seconde sprite */
+	assert_int_equal(self->sprite[1].patternL, 0xAA);
+	assert_int_equal(self->sprite[1].patternH, 0x55);
+	assert_int_equal(self->sprite[1].attribute, self->SOAM[6]);
+	assert_int_equal(self->sprite[1].x, self->SOAM[7]);
+	/* Test emptyness of following sprite */
+	for (i = 2; i < 8; i++) {
+		assert_int_equal(self->sprite[i].patternL, 0x00);
+		assert_int_equal(self->sprite[i].patternH, 0x00);
+		assert_int_equal(self->sprite[i].attribute, 0);
+		assert_int_equal(self->sprite[i].x, 0xFF);
+	}
+
+}
+
+static void test_PPU_FetchSprite_FlipVertical(void **state) {
+	PPU *self = (PPU*) *state;
+
+	uint8_t* pattern = Mapper_Get(self->mapper, AS_LDR, LDR_CHR);
+	uint8_t* tile_pattern = NULL;
+
+	int i;
+	self->scanline = 10;
+	self->PPUSTATUS = 0;
+
+	/* Clear SOAM */
+	for (i = 0; i < 32; i++) {
+		self->SOAM[i] = 0xFF;
+	}
+
+	/* Test only for two sprites */
+	/* Set first sprite found in OAM */
+	self->SOAM[0] = (self->scanline + 1) + 1;
+	self->SOAM[1] = 5; /* Set pattern n°6 as sprite */
+	self->SOAM[2] = 0x83;
+	self->SOAM[3] = 0xCC;
+	self->SOAM[4] = (self->scanline + 1) + 7;
+	self->SOAM[5] = 25; /* Set pattern n°26 as sprite */
+	self->SOAM[6] = 0x81;
+	self->SOAM[7] = 0xDD;
+	/* Initialize pattern table */
+	/* Pattern n°6 */
+	tile_pattern = pattern + (5 << 4);
+	for (i = 0; i < 16; i++) {
+		tile_pattern[i] = 0xFF;
+	}
+	tile_pattern[7-1] = 0xAA;
+	tile_pattern[(7-1) | 0x8] = 0x55;
+	/* Pattern n°26 */
+	tile_pattern = pattern + (25 << 4);
+	for (i = 0; i < 16; i++) {
+		tile_pattern[i] = 0xFF;
+	}
+	tile_pattern[7-7] = 0x55;
+	tile_pattern[(7-7) | 0x8] = 0xAA;
+
+	/* Execute Fetch sprite */
+	for (self->cycle = 257; self->cycle <= 320; self->cycle += 8) {
+		PPU_FetchSprite(self);
+	}
+
+	/* Test first sprite */
+	assert_int_equal(self->sprite[0].patternL, 0xAA);
+	assert_int_equal(self->sprite[0].patternH, 0x55);
+	assert_int_equal(self->sprite[0].attribute, self->SOAM[2]);
+	assert_int_equal(self->sprite[0].x, self->SOAM[3]);
+	/* Test seconde sprite */
+	assert_int_equal(self->sprite[1].patternL, 0x55);
+	assert_int_equal(self->sprite[1].patternH, 0xAA);
+	assert_int_equal(self->sprite[1].attribute, self->SOAM[6]);
+	assert_int_equal(self->sprite[1].x, self->SOAM[7]);
+	/* Test emptyness of following sprite */
+	for (i = 2; i < 8; i++) {
+		assert_int_equal(self->sprite[i].patternL, 0x00);
+		assert_int_equal(self->sprite[i].patternH, 0x00);
+		assert_int_equal(self->sprite[i].attribute, 0);
+		assert_int_equal(self->sprite[i].x, 0xFF);
+	}
+
+}
+
+static void test_PPU_FetchSprite_FlipBoth(void **state) {
+	PPU *self = (PPU*) *state;
+
+	uint8_t* pattern = Mapper_Get(self->mapper, AS_LDR, LDR_CHR);
+	uint8_t* tile_pattern = NULL;
+
+	int i;
+	self->scanline = 10;
+	self->PPUSTATUS = 0;
+
+	/* Clear SOAM */
+	for (i = 0; i < 32; i++) {
+		self->SOAM[i] = 0xFF;
+	}
+
+	/* Test only for two sprites */
+	/* Set first sprite found in OAM */
+	self->SOAM[0] = (self->scanline + 1) + 1;
+	self->SOAM[1] = 5; /* Set pattern n°6 as sprite */
+	self->SOAM[2] = 0xC3;
+	self->SOAM[3] = 0xCC;
+	self->SOAM[4] = (self->scanline + 1) + 7;
+	self->SOAM[5] = 25; /* Set pattern n°26 as sprite */
+	self->SOAM[6] = 0xC1;
+	self->SOAM[7] = 0xDD;
+	/* Initialize pattern table */
+	/* Pattern n°6 */
+	tile_pattern = pattern + (5 << 4);
+	for (i = 0; i < 16; i++) {
+		tile_pattern[i] = 0xFF;
+	}
+	tile_pattern[7-1] = 0xAA;
+	tile_pattern[(7-1) | 0x8] = 0x55;
+	/* Pattern n°26 */
+	tile_pattern = pattern + (25 << 4);
+	for (i = 0; i < 16; i++) {
+		tile_pattern[i] = 0xFF;
+	}
+	tile_pattern[7-7] = 0x55;
+	tile_pattern[(7-7) | 0x8] = 0xAA;
+
+	/* Execute Fetch sprite */
+	for (self->cycle = 257; self->cycle <= 320; self->cycle += 8) {
+		PPU_FetchSprite(self);
+	}
+
+	/* Test first sprite */
+	assert_int_equal(self->sprite[0].patternL, 0x55);
+	assert_int_equal(self->sprite[0].patternH, 0xAA);
+	assert_int_equal(self->sprite[0].attribute, self->SOAM[2]);
+	assert_int_equal(self->sprite[0].x, self->SOAM[3]);
+	/* Test seconde sprite */
+	assert_int_equal(self->sprite[1].patternL, 0xAA);
+	assert_int_equal(self->sprite[1].patternH, 0x55);
+	assert_int_equal(self->sprite[1].attribute, self->SOAM[6]);
+	assert_int_equal(self->sprite[1].x, self->SOAM[7]);
+	/* Test emptyness of following sprite */
+	for (i = 2; i < 8; i++) {
+		assert_int_equal(self->sprite[i].patternL, 0x00);
+		assert_int_equal(self->sprite[i].patternH, 0x00);
+		assert_int_equal(self->sprite[i].attribute, 0);
+		assert_int_equal(self->sprite[i].x, 0xFF);
+	}
+
+}
 
 
 
@@ -812,10 +1076,14 @@ int run_UTppu(void) {
 	};
 	const struct CMUnitTest test_PPU_Sprite[] = {
 		cmocka_unit_test(test_PPU_ClearSecondaryOAM),
-		cmocka_unit_test(test_PPU_SpriteEvaluationNoOverflow),
-		cmocka_unit_test(test_PPU_SpriteEvaluationOverflow),
-		cmocka_unit_test(test_PPU_SpriteEvaluationEight),
-		cmocka_unit_test(test_PPU_SpriteEvaluationZero),
+		cmocka_unit_test(test_PPU_SpriteEvaluation_NoOverflow),
+		cmocka_unit_test(test_PPU_SpriteEvaluation_Overflow),
+		cmocka_unit_test(test_PPU_SpriteEvaluation_Eight),
+		cmocka_unit_test(test_PPU_SpriteEvaluation_Zero),
+		cmocka_unit_test(test_PPU_FetchSprite_NoFlip),
+		cmocka_unit_test(test_PPU_FetchSprite_FlipHorizontal),
+		cmocka_unit_test(test_PPU_FetchSprite_FlipVertical),
+		cmocka_unit_test(test_PPU_FetchSprite_FlipBoth),
 	};
 	int out = 0;
 	out += cmocka_run_group_tests(test_PPU_CheckRegister, setup_PPU, teardown_PPU);
