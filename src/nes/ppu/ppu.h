@@ -24,6 +24,7 @@ typedef struct {
 	uint8_t patternH;
 	uint8_t attribute;
 	uint8_t x;
+	uint8_t isSpriteZero;
 } Sprite;
 
 typedef struct {
@@ -52,6 +53,7 @@ typedef struct {
 	uint8_t SOAMADDR;
 	uint8_t spriteState;
 	uint8_t spriteData;
+	uint8_t spriteZero;
 	/* Graphic memory */
 	uint32_t *image;
 	/* shift registers filled with values from the pattern table */

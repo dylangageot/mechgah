@@ -464,6 +464,7 @@ uint8_t PPU_SpriteEvaluation(PPU *self) {
 	if (self->cycle == 65) {
 		self->OAMADDR = self->SOAMADDR = 0;
 		self->spriteState = STATE_COPY_Y;
+		self->spriteZero = 0;
 	}
 
 	/* Read or write cycle? */
@@ -476,9 +477,11 @@ uint8_t PPU_SpriteEvaluation(PPU *self) {
 				/* Copy Y value to secondary OAM */
 				self->SOAM[self->SOAMADDR] = self->spriteData;
 				/* Test if scanline correspond to Y range */
-				if (((self->scanline + 1) >= self->spriteData) &&
-						((self->scanline + 1) < (self->spriteData + 8))) {
+				if (((self->scanline + 1) > self->spriteData) &&
+						((self->scanline + 1) <= (self->spriteData + 8))) {
 					self->spriteState = STATE_COPY_REMAINING;
+					if (self->OAMADDR == 0)
+						self->spriteZero = 1;
 					/* Increment primary and secondary index */
 					self->SOAMADDR = 0x1F & (self->SOAMADDR + 1);
 					self->OAMADDR++;
@@ -515,8 +518,8 @@ uint8_t PPU_SpriteEvaluation(PPU *self) {
 				/* No more space in Secondary OAM */
 			case STATE_OVERFLOW:
 				/* If sprite evaluated is in range, signal overflow */
-				if (((self->scanline + 1) >= self->spriteData) &&
-						((self->scanline + 1) < (self->spriteData + 8))) {
+				if (((self->scanline + 1) > self->spriteData) &&
+						((self->scanline + 1) <= (self->spriteData + 8))) {
 					/* Set Sprite Overflow bit to one */
 					self->PPUSTATUS |= 0x20;
 					/* Increment primary and secondary index */
@@ -623,12 +626,13 @@ uint8_t PPU_FetchSprite(PPU *self) {
 		/* Used slot? */
 	} else {
 		/* Compute Fine Y coordonate */
-		y = self->scanline - self->SOAM[soamIndex] + 1;
+		y = self->scanline - self->SOAM[soamIndex];
 		/* Retrieve corresponding pattern address */
 		tile = pattern + (self->SOAM[soamIndex + 1] << 4);
 		/* Copy attributes and X coordonate */
 		self->sprite[index].attribute = self->SOAM[soamIndex + 2];
 		self->sprite[index].x = self->SOAM[soamIndex + 3];
+		self->sprite[index].isSpriteZero = (index == 0) ? self->spriteZero : 0;
 		/* Flip both orientation */
 		if ((self->sprite[index].attribute & 0xC0) == 0xC0) {
 			self->sprite[index].patternL = reverse_byte(tile[7-y]);
@@ -683,19 +687,19 @@ uint8_t PPU_Draw(PPU *self) {
 			sprite_pixel_color = ((self->sprite[i].patternH >> 6) & 0x02)
 								| ((self->sprite[i].patternL >> 7) & 0x01);
 
-			if ((i == 0) && (sprite_pixel_color != 0) && (bitmap != 0)) {
-				if((((self->PPUMASK >> 3) & 0x03) == 0x03)
-					&& !(((self->sprite[i].x >= 0) && (self->sprite[i].x <= 7)) && (((self->PPUMASK >> 1) & 0x03) != 0x03))
-					&& (self->sprite[i].x != 255)
-					&& !((self->PPUSTATUS >> 6) & 0x01)) {
-
-					self->PPUSTATUS |= 0x40;
-				}
-			}
 
 			/* the first non transparent pixel has to be multiplexed */
 			if((sprite_pixel_color != 0) && sprite_mux_is_empty) {
 
+				if (self->sprite[i].isSpriteZero) {
+					if ((sprite_pixel_color != 0) && (bitmap != 0)
+							&& (((self->PPUMASK >> 3) & 0x03) == 0x03)
+							&& !(((self->cycle - 1 >= 0) && (self->cycle - 1 <= 7)) && (((self->PPUMASK >> 1) & 0x03) != 0x00))
+							&& (self->cycle - 1 != 255)
+							&& !((self->PPUSTATUS >> 6) & 0x01)) {
+						self->PPUSTATUS |= 0x40;
+					}
+				}
 				/*set this bit only in multiplexer */
 				sprite_mux = self->sprite[i];
 				sprite_mux_is_empty = 0;
