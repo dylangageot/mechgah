@@ -47,11 +47,21 @@ uint8_t NES_NextFrame(NES *self) {
 	return EXIT_SUCCESS;
 }
 
+uint32_t* NES_Render(NES *self) {
+	if (self == NULL)
+		return NULL;
+	if (self->ppu == NULL)
+		return NULL;
+	/* Return pixel array */
+	return self->ppu->image;
+}
+
 void NES_Destroy(NES *self) {
 	if (self == NULL)
 		return;
 	
 	CPU_Destroy(self->cpu);
+	PPU_Destroy(self->ppu);
 	if (self->mapper != NULL) {
 		/* Free mapper data */
 		Mapper_Destroy(self->mapper);
