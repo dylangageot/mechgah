@@ -41,8 +41,10 @@ NES* NES_Create(char *filename) {
 uint8_t NES_NextFrame(NES *self, uint16_t keysPressed) {
 	uint32_t previousClockCount = self->clockCount;
 	while (PPU_PictureDrawn(self->ppu) == 0) {
-		CPU_Execute(self->cpu, &self->context, &self->clockCount);
-		PPU_Execute(self->ppu, &self->context,
+		if (CPU_Execute(self->cpu, &self->context, &self->clockCount) 
+				== EXIT_FAILURE)
+			return EXIT_FAILURE;
+		PPU_Execute(self->ppu, &self->context, 
 				(self->clockCount - previousClockCount) * 3);
 		Controller_Execute(self->controller, keysPressed);
 		previousClockCount = self->clockCount;
