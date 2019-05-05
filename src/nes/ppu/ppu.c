@@ -682,6 +682,10 @@ uint8_t PPU_Draw(PPU *self) {
 
 			sprite_pixel_color = ((self->sprite[i].patternH >> 6) & 0x02)
 								| ((self->sprite[i].patternL >> 7) & 0x01);
+			
+			if ((i == 0) && (sprite_pixel_color != 0) && (bitmap != 0)) {
+				self->PPUSTATUS |= 0x40;
+			}
 
 			/* the first non transparent pixel has to be multiplexed */
 			if((sprite_pixel_color != 0) && sprite_mux_is_empty) {
