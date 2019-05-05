@@ -662,7 +662,8 @@ uint8_t PPU_Draw(PPU *self) {
 	uint8_t bitmap = (self->bitmapL & (0x8000 >> self->vram.x)) >> (15 - self->vram.x)
 					| (self->bitmapH & (0x8000 >> self->vram.x)) >> (14 - self->vram.x);
 
-	uint8_t color, color_palette = palette + (attribute << 2); /* color palette address */
+	uint8_t color;
+	uint8_t* color_palette = palette + (attribute << 2); /* color palette address */
 
 	/* variables used for sprites*/
 
