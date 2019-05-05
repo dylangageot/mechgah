@@ -79,7 +79,7 @@ uint8_t App_Init(App *self, int argc, char **argv) {
 }
 
 uint8_t App_Execute(App *self) {
-	int continuer = 1;
+	int continuer = 1, returnValue = EXIT_SUCCESS;
     SDL_Event event;
 	SDL_Surface *surface = NULL, *scaled = NULL;
 	SDL_Rect srcdest; srcdest.x = 0; srcdest.y = 0;
@@ -94,7 +94,11 @@ uint8_t App_Execute(App *self) {
                 continuer = 0;
         }
 
-		NES_NextFrame(self->nes);
+		if (NES_NextFrame(self->nes) == EXIT_FAILURE) {
+			returnValue = EXIT_FAILURE;
+			continuer = 0;
+			break;
+		}
 
 		PPU_RenderNametable(self->nes->ppu, NES_Render(self->nes), 0);
 		PPU_RenderSprites(self->nes->ppu, NES_Render(self->nes));
@@ -119,7 +123,7 @@ uint8_t App_Execute(App *self) {
 	SDL_FreeSurface(self->screen);
 	SDL_Quit();
 	NES_Destroy(self->nes);
-	return EXIT_SUCCESS;
+	return returnValue;
 }
 
 uint32_t App_TimeLeft(App *self) {
