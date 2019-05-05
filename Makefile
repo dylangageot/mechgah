@@ -18,6 +18,7 @@ SRC  		= $(NESDIR)/mapper/nrom.c \
 			  $(NESDIR)/cpu/cpu.c \
 			  $(NESDIR)/ppu/ppu.c \
 			  $(NESDIR)/nes.c \
+				$(NESDIR)/controller/controller.c \
 			  $(COMMONDIR)/stack.c \
 			  $(UTESTDIR)/UTnrom.c \
 			  $(UTESTDIR)/UTinstruction.c \
@@ -25,6 +26,7 @@ SRC  		= $(NESDIR)/mapper/nrom.c \
 			  $(UTESTDIR)/UTcpu.c \
 			  $(UTESTDIR)/UTstack.c \
 			  $(UTESTDIR)/UTppu.c \
+			  $(COMMONDIR)/keys.c \
 
 # use gcc
 CC			= gcc

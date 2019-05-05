@@ -12,6 +12,7 @@
 #include "mapper.h"
 #include "../cpu/cpu.h"
 #include "../ppu/ppu.h"
+#include "../controller/controller.h"
 
 /**
  * \struct IOReg
@@ -43,10 +44,11 @@ IOReg* IOReg_Create(void);
  * \param self instance of IOReg
  * \param cpu instance of CPU
  * \param ppu instance of PPU
+ * \param ctrl instance of Controller
  *
  * \return EXIT_SUCCESS if succeed, EXIT_FAILURE otherwise 
  */
-uint8_t IOReg_Connect(IOReg *self, CPU *cpu, PPU *ppu);
+uint8_t IOReg_Connect(IOReg *self, CPU *cpu, PPU *ppu, Controller *ctrl);
 
 /**
  * \brief Get pointer to access IO register
