@@ -488,7 +488,7 @@ uint8_t PPU_SpriteEvaluation(PPU *self) {
 				/* Test if scanline correspond to Y range */
 				if (((self->scanline + 1) >= self->spriteData) &&
 						((self->scanline + 1) < (self->spriteData + 8))) {
-					self->spriteState = STATE_COPY_REMAINING;	
+					self->spriteState = STATE_COPY_REMAINING;
 					/* Increment primary and secondary index */
 					self->SOAMADDR = 0x1F & (self->SOAMADDR + 1);
 					self->OAMADDR++;
@@ -692,9 +692,15 @@ uint8_t PPU_Draw(PPU *self) {
 
 			sprite_pixel_color = ((self->sprite[i].patternH >> 6) & 0x02)
 								| ((self->sprite[i].patternL >> 7) & 0x01);
-			
+
 			if ((i == 0) && (sprite_pixel_color != 0) && (bitmap != 0)) {
-				self->PPUSTATUS |= 0x40;
+				if((((self->PPUMASK >> 3) & 0x03) == 0x03)
+					&& !(((self->sprite[i].x >= 0) && (self->sprite[i].x <= 7)) && (((self->PPUMASK >> 1) & 0x03) != 0x03))
+					&& (self->sprite[i].x != 255)
+					&& !((self->PPUSTATUS >> 6) & 0x01)) {
+
+					self->PPUSTATUS |= 0x40;
+				}
 			}
 
 			/* the first non transparent pixel has to be multiplexed */
