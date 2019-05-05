@@ -274,8 +274,18 @@ uint8_t PPU_CheckRegister(PPU *self) {
 
 		uint8_t *vram = Mapper_Get(self->mapper, AS_PPU, self->vram.v);
 		/* Set value in VRAM correspondly to value of PPUDATA */
-		if (ack & AC_WR)
-			*vram = self->PPUDATA;
+		if (ack & AC_WR) {
+			/* If write occurs in palette color universal value */
+			if ((self->vram.v == 0x3F10) && ((self->vram.v & 0x3) == 0)) {
+				int i = 0;
+				uint8_t* palette = Mapper_Get(self->mapper, AS_PPU, 0x3F00);
+				for (i = 0; i < 8; i++) { 
+					*(palette + (i << 2)) = self->PPUDATA;
+				}
+			} else {
+				*vram = self->PPUDATA;
+			}
+		}
 		/* Place in PPUDATA the desired data from VRAM */
 		else if (ack & AC_RD)
 			self->PPUDATA = *vram;
