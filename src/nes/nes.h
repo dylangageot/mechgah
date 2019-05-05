@@ -45,11 +45,14 @@ NES* NES_Create(char *filename);
 uint8_t NES_NextFrame(NES *self);
 
 /**
- * \brief Update event for the controller
+ * \fn NES_Render
+ * \brief Render image from PPU
  *
- * \param event event from the keyboard
+ * \param self instance of NES
+ *
+ * \return image array with color in 32 bits
  */
-/* void NES_UpdateEvent(SDL_Event event); */
+uint32_t* NES_Render(NES *self);
 
 /**
  * \fn NES_Destroy
