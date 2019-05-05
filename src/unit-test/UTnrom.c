@@ -106,7 +106,11 @@ static void test_MapNROM_Get(void **state) {
 	/* Test PPU Palette memory space */
 	for (i = 0x3F00; i < 0x4000; i++) {
 		ptr = MapNROM_Get(self, AS_PPU, i);
-		assert_ptr_equal((void*) ptr, (void*) (self->ppu.palette + 
+		if ((i & 0x0003) == 0)
+			assert_ptr_equal((void*) ptr, (void*) (self->ppu.palette + 
+														(i & 0x000C)));
+		else	
+			assert_ptr_equal((void*) ptr, (void*) (self->ppu.palette + 
 														(i & 0x00FF)));
 	}
 

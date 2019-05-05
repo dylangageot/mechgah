@@ -326,8 +326,8 @@ static void test_PPU_ManageTiming_VisibleScanline(void **state) {
 		for (i = 1; i <= 256; i++) {
 			Stack_Init(&s);
 			PPU_ManageTiming(self, &s);
-			assert_ptr_equal(Stack_Pop(&s), (void*) PPU_FetchTile);
 			assert_ptr_equal(Stack_Pop(&s), (void*) PPU_Draw);
+			assert_ptr_equal(Stack_Pop(&s), (void*) PPU_FetchTile);
 			if (i < 65)
 				assert_ptr_equal(Stack_Pop(&s), (void*) PPU_ClearSecondaryOAM);
 			else
@@ -636,10 +636,10 @@ static void test_PPU_SpriteEvaluation_NoOverflow(void **state) {
 	}
 	/* Set 4 sprites Y-coordonate in range 
 	 * Make every sprite spaced in memory to hard test the algorithm */
-	self->OAM[1 << 2] = self->scanline + 1;
-	self->OAM[3 << 2] = self->scanline + 1;
-	self->OAM[5 << 2] = self->scanline + 1;
-	self->OAM[7 << 2] = self->scanline + 1;
+	self->OAM[1 << 2] = self->scanline;
+	self->OAM[3 << 2] = self->scanline;
+	self->OAM[5 << 2] = self->scanline;
+	self->OAM[7 << 2] = self->scanline;
 	/* Evaluate */
 	for (self->cycle = 65; self->cycle < 257; self->cycle++) {
 		PPU_SpriteEvaluation(self);
@@ -683,7 +683,7 @@ static void test_PPU_SpriteEvaluation_Eight(void **state) {
 	/* Set 8 sprites Y-coordonate in range 
 	 * Make every sprite spaced in memory to hard test the algorithm */
 	for (i = 0; i < 8; i++) {
-		self->OAM[i << 2] = self->scanline + 1;
+		self->OAM[i << 2] = self->scanline;
 	}
 	/* Evaluate */
 	for (self->cycle = 65; self->cycle < 257; self->cycle++) {
@@ -720,7 +720,7 @@ static void test_PPU_SpriteEvaluation_Overflow(void **state) {
 	/* Set 9 sprites Y-coordonate in range 
 	 * Make every sprite spaced in memory to hard test the algorithm */
 	for (i = 0; i < 9; i++) {
-		self->OAM[i << 2] = self->scanline + 1;
+		self->OAM[i << 2] = self->scanline;
 	}
 	/* Evaluate */
 	for (self->cycle = 65; self->cycle < 257; self->cycle++) {
@@ -784,11 +784,11 @@ static void test_PPU_FetchSprite_NoFlip(void **state) {
 
 	/* Test only for two sprites */
 	/* Set first sprite found in OAM */
-	self->SOAM[0] = (self->scanline + 1) + 1;
+	self->SOAM[0] = self->scanline - 1;
 	self->SOAM[1] = 5; /* Set pattern n°6 as sprite */
 	self->SOAM[2] = 0x03;
 	self->SOAM[3] = 0xCC;
-	self->SOAM[4] = (self->scanline + 1) + 7;
+	self->SOAM[4] = self->scanline - 7;
 	self->SOAM[5] = 25; /* Set pattern n°26 as sprite */
 	self->SOAM[6] = 0x01;
 	self->SOAM[7] = 0xDD;
@@ -850,11 +850,11 @@ static void test_PPU_FetchSprite_FlipHorizontal(void **state) {
 
 	/* Test only for two sprites */
 	/* Set first sprite found in OAM */
-	self->SOAM[0] = (self->scanline + 1) + 1;
+	self->SOAM[0] = self->scanline - 1;
 	self->SOAM[1] = 5; /* Set pattern n°6 as sprite */
 	self->SOAM[2] = 0x43;
 	self->SOAM[3] = 0xCC;
-	self->SOAM[4] = (self->scanline + 1) + 7;
+	self->SOAM[4] = self->scanline - 7;
 	self->SOAM[5] = 25; /* Set pattern n°26 as sprite */
 	self->SOAM[6] = 0x41;
 	self->SOAM[7] = 0xDD;
@@ -916,11 +916,11 @@ static void test_PPU_FetchSprite_FlipVertical(void **state) {
 
 	/* Test only for two sprites */
 	/* Set first sprite found in OAM */
-	self->SOAM[0] = (self->scanline + 1) + 1;
+	self->SOAM[0] = self->scanline - 1;
 	self->SOAM[1] = 5; /* Set pattern n°6 as sprite */
 	self->SOAM[2] = 0x83;
 	self->SOAM[3] = 0xCC;
-	self->SOAM[4] = (self->scanline + 1) + 7;
+	self->SOAM[4] = self->scanline - 7;
 	self->SOAM[5] = 25; /* Set pattern n°26 as sprite */
 	self->SOAM[6] = 0x81;
 	self->SOAM[7] = 0xDD;
@@ -982,11 +982,11 @@ static void test_PPU_FetchSprite_FlipBoth(void **state) {
 
 	/* Test only for two sprites */
 	/* Set first sprite found in OAM */
-	self->SOAM[0] = (self->scanline + 1) + 1;
+	self->SOAM[0] = self->scanline - 1;
 	self->SOAM[1] = 5; /* Set pattern n°6 as sprite */
 	self->SOAM[2] = 0xC3;
 	self->SOAM[3] = 0xCC;
-	self->SOAM[4] = (self->scanline + 1) + 7;
+	self->SOAM[4] = self->scanline - 7;
 	self->SOAM[5] = 25; /* Set pattern n°26 as sprite */
 	self->SOAM[6] = 0xC1;
 	self->SOAM[7] = 0xDD;
