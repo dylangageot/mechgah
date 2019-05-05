@@ -7,9 +7,10 @@ OUTNAME		= main
 UTEST		= UTest
 
 # directories and sources definition
-NESDIR		= src/nes
-UTESTDIR	= src/unit-test
-COMMONDIR	= src/common
+SRCDIR		= src
+NESDIR		= $(SRCDIR)/nes
+UTESTDIR	= $(SRCDIR)/unit-test
+COMMONDIR	= $(SRCDIR)/common
 SRC  		= $(NESDIR)/mapper/nrom.c \
 			  $(NESDIR)/mapper/mapper.c \
 			  $(NESDIR)/mapper/ioreg.c \
@@ -20,6 +21,7 @@ SRC  		= $(NESDIR)/mapper/nrom.c \
 			  $(NESDIR)/nes.c \
 				$(NESDIR)/controller/controller.c \
 			  $(COMMONDIR)/stack.c \
+			  $(SRCDIR)/app.c \
 			  $(UTESTDIR)/UTnrom.c \
 			  $(UTESTDIR)/UTinstruction.c \
 			  $(UTESTDIR)/UTloader.c \
