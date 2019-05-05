@@ -234,7 +234,7 @@ uint8_t PPU_CheckRegister(PPU *self) {
 	if (Mapper_Ack(self->mapper, 0x2005) & AC_WR) {
 		if (self->vram.w == 0) {
 			/* t: ....... ...HGFED = d: HGFED... */
-			self->vram.t &= 0x001F;
+			self->vram.t &= ~0x001F;
 			self->vram.t |= self->PPUSCROLL >> 3;
 			/* x:              CBA = d: .....CBA */
 			self->vram.x = self->PPUSCROLL & 0x07;
@@ -324,13 +324,12 @@ uint8_t PPU_ManageTiming(PPU *self, Stack *taskList) {
 			} else if (VALUE_IN(self->cycle, 65, 256) && IS_RENDERING_ON()) {
 				Stack_Push(taskList, (void*) PPU_SpriteEvaluation);
 			}
-			/* Draw pixel */
-			if (VALUE_IN(self->scanline, 0, 239) && IS_RENDERING_ON())
-				Stack_Push(taskList, (void*) PPU_Draw);
 			/* Fetch Tile at every cycle */
 			if (IS_RENDERING_ON())
 				Stack_Push(taskList, (void*) PPU_FetchTile);
-			/* Fetch Sprite part */
+			/* Draw pixel */
+			if (VALUE_IN(self->scanline, 0, 239) && IS_RENDERING_ON())
+				Stack_Push(taskList, (void*) PPU_Draw);
 		} else if (VALUE_IN(self->cycle, 257, 320) && IS_RENDERING_ON()) {
 			/* Affect hori(t) to hori(v)
 			 * or vert(t) to vert(v) */
@@ -426,6 +425,8 @@ uint8_t PPU_ManageV(PPU *self) {
 		/* vert(v) = vert(t) */
 		self->vram.v &= ~0x7BE0;
 		self->vram.v |= self->vram.t & 0x7BE0;
+	} else if (VALUE_IN(self->cycle, 328, 336)) {
+		PPU_IncrementCorseX(self);
 	}
 	return EXIT_SUCCESS;
 }
@@ -476,7 +477,7 @@ uint8_t PPU_SpriteEvaluation(PPU *self) {
 				self->SOAM[self->SOAMADDR] = self->spriteData;
 				/* Test if scanline correspond to Y range */
 				if (((self->scanline + 1) >= self->spriteData) &&
-						((self->scanline + 1) <= (self->spriteData + 8))) {
+						((self->scanline + 1) < (self->spriteData + 8))) {
 					self->spriteState = STATE_COPY_REMAINING;	
 					/* Increment primary and secondary index */
 					self->SOAMADDR = 0x1F & (self->SOAMADDR + 1);
@@ -515,7 +516,7 @@ uint8_t PPU_SpriteEvaluation(PPU *self) {
 			case STATE_OVERFLOW:
 				/* If sprite evaluated is in range, signal overflow */
 				if (((self->scanline + 1) >= self->spriteData) &&
-						((self->scanline + 1) <= (self->spriteData + 8))) {
+						((self->scanline + 1) < (self->spriteData + 8))) {
 					/* Set Sprite Overflow bit to one */
 					self->PPUSTATUS |= 0x20;	
 					/* Increment primary and secondary index */
@@ -539,7 +540,7 @@ uint8_t PPU_SpriteEvaluation(PPU *self) {
 					self->spriteState = STATE_WAIT;
 				}
 				break;
-				/* Wait for the end of sprite evaluation */
+			/* Wait for the end of sprite evaluation */
 			case STATE_WAIT:
 				self->OAMADDR += 0x04;
 				break;
@@ -579,7 +580,7 @@ uint8_t PPU_FetchTile(PPU *self) {
 	self->attributeH <<= 0x01;
 
 
-	if(self->cycle % 8 == 0) {
+	if((self->cycle % 8) == 0) {
 		/* insert data from pattern table into shift registers */
 		self->bitmapL &=~ 0x00FF;
 		self->bitmapL |= tile_pattern[fine_y];
@@ -608,8 +609,8 @@ uint8_t PPU_FetchSprite(PPU *self) {
 	uint8_t y, index, soamIndex;
 
 	/* Which sprite number in SOAM are we going to process? */
-	index = (self->cycle - 257) >> 3;
-	soamIndex = (self->cycle - 257) >> 1;
+	index = ((self->cycle - 257) & 0xF8) >> 3;
+	soamIndex = ((self->cycle - 257) & 0xF8) >> 1;
 	/* Empty slot? */
 	if ((self->SOAM[soamIndex + 1] == 0xFF) &&
 		(self->SOAM[soamIndex + 2] == 0xFF) &&	
@@ -622,7 +623,7 @@ uint8_t PPU_FetchSprite(PPU *self) {
 		/* Used slot? */
 	} else {
 		/* Compute Fine Y coordonate */
-		y = self->SOAM[soamIndex] - self->scanline - 1;
+		y = self->scanline - self->SOAM[soamIndex] + 1;
 		/* Retrieve corresponding pattern address */
 		tile = pattern + (self->SOAM[soamIndex + 1] << 4);
 		/* Copy attributes and X coordonate */
@@ -652,7 +653,6 @@ uint8_t PPU_FetchSprite(PPU *self) {
 
 
 uint8_t PPU_Draw(PPU *self) {
-
 	/* variables used for background */
 	uint8_t *palette = Mapper_Get(self->mapper, AS_PPU, 0x3F00);
 
@@ -676,8 +676,7 @@ uint8_t PPU_Draw(PPU *self) {
 	for (i = 0; i < 8; i++) {
 		if(self->sprite[i].x) {
 			/* decrement x counter for each sprite until it reaches 0 */
-			self->sprite[i].x --;
-
+			self->sprite[i].x--;
 		} else {
 			/* at x = 0, the sprite is active and needs to be printed */
 
@@ -685,7 +684,7 @@ uint8_t PPU_Draw(PPU *self) {
 								| ((self->sprite[i].patternL >> 7) & 0x01);
 
 			/* the first non transparent pixel has to be multiplexed */
-			if(sprite_pixel_color && sprite_mux_is_empty) {
+			if((sprite_pixel_color != 0) && sprite_mux_is_empty) {
 
 				/*set this bit only in multiplexer */
 				sprite_mux = self->sprite[i];
@@ -698,13 +697,13 @@ uint8_t PPU_Draw(PPU *self) {
 	}
 
 	/* if the sprite pixel has priority over background (0) or BG pixel is zero */
-	if (!((sprite_mux.attribute >> 5) & 0x01) || !(colorPalette[color_palette[bitmap]])) {
+	if ((!((sprite_mux.attribute >> 5) & 0x01) || ((bitmap & 0x3) == 0))
+			&& !sprite_mux_is_empty) {
 		/* display the sprite */
 		color_palette = palette + ((sprite_mux.attribute & 0x03) << 2) + 0x10;
 
 		color = ((sprite_mux.patternH >> 6) & 0x02)
 				| ((sprite_mux.patternL >> 7) & 0x01);
-
 	} else {
 		/* color_palette = palette + (attribute << 2); */
 		color = bitmap;
