@@ -650,7 +650,70 @@ uint8_t PPU_FetchSprite(PPU *self) {
 	return EXIT_SUCCESS;
 }
 
-uint8_t PPU_Draw(PPU *self) { return EXIT_SUCCESS; }
+
+uint8_t PPU_Draw(PPU *self) {
+
+	/* variables used for background */
+	uint8_t *palette = Mapper_Get(self->mapper, AS_PPU, 0x3F00);
+
+	uint8_t attribute = (self->attributeL & (0x8000 >> self->vram.x)) >> (15 - self->vram.x)
+						| (self->attributeH & (0x8000 >> self->vram.x)) >> (14 - self->vram.x);
+
+	uint8_t bitmap = (self->bitmapL & (0x8000 >> self->vram.x)) >> (15 - self->vram.x)
+					| (self->bitmapH & (0x8000 >> self->vram.x)) >> (14 - self->vram.x);
+
+	uint8_t color, color_palette = palette + (attribute << 2); /* color palette address */
+
+	/* variables used for sprites*/
+
+	uint8_t sprite_mux_is_empty = 1;
+	uint8_t sprite_pixel_color;
+	Sprite sprite_mux;
+
+	uint8_t i;
+
+	for (i = 0; i < 8; i++) {
+		if(self->sprite[i].x) {
+			/* decrement x counter for each sprite until it reaches 0 */
+			self->sprite[i].x --;
+
+		} else {
+			/* at x = 0, the sprite is active and needs to be printed */
+
+			sprite_pixel_color = ((self->sprite[i].patternH >> 6) & 0x02)
+								| ((self->sprite[i].patternL >> 7) & 0x01);
+
+			/* the first non transparent pixel has to be multiplexed */
+			if(sprite_pixel_color && sprite_mux_is_empty) {
+
+				/*set this bit only in multiplexer */
+				sprite_mux = self->sprite[i];
+				sprite_mux_is_empty = 0;
+
+			}
+			self->sprite[i].patternH <<= 1;
+			self->sprite[i].patternL <<= 1;
+		}
+	}
+
+	/* if the sprite pixel has priority over background (0) or BG pixel is zero */
+	if (!((sprite_mux.attribute >> 5) & 0x01) || !(colorPalette[color_palette[bitmap]])) {
+		/* display the sprite */
+		color_palette = palette + ((sprite_mux.attribute & 0x03) << 2) + 0x10;
+
+		color = ((sprite_mux.patternH >> 6) & 0x02)
+				| ((sprite_mux.patternL >> 7) & 0x01);
+
+	} else {
+		/* color_palette = palette + (attribute << 2); */
+		color = bitmap;
+	}
+
+	self->image[(self->scanline << 8) + self->cycle-1] = colorPalette[color_palette[color]];
+
+	return EXIT_SUCCESS;
+}
+
 
 uint8_t PPU_UpdateCycle(PPU *self) {
 	/* Increment cycle and scanline if it has overflow */
