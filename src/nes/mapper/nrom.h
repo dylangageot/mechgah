@@ -9,7 +9,9 @@
 #ifndef NROM_H
 #define NROM_H
 
-#include "peripheralRegister.h"
+#include "mapper.h"
+#include "ioreg.h"
+#include "../loader/loader.h"
 
 #define NROM_RAM_SIZE 2048
 
@@ -19,7 +21,7 @@
  */
 typedef struct {
 	uint8_t *ram;
-	PeripheralRegister ioReg;
+	IOReg * ioReg;
 	uint8_t *sram;
 	uint8_t *rom;
 } MapNROM_CPU;
@@ -39,11 +41,12 @@ typedef struct {
  * \brief Memory map used when using NROM mapper
  */
 typedef struct {
-	/*	Accessible data */	
+	/*	Accessible data */
 	MapNROM_CPU cpu;
 	MapNROM_PPU ppu;
 	/*	Mapper data */
 	uint8_t romSize;
+	uint8_t mirroring;
 } MapNROM;
 
 /**
@@ -51,32 +54,52 @@ typedef struct {
  * \brief Describe if the loaded ROM use 16 or 32kiB
  */
 enum NROMSize {
-	NROM_16KIB = 0,
-	NROM_32KIB,
+	NROM_32KIB = 0,
+	NROM_16KIB,
 	NROM_UNDEFINED
+};
+
+/**
+ * \enum NROMMirroring
+ * \brief Describe the mirroring mecanism to use
+ */
+enum NROMMirroring {
+	NROM_HORIZONTAL = 0,
+	NROM_VERTICAL
 };
 
 /**
  * \fn MapNROM_Create
  * \brief Allocate memory for NROM mapper
  *
- * \param romSize size of PGR-ROM
- * 
+ * \param header containing all ROM informations
+ *
  * \return pointer to the new allocated mapper
  */
-void* MapNROM_Create(uint8_t romSize);
+Mapper* MapNROM_Create(Header * header);
 
 /**
- * \fn MapNROM_Mapper
+ * \fn MapNROM_Get
  * \brief Give access to the data addressed in argument
  *
  * \param mapperData Memory map pointer
  * \param space CPU or PPU address space ?
  * \param address Address of the data to fetch
  *
- * \return uint8_t pointer of the data addressed 
+ * \return void* pointer of the data addressed
  */
-uint8_t* MapNROM_Mapper(void* mapperData, uint8_t space, uint16_t address);
+void* MapNROM_Get(void* mapperData, uint8_t space, uint16_t address);
+
+/**
+ * \fn MapNROM_Ack
+ * \brief Acknowledge IOReg from MapNROM
+ *
+ * \param mapperData instance of MapNROM
+ * \param address address to check if it was accessed
+ *
+ * \return 1 if it was accessed, 0 otherwise
+ */
+uint8_t MapNROM_Ack(void *mapperData, uint16_t address);
 
 /**
  * \fn MapNROM_Destroy

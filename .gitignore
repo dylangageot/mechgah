@@ -1,0 +1,12 @@
+**/out
+*.o
+*.d
+*.gcno
+*.gcov
+*.gcda
+*.info
+~*
+*~
+*.log
+UTest
+main
