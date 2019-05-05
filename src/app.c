@@ -102,8 +102,6 @@ uint8_t App_Execute(App *self) {
 			continuer = 0;
 		}
 
-		PPU_RenderNametable(self->nes->ppu, NES_Render(self->nes), 0);
-		PPU_RenderSprites(self->nes->ppu, NES_Render(self->nes));
 		surface = SDL_CreateRGBSurfaceFrom((void*) NES_Render(self->nes),
 					256,
 					240,
