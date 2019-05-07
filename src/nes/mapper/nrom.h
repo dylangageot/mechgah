@@ -44,6 +44,7 @@ typedef struct {
 	/*	Accessible data */
 	MapNROM_CPU cpu;
 	MapNROM_PPU ppu;
+	uint8_t dummy;
 	/*	Mapper data */
 	uint8_t romSize;
 	uint8_t mirroring;
