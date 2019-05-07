@@ -122,6 +122,9 @@ void* MapNROM_Get(void* mapperData, uint8_t space, uint16_t address) {
 		/* 0x2000 -> 0x4017 : IO bank 1 */
 		} else if (VALUE_IN(address, 0x2000, 0x401F)) {
 			return IOReg_Get(cpu->ioReg, accessType, address);
+		/* 0x4020 -> 0x5FFF : Dummy region*/
+		} else if (VALUE_IN(address, 0x4020, 0x5FFF)) {
+			return &(map->dummy);
 		/* 0x6000 -> 0x7FFF : SRAM */
 		} else if (VALUE_IN(address, 0x6000, 0x7FFF)) {
 			return cpu->sram + (address & 0x1FFF);
