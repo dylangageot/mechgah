@@ -471,6 +471,7 @@ uint8_t PPU_SpriteEvaluation(PPU *self) {
 	if ((self->cycle & 1) == 1) {
 		self->spriteData = self->OAM[self->OAMADDR];
 	} else {
+		uint8_t spriteSize = (self->PPUCTRL & 0x20) ? 16 : 8;
 		switch (self->spriteState) {
 			/*  Copy Y coordonate in Secondary OAM */
 			case STATE_COPY_Y:
@@ -478,7 +479,7 @@ uint8_t PPU_SpriteEvaluation(PPU *self) {
 				self->SOAM[self->SOAMADDR] = self->spriteData;
 				/* Test if scanline correspond to Y range */
 				if (((self->scanline + 1) > self->spriteData) &&
-						((self->scanline + 1) <= (self->spriteData + 8))) {
+						((self->scanline + 1) <= (self->spriteData + spriteSize))) {
 					self->spriteState = STATE_COPY_REMAINING;
 					if (self->OAMADDR == 0)
 						self->spriteZero = 1;
@@ -519,7 +520,7 @@ uint8_t PPU_SpriteEvaluation(PPU *self) {
 			case STATE_OVERFLOW:
 				/* If sprite evaluated is in range, signal overflow */
 				if (((self->scanline + 1) > self->spriteData) &&
-						((self->scanline + 1) <= (self->spriteData + 8))) {
+						((self->scanline + 1) <= (self->spriteData + spriteSize))) {
 					/* Set Sprite Overflow bit to one */
 					self->PPUSTATUS |= 0x20;
 					/* Increment primary and secondary index */
@@ -607,9 +608,9 @@ uint8_t PPU_FetchTile(PPU *self) {
 
 uint8_t PPU_FetchSprite(PPU *self) {
 	uint8_t *pattern = Mapper_Get(self->mapper, AS_LDR, LDR_CHR) +
-		((self->PPUCTRL & 0x08) ? 0x1000 : 0);
+			(((self->PPUCTRL & 0x28) == 0x08) ? 0x1000 : 0);
 	uint8_t *tile = NULL;
-	uint8_t y, index, soamIndex;
+	uint8_t y, index, soamIndex, spriteSize = 0;
 
 	/* Which sprite number in SOAM are we going to process? */
 	index = ((self->cycle - 257) & 0xF8) >> 3;
@@ -628,27 +629,36 @@ uint8_t PPU_FetchSprite(PPU *self) {
 		/* Compute Fine Y coordonate */
 		y = self->scanline - self->SOAM[soamIndex];
 		/* Retrieve corresponding pattern address */
-		tile = pattern + (self->SOAM[soamIndex + 1] << 4);
+		uint16_t patternIndex = self->SOAM[soamIndex + 1];
+		if (self->PPUCTRL & 0x20) {
+			patternIndex = ((patternIndex & 1) << 8) | (patternIndex & 0xFE);
+			/* If line is on the second sprite, switch pattern on it */
+			if (y > 7) {
+				y &= 7;
+				spriteSize = 0x10;
+			}
+		}
+		tile = pattern + (patternIndex << 4);
 		/* Copy attributes and X coordonate */
 		self->sprite[index].attribute = self->SOAM[soamIndex + 2];
 		self->sprite[index].x = self->SOAM[soamIndex + 3];
 		self->sprite[index].isSpriteZero = (index == 0) ? self->spriteZero : 0;
 		/* Flip both orientation */
 		if ((self->sprite[index].attribute & 0xC0) == 0xC0) {
-			self->sprite[index].patternL = reverse_byte(tile[7-y]);
-			self->sprite[index].patternH = reverse_byte(tile[(7-y) | 0x08]);
+			self->sprite[index].patternL = reverse_byte(tile[(7-y) | spriteSize]);
+			self->sprite[index].patternH = reverse_byte(tile[(7-y) | 0x8 | spriteSize]);
 			/* Flip vertical */
 		} else if ((self->sprite[index].attribute & 0xC0) == 0x80) {
-			self->sprite[index].patternL = tile[7-y];
-			self->sprite[index].patternH = tile[(7-y) | 0x08];
+			self->sprite[index].patternL = tile[(7-y) | spriteSize];
+			self->sprite[index].patternH = tile[(7-y) | 0x8 | spriteSize];
 			/* Flip horizontal */
 		} else if ((self->sprite[index].attribute & 0xC0) == 0x40) {
-			self->sprite[index].patternL = reverse_byte(tile[y]);
-			self->sprite[index].patternH = reverse_byte(tile[y | 0x08]);
+			self->sprite[index].patternL = reverse_byte(tile[y | spriteSize]);
+			self->sprite[index].patternH = reverse_byte(tile[y | 0x8 | spriteSize]);
 			/* Don't flip */
 		} else {
-			self->sprite[index].patternL = tile[y];
-			self->sprite[index].patternH = tile[y | 0x08];
+			self->sprite[index].patternL = tile[y | spriteSize];
+			self->sprite[index].patternH = tile[y | 0x8 | spriteSize];
 		}
 	}
 
