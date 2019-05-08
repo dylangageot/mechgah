@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include "../../common/macro.h"
 #include "../mapper/ioreg.h"
+#include "../const.h"
 
 /* Opcode LUT */
 static Opcode opcode[256] = {
@@ -84,46 +85,46 @@ Opcode Opcode_Get(uint8_t index) {
 }
 
 /* Macros used by instructions */
-#define SET_SIGN(x)		cpu->P = (*x & 0x80) ? cpu->P | 0x80 : cpu->P & (~0x80)
+#define SET_SIGN(x)		cpu->P = (*x & 0x80) ? cpu->P | P_SIGN : cpu->P & (~P_SIGN)
 void _SET_SIGN(CPU *cpu, uint8_t *src) {
 	if (*src & 0x80)
-		cpu->P |= 0x80;
+		cpu->P |= P_SIGN;
 	else
-		cpu->P &= ~0x80;
+		cpu->P &= ~P_SIGN;
 }
 
-#define SET_ZERO(x)		cpu->P = (*x == 0) ? cpu->P | 0x02 : cpu->P & (~0x02)
+#define SET_ZERO(x)		cpu->P = (*x == 0) ? cpu->P | P_ZERO : cpu->P & (~P_ZERO)
 void _SET_ZERO(CPU *cpu, uint8_t *src) {
 	if (*src == 0)
-		cpu->P |= 0x02;
+		cpu->P |= P_ZERO;
 	else
-		cpu->P &= ~0x02;
+		cpu->P &= ~P_ZERO;
 }
 
-#define SET_CARRY(x)	cpu->P = (x) ? cpu->P | 0x01 : cpu->P & (~0x01)   
+#define SET_CARRY(x)	cpu->P = (x) ? cpu->P | P_CARRY : cpu->P & (~P_CARRY)   
 void _SET_CARRY(CPU *cpu, uint8_t cond) {
 	if (cond)
-		cpu->P |= 0x01;
+		cpu->P |= P_CARRY;
 	else
-		cpu->P &= ~0x01;
+		cpu->P &= ~P_CARRY;
 }
 
-#define SET_OVERFLOW(x)	cpu->P = (x) ? cpu->P | 0x40 : cpu->P & (~0x40)  
+#define SET_OVERFLOW(x)	cpu->P = (x) ? cpu->P | P_OVERFLOW : cpu->P & (~P_OVERFLOW)  
 void _SET_OVERFLOW(CPU *cpu, uint8_t cond) {
 	if (cond)
-		cpu->P |= 0x40;
+		cpu->P |= P_OVERFLOW;
 	else
-		cpu->P &= ~0x40;
+		cpu->P &= ~P_OVERFLOW;
 }
 
-#define SET_INTERRUPT(x)	cpu->P |= 0x04   
+#define SET_INTERRUPT(x)	cpu->P |= P_INTERRUPT
 void _SET_INTERRUPT(CPU *cpu) {
-	cpu->P |= 0x04;
+	cpu->P |= P_INTERRUPT;
 }
 
-#define SET_BREAK(x)		cpu->P |= 0x10   
+#define SET_BREAK(x)		cpu->P |= P_BRK
 void _SET_BREAK(CPU *cpu) {
-	cpu->P |= 0x10;
+	cpu->P |= P_BRK;
 }
 
 #define REL_ADDR(x) (cpu->PC + (int16_t) *x)
@@ -141,14 +142,14 @@ uint8_t _GET_SR(CPU *cpu) {
 	return cpu->P;
 }
 
-#define PULL()		(*Mapper_Get(cpu->mapper, AS_CPU, 0x0100 | (++cpu->SP)))
+#define PULL()		(*Mapper_Get(cpu->mapper, AS_CPU, ADDR_STACK | (++cpu->SP)))
 uint8_t _PULL(CPU *cpu) {
-	return *Mapper_Get(cpu->mapper, AS_CPU, 0x0100 | (++cpu->SP));
+	return *Mapper_Get(cpu->mapper, AS_CPU, ADDR_STACK | (++cpu->SP));
 }
 
-#define	PUSH(x)		*(Mapper_Get(cpu->mapper, AS_CPU, 0x0100 | (cpu->SP--))) = *x
+#define	PUSH(x)		*(Mapper_Get(cpu->mapper, AS_CPU, ADDR_STACK | (cpu->SP--))) = *x
 void _PUSH(CPU *cpu, uint8_t *src) {
-	*(Mapper_Get(cpu->mapper, AS_CPU, 0x0100 | (cpu->SP--))) = *src;
+	*(Mapper_Get(cpu->mapper, AS_CPU, ADDR_STACK | (cpu->SP--))) = *src;
 }
 
 #define LOAD(x)		Mapper_Get(cpu->mapper, AC_RD | AS_CPU, x)
@@ -166,34 +167,34 @@ void _SET_WR(CPU *cpu, uint16_t address) {
 	Mapper_Get(cpu->mapper, AC_WR | AS_CPU, address);
 }
 
-#define IF_CARRY()	((cpu->P & 0x01) == 0x01)
+#define IF_CARRY()	((cpu->P & P_CARRY) == P_CARRY)
 uint8_t _IF_CARRY(CPU *cpu) {
-	return (cpu->P & 0x01) == 0x01;
+	return (cpu->P & P_CARRY) == P_CARRY;
 }
 
-#define IF_OVERFLOW()	((cpu->P & 0x40) == 0x40)
+#define IF_OVERFLOW()	((cpu->P & P_OVERFLOW) == P_OVERFLOW)
 uint8_t _IF_OVERFLOW(CPU *cpu) {
-	return (cpu->P & 0x40) == 0x40;
+	return (cpu->P & P_OVERFLOW) == P_OVERFLOW;
 }
 
-#define IF_SIGN()	((cpu->P & 0x80) == 0x80)
+#define IF_SIGN()	((cpu->P & P_SIGN) == P_SIGN)
 uint8_t _IF_SIGN(CPU *cpu) {
-	return (cpu->P & 0x80) == 0x80;
+	return (cpu->P & P_SIGN) == P_SIGN;
 }
 
-#define IF_ZERO()	((cpu->P & 0x02) == 0x02)
+#define IF_ZERO()	((cpu->P & P_ZERO) == P_ZERO)
 uint8_t _IF_ZERO(CPU *cpu) {
-	return (cpu->P & 0x02) == 0x02;
+	return (cpu->P & P_ZERO) == P_ZERO;
 }
 
-#define IF_INTERRUPT()	((cpu->P & 0x04) == 0x04)
+#define IF_INTERRUPT()	((cpu->P & P_INTERRUPT) == P_INTERRUPT)
 uint8_t _IF_INTERRUPT(CPU *cpu) {
-	return (cpu->P & 0x04) == 0x04;
+	return (cpu->P & P_INTERRUPT) == P_INTERRUPT;
 }
 
-#define IF_BREAK()	((cpu->P & 0x10) == 0x10)
+#define IF_BREAK()	((cpu->P & P_BRK) == P_BRK)
 uint8_t _IF_BREAK(CPU *cpu) {
-	return (cpu->P & 0x10) == 0x10;
+	return (cpu->P & P_BRK) == P_BRK;
 }
 
 uint8_t _BRANCH(CPU* cpu, Instruction *arg, uint8_t cond) {
@@ -214,7 +215,7 @@ uint8_t Instruction_DMA(Instruction *self, CPU *cpu, uint32_t *clockCycle) {
 	uint8_t data;
 
 	/* Start DMA operation if needed */
-	if (Mapper_Ack(cpu->mapper, 0x4014)) {
+	if (Mapper_Ack(cpu->mapper, ADDR_OAMDMA)) {
 		cpu->cntDMA = 0;
 		/* Add 1 (+1 if odd) to clock cycle 1 */
 		*clockCycle += 1 + (*clockCycle % 2);
@@ -231,7 +232,7 @@ uint8_t Instruction_DMA(Instruction *self, CPU *cpu, uint32_t *clockCycle) {
 		self->opcode.inst = _NOP;
 		/* Load and store */
 		data = *(LOAD(self->dataAddr));
-		STORE(0x2004, &data); 
+		STORE(ADDR_OAMDATA, &data); 
 		/* Increment DMA counter */
 		cpu->cntDMA++;
 		return DMA_ON;
@@ -316,7 +317,7 @@ uint8_t Instruction_Resolve(Instruction *self, CPU *cpu) {
 			address = (hWeight << 8) + lWeight;
 			if ((address & 0xFF00) != ((address + cpu->Y) & 0xFF00))
 				self->pageCrossed = 1;
-			address = (hWeight <<8 ) + lWeight + cpu->Y;
+			address = (hWeight << 8) + lWeight + cpu->Y;
 			self->dataMem = LOAD(address);
 			break;
 
