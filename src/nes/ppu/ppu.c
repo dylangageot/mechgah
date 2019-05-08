@@ -1,11 +1,12 @@
 #include "ppu.h"
 #include "../../common/macro.h"
 #include "../mapper/ioreg.h"
+#include "../const.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
-#define IS_RENDERING_ON() ((self->PPUMASK & 0x18) != 0)
+#define IS_RENDERING_ON() ((self->PPUMASK & (PPUMASK_SHOW_BG | PPUMASK_SHOW_SPR)) != 0)
 
 static uint32_t colorPalette[64] = {
 	0x007C7C7C, 0x000000FC, 0x000000BC, 0x004428BC,
@@ -72,7 +73,7 @@ PPU* PPU_Create(Mapper *mapper) {
 		return NULL;
 	}
 
-	self->image = (uint32_t*) malloc(256 * 240 * sizeof(uint32_t));
+	self->image = (uint32_t*) malloc(NES_SCREEN_WIDTH * NES_SCREEN_HEIGTH * sizeof(uint32_t));
 	if (self->image == NULL) {
 		ERROR_MSG("can't allocate memory for graphics array in PPU");
 		PPU_Destroy(self);
@@ -88,7 +89,7 @@ uint8_t PPU_Init(PPU *self) {
 	int i;
 
 	/* Init registers */
-	self->scanline = -1;
+	self->scanline = PRERENDER_SCANLINE;
 	self->cycle = 0;
 	self->vram.w = 0;
 	self->vram.x = 0;
@@ -106,7 +107,7 @@ uint8_t PPU_Init(PPU *self) {
 	self->nmiSent = 0;
 	self->pictureDrawn = 0;
 
-	for (i = 0; i < 256; i++)
+	for (i = 0; i < SIZE_OAM; i++)
 		self->OAM[i] = 0;
 
 	return EXIT_SUCCESS;
@@ -114,36 +115,36 @@ uint8_t PPU_Init(PPU *self) {
 
 char* RenderColorPalette(void) {
 	/* Copy Color Palette to a new array */
-	uint32_t *tab = (uint32_t*) malloc(64 * sizeof(uint32_t));
-	memcpy(tab, colorPalette, 64 * sizeof(uint32_t));
+	uint32_t *tab = (uint32_t*) malloc(SIZE_COLOR_PALETTE * sizeof(uint32_t));
+	memcpy(tab, colorPalette, SIZE_COLOR_PALETTE * sizeof(uint32_t));
 	return (char*) tab;
 }
 
 void PPU_RenderNametable(PPU *self, uint32_t *image, uint8_t index) {
 	uint8_t *nametable = Mapper_Get(self->mapper, AS_PPU,
-			0x2000 | (index << 10));
-	uint8_t *attribute = nametable + 0x3C0;
-	uint8_t *palette = Mapper_Get(self->mapper, AS_PPU, 0x3F00);
+			ADDR_NAMETABLE_1 | (index << 10));
+	uint8_t *attribute = nametable + SIZE_NAMETABLE;
+	uint8_t *palette = Mapper_Get(self->mapper, AS_PPU, ADDR_PALETTE_BG);
 	uint8_t *pattern = Mapper_Get(self->mapper, AS_LDR, LDR_CHR) +
-		((self->PPUCTRL & 0x10) ? 0x1000 : 0);
+		((self->PPUCTRL & PPUCTRL_BG_PT) ? SIZE_PATTERN : 0);
 	uint8_t *tile = NULL, *color = NULL;
 	uint8_t temp = 0, shift = 0;
 	uint32_t index_image = 0;
 	int x, y, i, j;
 
-	for (y = 0; y < 30; y++) {
-		for (x = 0; x < 32; x++) {
+	for (y = 0; y < TILE_Y_CNT; y++) {
+		for (x = 0; x < TILE_Y_CNT; x++) {
 			/* Tile to get pixels data from */
 			tile = pattern + (nametable[x + (y << 5)] << 4);
-			/* Retrieve attribute and decode */
+		/* Retrieve attribute and decode */
 			temp = attribute[(x >> 2) + ((y & 0xFC) << 1)];
 			shift = (x & 0x02) | ((y & 0x02) << 1);
 			temp = (temp >> shift) & 0x03;
 			/* Retrive palette color */
 			color = palette + (temp << 2);
 			/* Draw on screen */
-			for (j = 0; j < 8; j++) {
-				for (i = 0; i < 8; i++) {
+			for (j = 0; j < SIZE_TILE_PIXEL; j++) {
+				for (i = 0; i < SIZE_TILE_PIXEL; i++) {
 					temp = (reverse_byte(tile[j]) >> i) & 0x01;
 					temp |= ((reverse_byte(tile[j | 0x08 ]) >> i) & 0x01) << 1;
 					index_image = (x << 3) + (y << 11) + (j << 8) + i;
@@ -156,43 +157,46 @@ void PPU_RenderNametable(PPU *self, uint32_t *image, uint8_t index) {
 
 void PPU_RenderSprites(PPU *self, uint32_t *image) {
 
-	if ((self->PPUMASK & 0x10) == 0)
+	if ((self->PPUMASK & PPUMASK_SHOW_SPR) == 0)
 		return;
 
-	uint8_t *palette = Mapper_Get(self->mapper, AS_PPU, 0x3F00);
+	uint8_t *palette = Mapper_Get(self->mapper, AS_PPU, ADDR_PALETTE_BG);
 	uint8_t *pattern = Mapper_Get(self->mapper, AS_LDR, LDR_CHR) +
-		((self->PPUCTRL & 0x08) ? 0x1000 : 0);
+		((self->PPUCTRL & PPUCTRL_SPR_PT) ? SIZE_PATTERN : 0);
 	uint8_t *tile = NULL, *color = NULL;
 	uint8_t temp = 0;
 	int oamaddr, x, y, x_start, y_start, attribute;
 	uint32_t index_image = 0;
 
 	/* Evaluate sprite per sprite */
-	for (oamaddr = 0; oamaddr < 0x100; oamaddr += 0x4) {
+	for (oamaddr = 0; oamaddr < SIZE_OAM; oamaddr += 0x4) {
 		/* Tile to get pixels data from */
 		tile = pattern + (self->OAM[oamaddr + 1] << 4);
 		x_start = self->OAM[oamaddr + 3];
 		y_start = self->OAM[oamaddr] + 1;
 		attribute = self->OAM[oamaddr + 2];
-		color = palette + ((attribute & 0x03) << 2) + 0x10;
+		color = palette + ((attribute & OAM_ATTRIBUTE_PALETTE) << 2) + SIZE_PALETTE;
 		for (y = 0; y < 8; y++) {
 			for (x = 0; x < 8; x++) {
 				/* Flip both orientation */
-				if ((attribute & 0xC0) == 0xC0) {
+				if ((attribute & OAM_ATTRIBUTE_FLIP) == 
+						(OAM_ATTRIBUTE_FLIP_H | OAM_ATTRIBUTE_FLIP_V)) {
 					temp = (tile[7-y] >> x) & 0x01;
-					temp |= ((tile[(7-y) | 0x08 ] >> x) & 0x01) << 1;
-					/* Flip vertical */
-				} else if ((attribute & 0xC0) == 0x80) {
+					temp |= ((tile[(7-y) | SIZE_TILE_LAYER] >> x) & 0x01) << 1;
+				/* Flip vertical */
+				} else if ((attribute & OAM_ATTRIBUTE_FLIP) == 
+						OAM_ATTRIBUTE_FLIP_V) {
 					temp = (reverse_byte(tile[7-y]) >> x) & 0x01;
-					temp |= ((reverse_byte(tile[(7-y) | 0x08 ]) >> x) & 0x01) << 1;
-					/* Flip horizontal */
-				} else if ((attribute & 0xC0) == 0x40) {
+					temp |= ((reverse_byte(tile[(7-y) | SIZE_TILE_LAYER]) >> x) & 0x01) << 1;
+				/* Flip horizontal */
+				} else if ((attribute & OAM_ATTRIBUTE_FLIP) == 
+						OAM_ATTRIBUTE_FLIP_H) {
 					temp = (tile[y] >> x) & 0x01;
-					temp |= ((tile[y | 0x08 ] >> x) & 0x01) << 1;
-					/* Don't flip */
+					temp |= ((tile[y | SIZE_TILE_LAYER] >> x) & 0x01) << 1;
+				/* Don't flip */
 				} else {
 					temp = (reverse_byte(tile[y]) >> x) & 0x01;
-					temp |= ((reverse_byte(tile[y | 0x08 ]) >> x) & 0x01) << 1;
+					temp |= ((reverse_byte(tile[y | SIZE_TILE_LAYER]) >> x) & 0x01) << 1;
 				}
 				index_image = x_start + (y_start << 8) + (y << 8) + x;
 				if ((temp & 0x3) != 0)
@@ -207,31 +211,31 @@ uint8_t PPU_CheckRegister(PPU *self) {
 
 	/* PPUCTRL behavior:
 	 * Write	->	Update VRAM.t with nametable content */
-	if (Mapper_Ack(self->mapper, 0x2000) & AC_WR) {
+	if (Mapper_Ack(self->mapper, ADDR_PPUCTRL) & AC_WR) {
 		/* t: ...BA.. ........ = d: ......BA */
 		self->vram.t &= ~0x0C00;
-		self->vram.t |= (self->PPUCTRL & 0x03) << 10;
+		self->vram.t |= (self->PPUCTRL & PPUCTRL_BASE_NT) << 10;
 		return EXIT_SUCCESS;
 	}
 
 	/* PPUSTATUS behavior:
 	 * Read		->	Clear Vertical Blank Bit and VRAM.w latch */
-	if (Mapper_Ack(self->mapper, 0x2002)) {
-		self->PPUSTATUS &= ~0x80;
+	if (Mapper_Ack(self->mapper, ADDR_PPUSTATUS)) {
+		self->PPUSTATUS &= ~PPUSTATUS_VBL;
 		self->vram.w = 0;
 		return EXIT_SUCCESS;
 	}
 
 	/* OAMDATA behavior:
 	 * Write	->	Update OAM[OAMADDR] with given value and inc OAMADDR */
-	if (Mapper_Ack(self->mapper, 0x2004) & AC_WR) {
+	if (Mapper_Ack(self->mapper, ADDR_OAMDATA) & AC_WR) {
 		self->OAM[self->OAMADDR++] = self->OAMDATA;
 		return EXIT_SUCCESS;
 	}
 
 	/* PPUSCROLL behavior:
 	 * 2 Write	->	VRAM.w++ and update VRAM.t */
-	if (Mapper_Ack(self->mapper, 0x2005) & AC_WR) {
+	if (Mapper_Ack(self->mapper, ADDR_PPUSCROLL) & AC_WR) {
 		if (self->vram.w == 0) {
 			/* t: ....... ...HGFED = d: HGFED... */
 			self->vram.t &= ~0x001F;
@@ -251,7 +255,7 @@ uint8_t PPU_CheckRegister(PPU *self) {
 
 	/* PPUADDR behavior:
 	 * 2 Write	->	VRAM.w++ and update VRAM.t */
-	if (Mapper_Ack(self->mapper, 0x2006) & AC_WR) {
+	if (Mapper_Ack(self->mapper, ADDR_PPUADDR) & AC_WR) {
 		if (self->vram.w == 0) {
 			/* t: 0FEDCBA ........ = d: ..FEDCBA */
 			self->vram.t &= ~0x7F00;
@@ -270,7 +274,7 @@ uint8_t PPU_CheckRegister(PPU *self) {
 
 	/* PPUDATA behavior:
 	 * R/W		->	Update Mapper[VRAM] with given value and update VRAM.v */
-	if ((ack = Mapper_Ack(self->mapper, 0x2007))) {
+	if ((ack = Mapper_Ack(self->mapper, ADDR_PPUDATA))) {
 
 		uint8_t *vram = Mapper_Get(self->mapper, AS_PPU, self->vram.v);
 		/* Set value in VRAM correspondly to value of PPUDATA */
@@ -287,7 +291,7 @@ uint8_t PPU_CheckRegister(PPU *self) {
 			PPU_IncrementY(self);
 			/* If not rendering, increment linearly */
 		} else {
-			self->vram.v += (self->PPUCTRL & 0x04) ? 32 : 1;
+			self->vram.v += (self->PPUCTRL & PPUCTRL_VRAM_INC) ? 32 : 1;
 		}
 		return EXIT_SUCCESS;
 	}
@@ -359,14 +363,15 @@ uint8_t PPU_ManageTiming(PPU *self, Stack *taskList) {
 
 uint8_t PPU_SetFlag(PPU *self) {
 	/* Set Vertical Blank bit */
-	self->PPUSTATUS |= 0x80;
+	self->PPUSTATUS |= PPUSTATUS_VBL;
 	self->pictureDrawn = 1;
 	return EXIT_SUCCESS;
 }
 
 uint8_t PPU_ClearFlag(PPU *self) {
 	/* Clear Vertical Blank, Sprite 0 and Sprite Overflow bits */
-	self->PPUSTATUS &= ~0xE0;
+	self->PPUSTATUS &= ~(PPUSTATUS_VBL | PPUSTATUS_SPR_OVF | 
+						 PPUSTATUS_SPR_ZERO);
 	self->nmiSent = 0;
 	return EXIT_SUCCESS;
 }
@@ -437,13 +442,13 @@ uint8_t PPU_RefreshRegister(PPU *self, uint8_t *context) {
 	self->OAMDATA = self->OAM[self->OAMADDR];
 
 	/* PPUDATA read behavior when address looking at Color Palette */
-	if (VALUE_IN(self->vram.v, 0x3F00, 0x3FFF)) {
+	if (VALUE_IN(self->vram.v, ADDR_PALETTE_BG, ADDR_PALETTE_BG + 0x00FF)) {
 		self->PPUDATA = *Mapper_Get(self->mapper, AS_PPU, self->vram.v);
 	}
 
 	/* NMI Interrupt Generator */
-	if (!self->nmiSent && ((self->PPUSTATUS & 0x80) != 0) &&
-			((self->PPUCTRL & 0x80) != 0)) {
+	if (!self->nmiSent && ((self->PPUSTATUS & PPUSTATUS_VBL) != 0) &&
+			((self->PPUCTRL & PPUCTRL_NMI) != 0)) {
 		*context |= 0x02;
 		self->nmiSent = 1;
 	}
@@ -471,7 +476,7 @@ uint8_t PPU_SpriteEvaluation(PPU *self) {
 	if ((self->cycle & 1) == 1) {
 		self->spriteData = self->OAM[self->OAMADDR];
 	} else {
-		uint8_t spriteSize = (self->PPUCTRL & 0x20) ? 16 : 8;
+		uint8_t spriteSize = (self->PPUCTRL & PPUCTRL_SPR_SIZE) ? 16 : 8;
 		switch (self->spriteState) {
 			/*  Copy Y coordonate in Secondary OAM */
 			case STATE_COPY_Y:
@@ -522,7 +527,7 @@ uint8_t PPU_SpriteEvaluation(PPU *self) {
 				if (((self->scanline + 1) > self->spriteData) &&
 						((self->scanline + 1) <= (self->spriteData + spriteSize))) {
 					/* Set Sprite Overflow bit to one */
-					self->PPUSTATUS |= 0x20;
+					self->PPUSTATUS |= PPUSTATUS_SPR_OVF;
 					/* Increment primary and secondary index */
 					self->SOAMADDR = 0x1F & (self->SOAMADDR + 1);
 					self->OAMADDR++;
@@ -558,14 +563,14 @@ uint8_t PPU_SpriteEvaluation(PPU *self) {
 
 uint8_t PPU_FetchTile(PPU *self) {
 
-	uint8_t* pattern_address = Mapper_Get(self->mapper, AS_PPU, 0x2000
-			| (self->vram.v & 0x0FFF));
-	uint8_t* attribute = Mapper_Get(self->mapper, AS_PPU,0x23C0
+	uint8_t* pattern_address = Mapper_Get(self->mapper, AS_PPU, 
+			ADDR_NAMETABLE_1 | (self->vram.v & 0x0FFF));
+	uint8_t* attribute = Mapper_Get(self->mapper, AS_PPU, ADDR_ATTRIBUTE_1
 			| (self->vram.v & 0x0C00)
 			| ((self->vram.v >> 4) & 0x38)
 			| ((self->vram.v >> 2) & 0x07));
 	uint8_t* pattern = Mapper_Get(self->mapper, AS_LDR, LDR_CHR) +
-		((self->PPUCTRL & 0x10) ? 0x1000 : 0);
+		((self->PPUCTRL & PPUCTRL_BG_PT) ? SIZE_PATTERN : 0);
 
 	uint8_t shift, attribute_value = *attribute;
 	/* coarse X */
@@ -573,9 +578,9 @@ uint8_t PPU_FetchTile(PPU *self) {
 	/* coarse Y */
 	uint8_t y = (self->vram.v >> 5) & 0x1F;
 	/* fine y */
-	uint8_t fine_y = self->vram.v>>12;
+	uint8_t fine_y = self->vram.v >> 12;
 
-	uint8_t* tile_pattern = pattern + ( *pattern_address << 4);
+	uint8_t* tile_pattern = pattern + (*pattern_address << 4);
 
 	/* shift the attribute and bitmap registers */
 	self->bitmapL <<= 0x01;
@@ -590,7 +595,7 @@ uint8_t PPU_FetchTile(PPU *self) {
 		self->bitmapL |= tile_pattern[fine_y];
 
 		self->bitmapH &=~ 0x00FF;
-		self->bitmapH |= tile_pattern[fine_y | 0x08 ];
+		self->bitmapH |= tile_pattern[fine_y | SIZE_TILE_LAYER];
 
 		/* get and decode attribute */
 		shift = (x & 0x02) | ((y & 0x02) << 1);
@@ -598,17 +603,18 @@ uint8_t PPU_FetchTile(PPU *self) {
 
 		/* set all the byte's bits to the value of the attribute bit */
 		self->attributeL &=~ 0x00FF;
-		self->attributeL |= ((attribute_value & 0x01)? 0x00FF : 0);
+		self->attributeL |= ((attribute_value & 0x01) ? 0x00FF : 0);
 
 		self->attributeH &=~ 0x00FF;
-		self->attributeH |= (((attribute_value >> 0x01) & 0x01)? 0x00FF : 0);
+		self->attributeH |= (((attribute_value >> 0x01) & 0x01) ? 0x00FF : 0);
 	}
 	return EXIT_SUCCESS;
 }
 
 uint8_t PPU_FetchSprite(PPU *self) {
 	uint8_t *pattern = Mapper_Get(self->mapper, AS_LDR, LDR_CHR) +
-			(((self->PPUCTRL & 0x28) == 0x08) ? 0x1000 : 0);
+			(((self->PPUCTRL & (PPUCTRL_SPR_PT | PPUCTRL_SPR_SIZE)) == 
+			   PPUCTRL_SPR_PT) ? SIZE_PATTERN : 0);
 	uint8_t *tile = NULL;
 	uint8_t y, index, soamIndex, spriteSize = 0;
 
@@ -616,9 +622,9 @@ uint8_t PPU_FetchSprite(PPU *self) {
 	index = ((self->cycle - 257) & 0xF8) >> 3;
 	soamIndex = ((self->cycle - 257) & 0xF8) >> 1;
 	/* Empty slot? */
-	if ((self->SOAM[soamIndex + 1] == 0xFF) &&
-		(self->SOAM[soamIndex + 2] == 0xFF) &&
-		(self->SOAM[soamIndex + 3] == 0xFF)) {
+	if ((self->SOAM[soamIndex + INDEX_OAM_TILE] == 0xFF) &&
+		(self->SOAM[soamIndex + INDEX_OAM_ATTRIBUTE] == 0xFF) &&
+		(self->SOAM[soamIndex + INDEX_OAM_X_COORD] == 0xFF)) {
 		/* Set to transparency */
 		self->sprite[index].patternL = 0x00;
 		self->sprite[index].patternH = 0x00;
@@ -627,38 +633,39 @@ uint8_t PPU_FetchSprite(PPU *self) {
 		/* Used slot? */
 	} else {
 		/* Compute Fine Y coordonate */
-		y = self->scanline - self->SOAM[soamIndex];
+		y = self->scanline - self->SOAM[soamIndex + INDEX_OAM_Y_COORD];
 		/* Retrieve corresponding pattern address */
-		uint16_t patternIndex = self->SOAM[soamIndex + 1];
-		if (self->PPUCTRL & 0x20) {
+		uint16_t patternIndex = self->SOAM[soamIndex + INDEX_OAM_TILE];
+		if (self->PPUCTRL & PPUCTRL_SPR_SIZE) {
 			patternIndex = ((patternIndex & 1) << 8) | (patternIndex & 0xFE);
 			/* If line is on the second sprite, switch pattern on it */
 			if (y > 7) {
 				y &= 7;
-				spriteSize = 0x10;
+				spriteSize = SIZE_TILE;
 			}
 		}
 		tile = pattern + (patternIndex << 4);
 		/* Copy attributes and X coordonate */
-		self->sprite[index].attribute = self->SOAM[soamIndex + 2];
-		self->sprite[index].x = self->SOAM[soamIndex + 3];
+		self->sprite[index].attribute = self->SOAM[soamIndex + INDEX_OAM_ATTRIBUTE];
+		self->sprite[index].x = self->SOAM[soamIndex + INDEX_OAM_X_COORD];
 		self->sprite[index].isSpriteZero = (index == 0) ? self->spriteZero : 0;
+		uint8_t flipValue = self->sprite[index].attribute & OAM_ATTRIBUTE_FLIP;
 		/* Flip both orientation */
-		if ((self->sprite[index].attribute & 0xC0) == 0xC0) {
+		if (flipValue == (OAM_ATTRIBUTE_FLIP_V | OAM_ATTRIBUTE_FLIP_H)) {
 			self->sprite[index].patternL = reverse_byte(tile[(7-y) | spriteSize]);
-			self->sprite[index].patternH = reverse_byte(tile[(7-y) | 0x8 | spriteSize]);
-			/* Flip vertical */
-		} else if ((self->sprite[index].attribute & 0xC0) == 0x80) {
+			self->sprite[index].patternH = reverse_byte(tile[(7-y) | SIZE_TILE_LAYER | spriteSize]);
+		/* Flip vertical */
+		} else if (flipValue == OAM_ATTRIBUTE_FLIP_V) {
 			self->sprite[index].patternL = tile[(7-y) | spriteSize];
-			self->sprite[index].patternH = tile[(7-y) | 0x8 | spriteSize];
-			/* Flip horizontal */
-		} else if ((self->sprite[index].attribute & 0xC0) == 0x40) {
+			self->sprite[index].patternH = tile[(7-y) | SIZE_TILE_LAYER | spriteSize];
+		/* Flip horizontal */
+		} else if (flipValue == OAM_ATTRIBUTE_FLIP_H) {
 			self->sprite[index].patternL = reverse_byte(tile[y | spriteSize]);
-			self->sprite[index].patternH = reverse_byte(tile[y | 0x8 | spriteSize]);
-			/* Don't flip */
+			self->sprite[index].patternH = reverse_byte(tile[y | SIZE_TILE_LAYER | spriteSize]);
+		/* Don't flip */
 		} else {
 			self->sprite[index].patternL = tile[y | spriteSize];
-			self->sprite[index].patternH = tile[y | 0x8 | spriteSize];
+			self->sprite[index].patternH = tile[y | SIZE_TILE_LAYER | spriteSize];
 		}
 	}
 
@@ -668,7 +675,7 @@ uint8_t PPU_FetchSprite(PPU *self) {
 
 uint8_t PPU_Draw(PPU *self) {
 	/* variables used for background */
-	uint8_t *palette = Mapper_Get(self->mapper, AS_PPU, 0x3F00);
+	uint8_t *palette = Mapper_Get(self->mapper, AS_PPU, ADDR_PALETTE_BG);
 
 	uint8_t attribute = (self->attributeL & (0x8000 >> self->vram.x)) >> (15 - self->vram.x)
 						| (self->attributeH & (0x8000 >> self->vram.x)) >> (14 - self->vram.x);
@@ -687,7 +694,7 @@ uint8_t PPU_Draw(PPU *self) {
 
 	uint8_t i;
 
-	for (i = 0; i < 8; i++) {
+	for (i = 0; i < SPR_SOAM_CNT; i++) {
 		if(self->sprite[i].x) {
 			/* decrement x counter for each sprite until it reaches 0 */
 			self->sprite[i].x--;
@@ -707,7 +714,7 @@ uint8_t PPU_Draw(PPU *self) {
 							&& !(((self->cycle - 1 >= 0) && (self->cycle - 1 <= 7)) && (((self->PPUMASK >> 1) & 0x03) != 0x00))
 							&& (self->cycle - 1 != 255)
 							&& !((self->PPUSTATUS >> 6) & 0x01)) {
-						self->PPUSTATUS |= 0x40;
+						self->PPUSTATUS |= PPUSTATUS_SPR_ZERO;
 					}
 				}
 				/*set this bit only in multiplexer */
@@ -721,7 +728,7 @@ uint8_t PPU_Draw(PPU *self) {
 	}
 
 	/* if the sprite pixel has priority over background (0) or BG pixel is zero */
-	if ((!((sprite_mux.attribute >> 5) & 0x01) || ((bitmap & 0x3) == 0))
+	if ((!(sprite_mux.attribute & OAM_ATTRIBUTE_PRIOTIY) || ((bitmap & 0x3) == 0))
 			&& !sprite_mux_is_empty) {
 		/* display the sprite */
 		color_palette = palette + ((sprite_mux.attribute & 0x03) << 2) + 0x10;
