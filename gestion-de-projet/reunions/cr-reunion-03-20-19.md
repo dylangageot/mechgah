@@ -1,4 +1,4 @@
-# Compte rendu réunion 20 / 03
+# Compte rendu réunion 20/03/2019
 
 ***Compte-rendu d'avancement de projet:***
 * CPU quasiment finie (il manque le code d'une instruction et les tests unitaires de deux instructions)

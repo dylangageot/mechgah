@@ -48,7 +48,7 @@ OBJS    	= $(SRC:.c=.o)
 %.o: %.c
 			 $(CC) $(CFLAGS) -c $< -o $@
 
-all: $(OUTNAME) $(UTEST)
+all: $(OUTNAME)
 
 # executable compilation
 $(OUTNAME): $(OUTNAME).o $(OBJS) $(SRC)
@@ -66,10 +66,13 @@ run-test: $(UTEST)
 		lcov --capture --directory . --output-file coverage.info ; \
 		genhtml coverage.info --output-directory out
 
+doc:
+	doxygen doxyfile
+
 # cleaning rule
 clean:
 	rm -f *.o *.d $(OBJS) $(SRC:.c=.gcda) $(SRC:.c=.d) $(OUTNAME) $(UTEST) \
 	$(SRC:.c=.gcno) $(SRC:.c=.gcov) *.gcda *.gcno *.gcov *.info *~ -r out  \
-	*.log
+	*.log doxygen
 
 include $(shell find -name '*.d' | sed 's\./\\')

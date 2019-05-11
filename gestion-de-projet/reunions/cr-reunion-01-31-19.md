@@ -1,4 +1,4 @@
-# Compte Rendu réunion 31/01/19
+# Compte rendu réunion 31/01/2019
 
 ***Deadline diagramme de Gantt 22 fev***
 * Possibilité de modifier pendant le projet

@@ -1,4 +1,4 @@
-# Compte rendu réunion 14 / 02
+# Compte rendu réunion 14/02/2019
 
 * Étoffer le cahier des charges
 * Voir moins grand pour la première version

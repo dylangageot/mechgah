@@ -1,13 +1,13 @@
-# Emulateur NES
+# Cahier des charges
 
 ## Presentation du projet
 
-Ce projet porte sur l'émulation du système de la console de jeux NES. C'est à dire reproduire son comportement hardware et software de manière logicielle. La console de jeux NES est une console de jeux sortie en 1985 et développée par la société japonaise Nintendo.
+Ce projet porte sur l'émulation du système de la console de jeux NES. C'est à dire reproduire son comportement hardware en logicielle. La console de jeux NES est une console de jeux sortie en 1985 et développée par la société japonaise Nintendo.
 
 ## Objectifs
 
-- Emuler le fonctionnement de la console NES de Nintendo
-- Être en capacité d'émuler la plupart des jeux sous license
+- Émuler le fonctionnement de la console NES de Nintendo
+- Être en capacité d'émuler la plupart des jeux sous licence
 - Développer pour fonctionner sous Linux
 
 ## Outils de développement
@@ -18,19 +18,17 @@ Nous avons choisi développer notre émulateur à travers un Makefile, de tel ma
 
 ### CPU
 
-#### Representation de la mémoire
+#### Représentation de la mémoire
 
 ![Representation-memoire](https://people.ece.cornell.edu/land/courses/ece4760/FinalProjects/s2009/bhp7_teg25/bhp7_teg25/index_files/image012.jpg)
 
 #### Fonctionnement du processeur 6502
 
-Le processeur est de type 8 bits. Ses registres de travail sont donc aussi de taille 8 bits. Cela implique que c'est aussi la taille maximale des données manipulables.
+Le processeur est de type 8 bits. Ses registres de travail sont donc aussi de taille 8 bits. Cependant, le Programme Counter (PC) est lui de taille 16 bits. Le domaine d'adressage disponible est ainsi de 64Ko.
 
-Cependant, le Programme Counter (PC) est lui de taille 16 bits. Le domaine d'adressage disponible est ainsi de 64Ko.
+Il possède en plus un Multi-Memory Controller (MMC) qui permet d'adresser plus de mémoire (voir partie mémoire).
 
-Il possède en plus un Multi-Memory Controller (MMC) qui permet d'adresser plus de mémoire. (Voir partie mémoire).
-
-Le processeur possède un jeu d'instruction capable de manipuler les 64 Ko de mémoire et 6 registres.
+Le processeur possède un jeu d'instruction capable de manipuler les 64 Ko de mémoire et ses 6 registres.
 
 **Registres 8 bits** :
   - **Stack register** : Garde l'adresse du haut de la pile, pile permettant de sauvegarder des données lors de l’exécution d'une fonction.
@@ -90,11 +88,11 @@ La PPU (Picture Processing Unit) a pour fonction de gérer l'affichage. La réso
 
 #### Frame rendering
 
-Le rendu des images/frames s'exécute à 60 Hz pour une NES NTSC et 50 Hz pour la version PAL. La PPU fonctionne avec une fréquence d'horloge 3 fois supérieure à celle de la CPU, ainsi **3 pixels sont rendus à l'écran en un cycle CPU**. On appelle scanline le rendu d'une ligne de pixels, comprenant également les pixels invisibles nécessaires au timing des signaux composites. Ainsi on décompte 262 scanlines, chacune d'entre elles étant composée de 341 pixels. Lorsque la PPU a fini de rendre l'image visible à l'écran, une succession de 20 scanlines prend place, on appelle cet période **vertical blank**. C'est durant cet période que l'on doit écrire dans la mémoire vidéo pour éviter de potentiels artefacts.
+Le rendu des images/frames s'exécute à 60 Hz pour une NES NTSC et 50 Hz pour la version PAL. La PPU fonctionne avec une fréquence d'horloge 3 fois supérieure à celle de la CPU, ainsi **3 pixels sont rendus à l'écran en un cycle CPU**. On appelle scanline le rendu d'une ligne de pixels, comprenant également les pixels invisibles nécessaires au timing des signaux composites. Ainsi on décompte 262 scanlines, chacune d'entre elles étant composée de 341 cycles. Lorsque la PPU a fini de rendre l'image visible à l'écran, une succession de 20 scanlines prend place, on appelle cette période **vertical blank**. C'est durant cette période que l'on doit écrire dans la mémoire vidéo pour éviter de potentiels artefacts.
 
 #### Pattern Tables
 
-Pour pallier aux contraintes de l'époque, les données décrivant les informations à l'écran sont grossières : on ne stocke pas en brut la couleur d'un pixel à des coordonnées précises, à la place, on crée des blocs contenant les informations nécessaires (dessin, couleur) puis on vient les appeler dans une table mémoire pour les afficher à l'écran. Un bloc élémentaire est constitué de **8x8 pixels** et est appelé **fun pattern**. Ces patterns permettent de décrire le décor (background) et les personnages/objets à l'écran (sprites).
+Pour pallier aux contraintes de l'époque, les données décrivant les informations à l'écran sont grossières : on ne stocke pas en brut la couleur d'un pixel à des coordonnées précises, à la place, on crée des blocs contenant les informations nécessaires (dessin, couleur) puis on vient les appeler dans une table mémoire pour les afficher à l'écran. Un bloc élémentaire est constitué de **8x8 pixels** et est appelé **un pattern**. Ces patterns permettent de décrire le décor (background) et les personnages/objets à l'écran (sprites).
 
 La table des patterns est contenue dans une ROM (appelé CHR-ROM) sur le circuit imprimé de la cartouche de jeu. Cette ROM est généralement d'une taille de 8KB, permettant de **stocker 512 patterns**. Chaque pattern occupe 16 octets de mémoire, décrivant ainsi les couleurs avec deux bits par pixels, **soit 4 couleurs possibles pour sur un pattern** (voir l'illustration ci-dessous). Nous verrons dans la partie sur les palettes de couleur comment fonctionne le mécanisme de coloriage.
 
@@ -186,7 +184,7 @@ Décrit le rapport cyclique du signal carré. Il peut prendre 4 valeurs :
 |  1 |  1 | 25 % inversé     |  -- _ _ ----------
 
 * **L : Length Counter**
-Ce bit régit l'arrêt (1) ou non (0) du "length counter" permettant la gestion automatique de la durée des notes. Lorsque le bit **L** est à l'état 0, le compteur effectue une fonction de décomptage depuis une valeur stockée dans le registe *0x4003*. Lorsque le compteur atteint 0, la note est stoppée.
+Ce bit régit l'arrêt (1) ou non (0) du "length counter" permettant la gestion automatique de la durée des notes. Lorsque le bit **L** est à l'état 0, le compteur effectue une fonction de décomptage depuis une valeur stockée dans le registre *0x4003*. Lorsque le compteur atteint 0, la note est stoppée.
 
 * **C : Constant volume**
 Lorsque ce bit est à l'état 1, l'APU utilise la valeur constante *VVVV* comme valeur de volume pour le canal. Sinon, le volume est géré par l'enveloppe de volume (outil permettant d'effectuer des modifications sur le volume que nous ne détaillerons pas ici)
@@ -242,7 +240,6 @@ Voici une liste non-exhaustive de fonctionnalités que l'on retrouve sur les ém
 - Interface de gestion (choix des ROMs, raccourcis clavier, paramètres graphiques)
   - Pouvoir mettre à l'échelle l'affichage (proportionnel)
   - Pouvoir enregistrer le contexte d'exécution d'un jeu pour sauvegarder sa partie
-  - Pouvoir mettre en pause le jeu
 - (Optionnel) Développement de l'APU (moteur sonore)
 
 ## Versions
@@ -258,7 +255,5 @@ Voici une liste non-exhaustive de fonctionnalités que l'on retrouve sur les ém
 
 - Développement de plusieurs mappers (MMC1, MMC3 et/ou UROM)
 - Interface de gestion :
-  - Chargement des ROMs
   - Configuration des touches
-  - Rescale de l'image
   - Chargement/Sauvegarde du contexte et pause

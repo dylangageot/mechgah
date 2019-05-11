@@ -1,4 +1,4 @@
-# Compte rendu réunion 08 / 02
+# Compte rendu réunion 08/02/2019
 
 *tests unitaires et d'intégration en continu*
 
