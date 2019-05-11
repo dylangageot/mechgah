@@ -1,7 +1,0 @@
-<map id="src/nes/mapper/ioreg.h" name="src/nes/mapper/ioreg.h">
-<area shape="rect" id="node2" href="$mapper_8h.html" title="header file of Mapper module " alt="" coords="178,155,254,181"/>
-<area shape="rect" id="node4" href="$cpu_8h.html" title="header file of CPU module " alt="" coords="24,80,115,107"/>
-<area shape="rect" id="node5" href="$ppu_8h.html" title="header file of PPU module " alt="" coords="318,80,408,107"/>
-<area shape="rect" id="node7" href="$controller_8h.html" title="header file of Controller module " alt="" coords="139,80,294,107"/>
-<area shape="rect" id="node6" href="$stack_8h.html" title="header file of Stack module " alt="" coords="285,155,428,181"/>
-</map>

@@ -1,8 +1,0 @@
-<map id="NES" name="NES">
-<area shape="rect" id="node2" href="$struct_p_p_u.html" title="Hold every variable needed to run PPU. " alt="" coords="120,95,171,121"/>
-<area shape="rect" id="node3" href="$struct_sprite.html" title="Hold registers for sprite rendering. " alt="" coords="5,5,61,32"/>
-<area shape="rect" id="node4" href="$struct_v_r_a_m.html" title="Hold pointer that is used to address VRAM. " alt="" coords="85,5,147,32"/>
-<area shape="rect" id="node5" href="$struct_mapper.html" title="Generic structure to hold mapper. " alt="" coords="263,5,329,32"/>
-<area shape="rect" id="node6" href="$struct_c_p_u.html" title="Hold CPU&#39;s register and memory. " alt="" coords="320,95,371,121"/>
-<area shape="rect" id="node7" href="$struct_controller.html" title="Holds necessary variables for the controller emulation to work. Only support the standard joypads..." alt="" coords="395,95,474,121"/>
-</map>

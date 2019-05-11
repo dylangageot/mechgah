@@ -1,7 +1,0 @@
-<map id="src/nes/cpu/cpu.h" name="src/nes/cpu/cpu.h">
-<area shape="rect" id="node2" href="$nes_8h.html" title="header file of NES module " alt="" coords="5,80,107,107"/>
-<area shape="rect" id="node4" href="$ioreg_8h.html" title="header file of IOReg module " alt="" coords="131,80,285,107"/>
-<area shape="rect" id="node6" href="$instruction_8h.html" title="header file of Instruction module " alt="" coords="309,80,475,107"/>
-<area shape="rect" id="node3" href="$app_8h.html" title="header file of App using SDL " alt="" coords="18,155,94,181"/>
-<area shape="rect" id="node5" href="$nrom_8h.html" title="header file of NROM mapper module " alt="" coords="130,155,286,181"/>
-</map>

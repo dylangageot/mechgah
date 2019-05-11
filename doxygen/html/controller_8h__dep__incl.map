@@ -1,6 +1,0 @@
-<map id="src/nes/controller/controller.h" name="src/nes/controller/controller.h">
-<area shape="rect" id="node2" href="$nes_8h.html" title="header file of NES module " alt="" coords="5,95,107,121"/>
-<area shape="rect" id="node4" href="$ioreg_8h.html" title="header file of IOReg module " alt="" coords="131,95,285,121"/>
-<area shape="rect" id="node3" href="$app_8h.html" title="header file of App using SDL " alt="" coords="18,169,94,196"/>
-<area shape="rect" id="node5" href="$nrom_8h.html" title="header file of NROM mapper module " alt="" coords="130,169,286,196"/>
-</map>

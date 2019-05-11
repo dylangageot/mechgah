@@ -1,5 +1,0 @@
-<map id="PPU" name="PPU">
-<area shape="rect" id="node2" href="$struct_sprite.html" title="Hold registers for sprite rendering. " alt="" coords="5,5,61,32"/>
-<area shape="rect" id="node3" href="$struct_v_r_a_m.html" title="Hold pointer that is used to address VRAM. " alt="" coords="85,5,147,32"/>
-<area shape="rect" id="node4" href="$struct_mapper.html" title="Generic structure to hold mapper. " alt="" coords="171,5,237,32"/>
-</map>

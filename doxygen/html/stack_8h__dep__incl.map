@@ -1,7 +1,0 @@
-<map id="src/common/stack.h" name="src/common/stack.h">
-<area shape="rect" id="node2" href="$ppu_8h.html" title="header file of PPU module " alt="" coords="69,80,195,107"/>
-<area shape="rect" id="node3" href="$nes_8h.html" title="header file of NES module " alt="" coords="5,155,107,181"/>
-<area shape="rect" id="node5" href="$ioreg_8h.html" title="header file of IOReg module " alt="" coords="131,155,285,181"/>
-<area shape="rect" id="node4" href="$app_8h.html" title="header file of App using SDL " alt="" coords="18,229,94,256"/>
-<area shape="rect" id="node6" href="$nrom_8h.html" title="header file of NROM mapper module " alt="" coords="130,229,286,256"/>
-</map>
