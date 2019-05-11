@@ -1,6 +1,6 @@
 /**
  * \file cpu.h
- * \brief Header file of the CPU module
+ * \brief header file of CPU module
  * \author Dylan Gageot
  * \version 1.0
  * \date 2019-02-13
@@ -17,25 +17,23 @@
 #include "../mapper/mapper.h"
 
 /**
- * \struct CPU
  * \brief Hold CPU's register and memory
  */
 typedef struct {
 	/* IO Register */
-	uint8_t OAMDMA;							/*! OAMDMA					*/
+	uint8_t OAMDMA;							/*!< CPU address to copy 256 bytes to OAM */
 	/* Internal Register */
-	uint8_t A;								/*! Accumulator				*/
-	uint8_t X;								/*! X index					*/
-	uint8_t Y;								/*! Y index					*/
-	uint8_t SP;								/*! Stack Pointer			*/
-	uint8_t P;								/*! Status					*/
-	uint16_t PC;							/*! Program counter		    */
-	int16_t cntDMA;							/*! DMA counter				*/
-	Mapper* mapper;							/*! Mapper					*/
+	uint8_t A;								/*!< Accumulator			*/
+	uint8_t X;								/*!< X index				*/
+	uint8_t Y;								/*!< Y index				*/
+	uint8_t SP;								/*!< Stack Pointer			*/
+	uint8_t P;								/*!< Status					*/
+	uint16_t PC;							/*!< Program counter		*/
+	int16_t cntDMA;							/*!< DMA counter			*/
+	Mapper* mapper;							/*!< Mapper to get data from*/
 } CPU;
 
 /**
- * \fn CPU_Create
  * \brief Allocate memory for CPU structure
  *
  * \param mapper address of Mapper pointer from NES struct
@@ -45,18 +43,16 @@ typedef struct {
 CPU* CPU_Create(Mapper* mapper);
 
 /**
- * \fn CPU_Init
  * \brief Initialize all CPU registers (A, X, Y, SP, P and PC)
  *
  * \param self instance of CPU
  *
- * \return 0 if success, 1 otherwise
+ * \return EXIT_SUCCESS if succeed, EXIT_FAILURE otherwise
  */
 
 uint8_t CPU_Init(CPU* self);
 
 /**
- * \fn CPU_InterruptManager
  * \brief Handle the NMI, IRQ and BRK interrupts
  *
  * \param self instance of CPU
@@ -71,7 +67,6 @@ uint8_t CPU_Init(CPU* self);
 uint8_t CPU_InterruptManager(CPU* self, uint8_t* context);
 
 /**
- * \fn CPU_Execute
  * \brief Execute the next instruction
  *
  * \param self instance of CPU
@@ -83,7 +78,6 @@ uint8_t CPU_InterruptManager(CPU* self, uint8_t* context);
 uint8_t CPU_Execute(CPU* self, uint8_t* context, uint32_t *clockCycle);
 
 /**
- * \fn CPU_Destroy
  * \brief Free CPU's instance
  *
  * \param self

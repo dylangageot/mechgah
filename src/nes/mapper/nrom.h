@@ -1,6 +1,6 @@
 /**
  * \file nrom.h
- * \brief Header for NROM mapper
+ * \brief header file of NROM mapper module
  * \author Dylan Gageot
  * \version 1.0
  * \date 2019-02-20
@@ -16,7 +16,6 @@
 #define NROM_RAM_SIZE 2048
 
 /**
- * \struct MapNROM_CPU
  * \brief Memory map of CPU when using NROM mapper
  */
 typedef struct {
@@ -27,7 +26,6 @@ typedef struct {
 } MapNROM_CPU;
 
 /**
- * \struct MapNROM_PPU
  * \brief Memory map of PPU when using NROM mapper
  */
 typedef struct {
@@ -37,7 +35,6 @@ typedef struct {
 } MapNROM_PPU;
 
 /**
- * \struct MapNROM
  * \brief Memory map used when using NROM mapper
  */
 typedef struct {
@@ -51,7 +48,6 @@ typedef struct {
 } MapNROM;
 
 /**
- * \enum NROMSize
  * \brief Describe if the loaded ROM use 16 or 32kiB
  */
 enum NROMSize {
@@ -61,7 +57,6 @@ enum NROMSize {
 };
 
 /**
- * \enum NROMMirroring
  * \brief Describe the mirroring mecanism to use
  */
 enum NROMMirroring {
@@ -70,7 +65,6 @@ enum NROMMirroring {
 };
 
 /**
- * \fn MapNROM_Create
  * \brief Allocate memory for NROM mapper
  *
  * \param header containing all ROM informations
@@ -80,7 +74,6 @@ enum NROMMirroring {
 Mapper* MapNROM_Create(Header * header);
 
 /**
- * \fn MapNROM_Get
  * \brief Give access to the data addressed in argument
  *
  * \param mapperData Memory map pointer
@@ -92,7 +85,6 @@ Mapper* MapNROM_Create(Header * header);
 void* MapNROM_Get(void* mapperData, uint8_t space, uint16_t address);
 
 /**
- * \fn MapNROM_Ack
  * \brief Acknowledge IOReg from MapNROM
  *
  * \param mapperData instance of MapNROM
@@ -103,7 +95,6 @@ void* MapNROM_Get(void* mapperData, uint8_t space, uint16_t address);
 uint8_t MapNROM_Ack(void *mapperData, uint16_t address);
 
 /**
- * \fn MapNROM_Destroy
  * \brief Destroy/free the mapper
  *
  * \param mapperData Memory map pointer

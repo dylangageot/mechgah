@@ -1,0 +1,511 @@
+\hypertarget{instruction_8h}{}\section{src/nes/cpu/instruction.h File Reference}
+\label{instruction_8h}\index{src/nes/cpu/instruction.\+h@{src/nes/cpu/instruction.\+h}}
+
+
+header file of \hyperlink{struct_instruction}{Instruction} module  
+
+
+{\ttfamily \#include \char`\"{}cpu.\+h\char`\"{}}\newline
+Include dependency graph for instruction.\+h\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=204pt]{instruction_8h__incl}
+\end{center}
+\end{figure}
+\subsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{struct_opcode}{Opcode}
+\begin{DoxyCompactList}\small\item\em Hold instruction function and addressing mode associated. \end{DoxyCompactList}\item 
+struct \hyperlink{struct_instruction}{Instruction}
+\begin{DoxyCompactList}\small\item\em Hold \hyperlink{struct_opcode}{Opcode} and arguments associated. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{instruction_8h_a39f2333791bc7dbad8245d1abca91507}\label{instruction_8h_a39f2333791bc7dbad8245d1abca91507}} 
+\#define {\bfseries D\+M\+A\+\_\+\+O\+FF}~0
+\item 
+\mbox{\Hypertarget{instruction_8h_afdbde9121c95a15b20c188151164c320}\label{instruction_8h_afdbde9121c95a15b20c188151164c320}} 
+\#define {\bfseries D\+M\+A\+\_\+\+ON}~1
+\item 
+\mbox{\Hypertarget{instruction_8h_a4fdeba015715391e86584e63970bbb62}\label{instruction_8h_a4fdeba015715391e86584e63970bbb62}} 
+\#define {\bfseries N\+B\+A\+R\+G\+\_\+\+D\+MA}~0x\+FF
+\end{DoxyCompactItemize}
+\subsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{instruction_8h_a36bbd4522e8a1929f0a16b626c4d9161}\label{instruction_8h_a36bbd4522e8a1929f0a16b626c4d9161}} 
+typedef struct \hyperlink{struct_instruction}{Instruction} {\bfseries Instruction}
+\end{DoxyCompactItemize}
+\subsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+enum \hyperlink{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2b}{Addressing\+Mode} \{ \newline
+\hyperlink{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2ba8054fa474b4ee38123cfeed70397e6f4}{I\+MP} = 0, 
+\hyperlink{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2baa6cd1d230aaca43e44f87cd2aab71c83}{A\+CC}, 
+\hyperlink{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2bafc8db2219c7a64d05378683b25cf6e82}{Z\+EX}, 
+\hyperlink{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2bafedfe8a6fc748d415f1da526b96ec0ea}{Z\+EY}, 
+\newline
+\hyperlink{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2baded4d1e852e25c6187212be41068b5b0}{I\+NX}, 
+\hyperlink{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2bac82a11f742631540ae4e1b48fb405ee6}{I\+NY}, 
+\hyperlink{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2baa77e6848bc2c2031677291053c6badaa}{I\+MM}, 
+\hyperlink{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2bacb2a8193bc0a747134de34ceb540cdc8}{Z\+ER}, 
+\newline
+\hyperlink{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2bab2082544bca640e70f0bb74d17a98082}{R\+EL}, 
+\hyperlink{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2ba62f7ef0a404defa34640e94940792147}{A\+BS}, 
+\hyperlink{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2ba88c7cab15e73ef3fd12422a3c838887a}{A\+BX}, 
+\hyperlink{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2bada8a7a910b54a8c3993ff0b659d49b29}{A\+BY}, 
+\newline
+\hyperlink{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2bae343a5e4c360cbb66537d82b8c7fbd25}{A\+BI}, 
+\hyperlink{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2ba4c175fbb65c723226d182dbfd556136a}{N\+UL}
+ \}\begin{DoxyCompactList}\small\item\em Mnemonic for every addressing mode. \end{DoxyCompactList}
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+uint8\+\_\+t \hyperlink{instruction_8h_aaff869c82a3e5ed485aee64f02521ce9}{Instruction\+\_\+\+D\+MA} (\hyperlink{struct_instruction}{Instruction} $\ast$self, \hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, uint32\+\_\+t $\ast$clock\+Cycle)
+\begin{DoxyCompactList}\small\item\em Manage D\+MA request. \end{DoxyCompactList}\item 
+uint8\+\_\+t \hyperlink{instruction_8h_aa86df24b487c14a8d6c7becb117a42b0}{Instruction\+\_\+\+Fetch} (\hyperlink{struct_instruction}{Instruction} $\ast$self, \hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu)
+\begin{DoxyCompactList}\small\item\em Fetch and decode instruction from P\+G\+R-\/\+R\+OM. \end{DoxyCompactList}\item 
+uint8\+\_\+t \hyperlink{instruction_8h_aecbf0407f0408c73f8d79cf83e9e5059}{Instruction\+\_\+\+Resolve} (\hyperlink{struct_instruction}{Instruction} $\ast$self, \hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu)
+\begin{DoxyCompactList}\small\item\em Get the data to execute the instruction. \end{DoxyCompactList}\item 
+void \hyperlink{instruction_8h_a328bbc59237bfea408b3384cbf0fb21d}{Instruction\+\_\+\+Print\+Log} (\hyperlink{struct_instruction}{Instruction} $\ast$self, \hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, uint32\+\_\+t clock\+Cycle)
+\begin{DoxyCompactList}\small\item\em Print instruction. \end{DoxyCompactList}\item 
+\hyperlink{struct_opcode}{Opcode} \hyperlink{instruction_8h_a4a1ed2a7814e7efe547e78246374fe5e}{Opcode\+\_\+\+Get} (uint8\+\_\+t index)
+\begin{DoxyCompactList}\small\item\em Function to use opcode L\+UT in unit-\/test. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{instruction_8h_afef859bd0709445d815175935cb877a5}\label{instruction_8h_afef859bd0709445d815175935cb877a5}} 
+void \hyperlink{instruction_8h_afef859bd0709445d815175935cb877a5}{\+\_\+\+S\+E\+T\+\_\+\+S\+I\+GN} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, uint8\+\_\+t $\ast$src)
+\begin{DoxyCompactList}\small\item\em Useful function to ease implementation of the following instructions. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{instruction_8h_add6f26b2a06e638f7e779ed7b60f4096}\label{instruction_8h_add6f26b2a06e638f7e779ed7b60f4096}} 
+void {\bfseries \+\_\+\+S\+E\+T\+\_\+\+Z\+E\+RO} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, uint8\+\_\+t $\ast$src)
+\item 
+\mbox{\Hypertarget{instruction_8h_ad412dac6bce7a10306dbb79609b5ec86}\label{instruction_8h_ad412dac6bce7a10306dbb79609b5ec86}} 
+void {\bfseries \+\_\+\+S\+E\+T\+\_\+\+C\+A\+R\+RY} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, uint8\+\_\+t cond)
+\item 
+\mbox{\Hypertarget{instruction_8h_a02c87ffda2dda1534a8f8645e71c4a46}\label{instruction_8h_a02c87ffda2dda1534a8f8645e71c4a46}} 
+void {\bfseries \+\_\+\+S\+E\+T\+\_\+\+O\+V\+E\+R\+F\+L\+OW} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, uint8\+\_\+t cond)
+\item 
+\mbox{\Hypertarget{instruction_8h_abb885dbe0db2acb5b72389c0c95f18ba}\label{instruction_8h_abb885dbe0db2acb5b72389c0c95f18ba}} 
+void {\bfseries \+\_\+\+S\+E\+T\+\_\+\+I\+N\+T\+E\+R\+R\+U\+PT} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu)
+\item 
+\mbox{\Hypertarget{instruction_8h_ad37ec8142e73844e9d2f9c47ea6bfc51}\label{instruction_8h_ad37ec8142e73844e9d2f9c47ea6bfc51}} 
+void {\bfseries \+\_\+\+S\+E\+T\+\_\+\+B\+R\+E\+AK} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu)
+\item 
+\mbox{\Hypertarget{instruction_8h_aa6f7fb63c2bc60d926b561b5b3ac30df}\label{instruction_8h_aa6f7fb63c2bc60d926b561b5b3ac30df}} 
+uint16\+\_\+t {\bfseries \+\_\+\+R\+E\+L\+\_\+\+A\+D\+DR} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, int8\+\_\+t $\ast$src)
+\item 
+\mbox{\Hypertarget{instruction_8h_a2183e8da42bd22ac8bc65be84c1f2b4a}\label{instruction_8h_a2183e8da42bd22ac8bc65be84c1f2b4a}} 
+void {\bfseries \+\_\+\+S\+E\+T\+\_\+\+SR} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, uint8\+\_\+t $\ast$src)
+\item 
+\mbox{\Hypertarget{instruction_8h_a2e0160c9c5b0b9d40b3102cb8b380ea4}\label{instruction_8h_a2e0160c9c5b0b9d40b3102cb8b380ea4}} 
+uint8\+\_\+t {\bfseries \+\_\+\+G\+E\+T\+\_\+\+SR} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu)
+\item 
+\mbox{\Hypertarget{instruction_8h_a94a6c92b20d47c13bfb4386b30e3c860}\label{instruction_8h_a94a6c92b20d47c13bfb4386b30e3c860}} 
+uint8\+\_\+t {\bfseries \+\_\+\+P\+U\+LL} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu)
+\item 
+\mbox{\Hypertarget{instruction_8h_a114a8307734a41cf8f878b0bacd607d5}\label{instruction_8h_a114a8307734a41cf8f878b0bacd607d5}} 
+void {\bfseries \+\_\+\+P\+U\+SH} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, uint8\+\_\+t $\ast$src)
+\item 
+\mbox{\Hypertarget{instruction_8h_aece1667bdade8b61105fe8fd4004acea}\label{instruction_8h_aece1667bdade8b61105fe8fd4004acea}} 
+uint8\+\_\+t $\ast$ {\bfseries \+\_\+\+L\+O\+AD} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, uint16\+\_\+t address)
+\item 
+\mbox{\Hypertarget{instruction_8h_aa2256dac0326056d75503aeaa6973abc}\label{instruction_8h_aa2256dac0326056d75503aeaa6973abc}} 
+void {\bfseries \+\_\+\+S\+T\+O\+RE} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, uint16\+\_\+t address, uint8\+\_\+t $\ast$src)
+\item 
+\mbox{\Hypertarget{instruction_8h_a073151f6cf805edb6ab0aa14ecf70d04}\label{instruction_8h_a073151f6cf805edb6ab0aa14ecf70d04}} 
+void {\bfseries \+\_\+\+S\+E\+T\+\_\+\+WR} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, uint16\+\_\+t address)
+\item 
+\mbox{\Hypertarget{instruction_8h_a9c0684929b6b7c58fe94680c42db343e}\label{instruction_8h_a9c0684929b6b7c58fe94680c42db343e}} 
+uint8\+\_\+t {\bfseries \+\_\+\+I\+F\+\_\+\+C\+A\+R\+RY} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu)
+\item 
+\mbox{\Hypertarget{instruction_8h_a72af1f61f1bdd97e73e4c45dd5862d53}\label{instruction_8h_a72af1f61f1bdd97e73e4c45dd5862d53}} 
+uint8\+\_\+t {\bfseries \+\_\+\+I\+F\+\_\+\+O\+V\+E\+R\+F\+L\+OW} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu)
+\item 
+\mbox{\Hypertarget{instruction_8h_a56a1693eb76532294b3edc548aa17319}\label{instruction_8h_a56a1693eb76532294b3edc548aa17319}} 
+uint8\+\_\+t {\bfseries \+\_\+\+I\+F\+\_\+\+S\+I\+GN} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu)
+\item 
+\mbox{\Hypertarget{instruction_8h_a48865320ef9b3a1a425ea606234c2e70}\label{instruction_8h_a48865320ef9b3a1a425ea606234c2e70}} 
+uint8\+\_\+t {\bfseries \+\_\+\+I\+F\+\_\+\+Z\+E\+RO} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu)
+\item 
+\mbox{\Hypertarget{instruction_8h_a81e291bfc819808c4adc24aa441d08ae}\label{instruction_8h_a81e291bfc819808c4adc24aa441d08ae}} 
+uint8\+\_\+t {\bfseries \+\_\+\+I\+F\+\_\+\+I\+N\+T\+E\+R\+R\+U\+PT} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu)
+\item 
+\mbox{\Hypertarget{instruction_8h_ad5bfab5e4c2a6d22891ed68ed4bdaf18}\label{instruction_8h_ad5bfab5e4c2a6d22891ed68ed4bdaf18}} 
+uint8\+\_\+t {\bfseries \+\_\+\+I\+F\+\_\+\+B\+R\+E\+AK} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu)
+\item 
+\mbox{\Hypertarget{instruction_8h_a80b3dc6d2e98eafc64f5e52bb7b815b7}\label{instruction_8h_a80b3dc6d2e98eafc64f5e52bb7b815b7}} 
+uint8\+\_\+t {\bfseries \+\_\+\+B\+R\+A\+N\+CH} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg, uint8\+\_\+t cond)
+\item 
+uint8\+\_\+t \hyperlink{instruction_8h_a03b707d9b2d4827eacc7dc37f9909081}{\+\_\+\+A\+DC} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\begin{DoxyCompactList}\small\item\em \hyperlink{struct_instruction}{Instruction} set of 6502. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{instruction_8h_aaf700a6a581035f633a19c3955ddb9ca}\label{instruction_8h_aaf700a6a581035f633a19c3955ddb9ca}} 
+uint8\+\_\+t {\bfseries \+\_\+\+A\+ND} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_a671344fbb3aabd351376ebf98ba2c1f1}\label{instruction_8h_a671344fbb3aabd351376ebf98ba2c1f1}} 
+uint8\+\_\+t {\bfseries \+\_\+\+A\+SL} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_a96ef7e13bd7ea08775c4b8ba623d43e8}\label{instruction_8h_a96ef7e13bd7ea08775c4b8ba623d43e8}} 
+uint8\+\_\+t {\bfseries \+\_\+\+B\+CC} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_a25b7c35629206c5f94b7f3474137311a}\label{instruction_8h_a25b7c35629206c5f94b7f3474137311a}} 
+uint8\+\_\+t {\bfseries \+\_\+\+B\+CS} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_ac10e90631208d700e082954b2242ade3}\label{instruction_8h_ac10e90631208d700e082954b2242ade3}} 
+uint8\+\_\+t {\bfseries \+\_\+\+B\+EQ} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_a48eeb1df625eaa89c9086ccaf6905c3e}\label{instruction_8h_a48eeb1df625eaa89c9086ccaf6905c3e}} 
+uint8\+\_\+t {\bfseries \+\_\+\+B\+IT} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_a98fb8654db4b1678a3c1abcf2869baef}\label{instruction_8h_a98fb8654db4b1678a3c1abcf2869baef}} 
+uint8\+\_\+t {\bfseries \+\_\+\+B\+MI} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_aeaba7191d44b7878987c8d786d1914eb}\label{instruction_8h_aeaba7191d44b7878987c8d786d1914eb}} 
+uint8\+\_\+t {\bfseries \+\_\+\+B\+NE} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_ab335118052c4e5784c463616f7a563a8}\label{instruction_8h_ab335118052c4e5784c463616f7a563a8}} 
+uint8\+\_\+t {\bfseries \+\_\+\+B\+PL} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_af4c7e987bdc274b34e94bd9aed774f5f}\label{instruction_8h_af4c7e987bdc274b34e94bd9aed774f5f}} 
+uint8\+\_\+t {\bfseries \+\_\+\+B\+RK} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_adf7cfbae9110d7855c6a6adb9dc35765}\label{instruction_8h_adf7cfbae9110d7855c6a6adb9dc35765}} 
+uint8\+\_\+t {\bfseries \+\_\+\+B\+VC} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_a00e3c7cca0bb5e5526f62639e2adab29}\label{instruction_8h_a00e3c7cca0bb5e5526f62639e2adab29}} 
+uint8\+\_\+t {\bfseries \+\_\+\+B\+VS} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_a7fe07f4bae6e72a6a58f872941161942}\label{instruction_8h_a7fe07f4bae6e72a6a58f872941161942}} 
+uint8\+\_\+t {\bfseries \+\_\+\+C\+LC} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_a0054416edcce4a53da39dcfd4a148b7d}\label{instruction_8h_a0054416edcce4a53da39dcfd4a148b7d}} 
+uint8\+\_\+t {\bfseries \+\_\+\+C\+LD} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_a00d1bb18b0be19a09c905e51c828fed8}\label{instruction_8h_a00d1bb18b0be19a09c905e51c828fed8}} 
+uint8\+\_\+t {\bfseries \+\_\+\+C\+LI} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_aa8d7701a3f6b964aba8b89e78270bcb2}\label{instruction_8h_aa8d7701a3f6b964aba8b89e78270bcb2}} 
+uint8\+\_\+t {\bfseries \+\_\+\+C\+LV} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_a4216ae7e1a49c2d293491e469e3d58ae}\label{instruction_8h_a4216ae7e1a49c2d293491e469e3d58ae}} 
+uint8\+\_\+t {\bfseries \+\_\+\+C\+MP} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_a8b543b7541c63cdde515457ee50a36c9}\label{instruction_8h_a8b543b7541c63cdde515457ee50a36c9}} 
+uint8\+\_\+t {\bfseries \+\_\+\+C\+PX} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_ac3f2daf8cbf328f1e6aa79505908fac4}\label{instruction_8h_ac3f2daf8cbf328f1e6aa79505908fac4}} 
+uint8\+\_\+t {\bfseries \+\_\+\+C\+PY} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_a2c32419b8d8db92d7ef139f9462fd330}\label{instruction_8h_a2c32419b8d8db92d7ef139f9462fd330}} 
+uint8\+\_\+t {\bfseries \+\_\+\+D\+EC} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_aa5469d57f6b8b5a95d62d3468db08685}\label{instruction_8h_aa5469d57f6b8b5a95d62d3468db08685}} 
+uint8\+\_\+t {\bfseries \+\_\+\+D\+EX} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_a86eb2d57bf8dd212053dbb74a5cc422d}\label{instruction_8h_a86eb2d57bf8dd212053dbb74a5cc422d}} 
+uint8\+\_\+t {\bfseries \+\_\+\+D\+EY} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_a7bfb11b24c245efbf2236b3b8b252fea}\label{instruction_8h_a7bfb11b24c245efbf2236b3b8b252fea}} 
+uint8\+\_\+t {\bfseries \+\_\+\+E\+OR} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_a06be5c2a463e96965d647239742f86d9}\label{instruction_8h_a06be5c2a463e96965d647239742f86d9}} 
+uint8\+\_\+t {\bfseries \+\_\+\+I\+NC} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_abec5f4c725985136767ed5c14b23f179}\label{instruction_8h_abec5f4c725985136767ed5c14b23f179}} 
+uint8\+\_\+t {\bfseries \+\_\+\+I\+NX} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_a10aabee46553a859b8cc58f618d4b8cc}\label{instruction_8h_a10aabee46553a859b8cc58f618d4b8cc}} 
+uint8\+\_\+t {\bfseries \+\_\+\+I\+NY} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_adae60959cbbde07c2be7b7161a4e9c65}\label{instruction_8h_adae60959cbbde07c2be7b7161a4e9c65}} 
+uint8\+\_\+t {\bfseries \+\_\+\+J\+MP} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_a852c6087ac318bc38d1af8a632ab7f9d}\label{instruction_8h_a852c6087ac318bc38d1af8a632ab7f9d}} 
+uint8\+\_\+t {\bfseries \+\_\+\+J\+SR} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_a49a73c9642d4938852d4bc93c93c3111}\label{instruction_8h_a49a73c9642d4938852d4bc93c93c3111}} 
+uint8\+\_\+t {\bfseries \+\_\+\+L\+DA} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_a29591eca6fa2887221563f06f19a6bb5}\label{instruction_8h_a29591eca6fa2887221563f06f19a6bb5}} 
+uint8\+\_\+t {\bfseries \+\_\+\+L\+DX} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_a3ebdce21cd6cacacb7a1c94c48488e8f}\label{instruction_8h_a3ebdce21cd6cacacb7a1c94c48488e8f}} 
+uint8\+\_\+t {\bfseries \+\_\+\+L\+DY} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_a1644c294d81b170e54ccc13e0f1ad860}\label{instruction_8h_a1644c294d81b170e54ccc13e0f1ad860}} 
+uint8\+\_\+t {\bfseries \+\_\+\+L\+SR} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_a90eee5028eda3951c5e0dc5bb50409d1}\label{instruction_8h_a90eee5028eda3951c5e0dc5bb50409d1}} 
+uint8\+\_\+t {\bfseries \+\_\+\+N\+OP} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_aec1dc7fa8a127131237f8b74425b34ad}\label{instruction_8h_aec1dc7fa8a127131237f8b74425b34ad}} 
+uint8\+\_\+t {\bfseries \+\_\+\+O\+RA} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_a4f0a27884f8f917f40b24d863d2e9bd3}\label{instruction_8h_a4f0a27884f8f917f40b24d863d2e9bd3}} 
+uint8\+\_\+t {\bfseries \+\_\+\+P\+HA} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_a21bea7c8f738910b54a1e7538c1df8ed}\label{instruction_8h_a21bea7c8f738910b54a1e7538c1df8ed}} 
+uint8\+\_\+t {\bfseries \+\_\+\+P\+HP} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_aad1a5ff191b0c9e20b469e34b0da9eeb}\label{instruction_8h_aad1a5ff191b0c9e20b469e34b0da9eeb}} 
+uint8\+\_\+t {\bfseries \+\_\+\+P\+LA} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_a0913efb576f61161c7f4ef49d2bbcdbf}\label{instruction_8h_a0913efb576f61161c7f4ef49d2bbcdbf}} 
+uint8\+\_\+t {\bfseries \+\_\+\+P\+LP} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_a414e391e398a44b7ba7bbb51b41b2fd5}\label{instruction_8h_a414e391e398a44b7ba7bbb51b41b2fd5}} 
+uint8\+\_\+t {\bfseries \+\_\+\+R\+OL} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_a00d9d91bc3ab592ab82ac17c290572a7}\label{instruction_8h_a00d9d91bc3ab592ab82ac17c290572a7}} 
+uint8\+\_\+t {\bfseries \+\_\+\+R\+OR} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_a2e7e0662c5c7e4ece169ce17d97ce944}\label{instruction_8h_a2e7e0662c5c7e4ece169ce17d97ce944}} 
+uint8\+\_\+t {\bfseries \+\_\+\+R\+TI} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_afdc1319c0a15060c11de3ea546e76458}\label{instruction_8h_afdc1319c0a15060c11de3ea546e76458}} 
+uint8\+\_\+t {\bfseries \+\_\+\+R\+TS} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_aa2cff4ea2221768c5cd1431516ebad8c}\label{instruction_8h_aa2cff4ea2221768c5cd1431516ebad8c}} 
+uint8\+\_\+t {\bfseries \+\_\+\+S\+BC} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_a3ae9dbeb7f2acac0d70a635c54695143}\label{instruction_8h_a3ae9dbeb7f2acac0d70a635c54695143}} 
+uint8\+\_\+t {\bfseries \+\_\+\+S\+EC} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_a72cf9b2aca3c7063fe19c57b99f6638a}\label{instruction_8h_a72cf9b2aca3c7063fe19c57b99f6638a}} 
+uint8\+\_\+t {\bfseries \+\_\+\+S\+ED} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_acba35cef4b26cdb0e9d99d685c87b2fd}\label{instruction_8h_acba35cef4b26cdb0e9d99d685c87b2fd}} 
+uint8\+\_\+t {\bfseries \+\_\+\+S\+EI} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_ab4c4fab4074602845976e4095bacbcda}\label{instruction_8h_ab4c4fab4074602845976e4095bacbcda}} 
+uint8\+\_\+t {\bfseries \+\_\+\+S\+TA} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_a1479ee5894a39e5b87b09e9d4104e061}\label{instruction_8h_a1479ee5894a39e5b87b09e9d4104e061}} 
+uint8\+\_\+t {\bfseries \+\_\+\+S\+TX} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_a404f65149fa054bd08c9f4c9631fc5a7}\label{instruction_8h_a404f65149fa054bd08c9f4c9631fc5a7}} 
+uint8\+\_\+t {\bfseries \+\_\+\+S\+TY} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_addb5cba4a6ee241ccbddd8141bf21266}\label{instruction_8h_addb5cba4a6ee241ccbddd8141bf21266}} 
+uint8\+\_\+t {\bfseries \+\_\+\+T\+AX} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_adeac6985e3901f30fd58a7620289bd9b}\label{instruction_8h_adeac6985e3901f30fd58a7620289bd9b}} 
+uint8\+\_\+t {\bfseries \+\_\+\+T\+AY} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_ae8336cf3caec239a6251a19f30d7c434}\label{instruction_8h_ae8336cf3caec239a6251a19f30d7c434}} 
+uint8\+\_\+t {\bfseries \+\_\+\+T\+SX} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_ac6ff3fc8ff1156a41e85f7b272de23d6}\label{instruction_8h_ac6ff3fc8ff1156a41e85f7b272de23d6}} 
+uint8\+\_\+t {\bfseries \+\_\+\+T\+XA} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_a5969ffacfa04279ab741eb2262940def}\label{instruction_8h_a5969ffacfa04279ab741eb2262940def}} 
+uint8\+\_\+t {\bfseries \+\_\+\+T\+XS} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\item 
+\mbox{\Hypertarget{instruction_8h_af11a7dab63fb1c0fb7fdfeef36fe8bbb}\label{instruction_8h_af11a7dab63fb1c0fb7fdfeef36fe8bbb}} 
+uint8\+\_\+t {\bfseries \+\_\+\+T\+YA} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$cpu, \hyperlink{struct_instruction}{Instruction} $\ast$arg)
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+header file of \hyperlink{struct_instruction}{Instruction} module 
+
+\begin{DoxyAuthor}{Author}
+Dylan Gageot 
+\end{DoxyAuthor}
+\begin{DoxyVersion}{Version}
+1.\+0 
+\end{DoxyVersion}
+\begin{DoxyDate}{Date}
+2019-\/02-\/20 
+\end{DoxyDate}
+
+
+\subsection{Enumeration Type Documentation}
+\mbox{\Hypertarget{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2b}\label{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2b}} 
+\index{instruction.\+h@{instruction.\+h}!Addressing\+Mode@{Addressing\+Mode}}
+\index{Addressing\+Mode@{Addressing\+Mode}!instruction.\+h@{instruction.\+h}}
+\subsubsection{\texorpdfstring{Addressing\+Mode}{AddressingMode}}
+{\footnotesize\ttfamily enum \hyperlink{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2b}{Addressing\+Mode}}
+
+
+
+Mnemonic for every addressing mode. 
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{I\+MP@{I\+MP}!instruction.\+h@{instruction.\+h}}\index{instruction.\+h@{instruction.\+h}!I\+MP@{I\+MP}}}\mbox{\Hypertarget{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2ba8054fa474b4ee38123cfeed70397e6f4}\label{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2ba8054fa474b4ee38123cfeed70397e6f4}} 
+I\+MP&Implied (0 byte is read in R\+OM) \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{A\+CC@{A\+CC}!instruction.\+h@{instruction.\+h}}\index{instruction.\+h@{instruction.\+h}!A\+CC@{A\+CC}}}\mbox{\Hypertarget{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2baa6cd1d230aaca43e44f87cd2aab71c83}\label{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2baa6cd1d230aaca43e44f87cd2aab71c83}} 
+A\+CC&Accumulator (0 byte is read in R\+OM) \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{Z\+EX@{Z\+EX}!instruction.\+h@{instruction.\+h}}\index{instruction.\+h@{instruction.\+h}!Z\+EX@{Z\+EX}}}\mbox{\Hypertarget{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2bafc8db2219c7a64d05378683b25cf6e82}\label{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2bafc8db2219c7a64d05378683b25cf6e82}} 
+Z\+EX&Zero-\/page Indexed X (1 bytes is read in R\+OM) \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{Z\+EY@{Z\+EY}!instruction.\+h@{instruction.\+h}}\index{instruction.\+h@{instruction.\+h}!Z\+EY@{Z\+EY}}}\mbox{\Hypertarget{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2bafedfe8a6fc748d415f1da526b96ec0ea}\label{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2bafedfe8a6fc748d415f1da526b96ec0ea}} 
+Z\+EY&Zero-\/page Indexed Y (1 bytes is read in R\+OM) \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{I\+NX@{I\+NX}!instruction.\+h@{instruction.\+h}}\index{instruction.\+h@{instruction.\+h}!I\+NX@{I\+NX}}}\mbox{\Hypertarget{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2baded4d1e852e25c6187212be41068b5b0}\label{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2baded4d1e852e25c6187212be41068b5b0}} 
+I\+NX&Pre-\/indexed indirect X (1 bytes is read in R\+OM) \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{I\+NY@{I\+NY}!instruction.\+h@{instruction.\+h}}\index{instruction.\+h@{instruction.\+h}!I\+NY@{I\+NY}}}\mbox{\Hypertarget{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2bac82a11f742631540ae4e1b48fb405ee6}\label{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2bac82a11f742631540ae4e1b48fb405ee6}} 
+I\+NY&Post-\/indexed indirect Y (1 bytes is read in R\+OM) \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{I\+MM@{I\+MM}!instruction.\+h@{instruction.\+h}}\index{instruction.\+h@{instruction.\+h}!I\+MM@{I\+MM}}}\mbox{\Hypertarget{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2baa77e6848bc2c2031677291053c6badaa}\label{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2baa77e6848bc2c2031677291053c6badaa}} 
+I\+MM&Immediate (1 bytes is read in R\+OM) \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{Z\+ER@{Z\+ER}!instruction.\+h@{instruction.\+h}}\index{instruction.\+h@{instruction.\+h}!Z\+ER@{Z\+ER}}}\mbox{\Hypertarget{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2bacb2a8193bc0a747134de34ceb540cdc8}\label{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2bacb2a8193bc0a747134de34ceb540cdc8}} 
+Z\+ER&Zero page (1 bytes is read in R\+OM) \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{R\+EL@{R\+EL}!instruction.\+h@{instruction.\+h}}\index{instruction.\+h@{instruction.\+h}!R\+EL@{R\+EL}}}\mbox{\Hypertarget{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2bab2082544bca640e70f0bb74d17a98082}\label{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2bab2082544bca640e70f0bb74d17a98082}} 
+R\+EL&Relative (1 bytes is read in R\+OM) \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{A\+BS@{A\+BS}!instruction.\+h@{instruction.\+h}}\index{instruction.\+h@{instruction.\+h}!A\+BS@{A\+BS}}}\mbox{\Hypertarget{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2ba62f7ef0a404defa34640e94940792147}\label{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2ba62f7ef0a404defa34640e94940792147}} 
+A\+BS&Absolute (2 bytes is read in R\+OM) \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{A\+BX@{A\+BX}!instruction.\+h@{instruction.\+h}}\index{instruction.\+h@{instruction.\+h}!A\+BX@{A\+BX}}}\mbox{\Hypertarget{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2ba88c7cab15e73ef3fd12422a3c838887a}\label{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2ba88c7cab15e73ef3fd12422a3c838887a}} 
+A\+BX&Indexed X (2 bytes is read in R\+OM) \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{A\+BY@{A\+BY}!instruction.\+h@{instruction.\+h}}\index{instruction.\+h@{instruction.\+h}!A\+BY@{A\+BY}}}\mbox{\Hypertarget{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2bada8a7a910b54a8c3993ff0b659d49b29}\label{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2bada8a7a910b54a8c3993ff0b659d49b29}} 
+A\+BY&Indexed Y (2 bytes is read in R\+OM) \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{A\+BI@{A\+BI}!instruction.\+h@{instruction.\+h}}\index{instruction.\+h@{instruction.\+h}!A\+BI@{A\+BI}}}\mbox{\Hypertarget{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2bae343a5e4c360cbb66537d82b8c7fbd25}\label{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2bae343a5e4c360cbb66537d82b8c7fbd25}} 
+A\+BI&Absolute indirect (2 bytes is read in R\+OM) \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{N\+UL@{N\+UL}!instruction.\+h@{instruction.\+h}}\index{instruction.\+h@{instruction.\+h}!N\+UL@{N\+UL}}}\mbox{\Hypertarget{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2ba4c175fbb65c723226d182dbfd556136a}\label{instruction_8h_aa5cfff0cd9c5ad5ebda7aeecc4a50c2ba4c175fbb65c723226d182dbfd556136a}} 
+N\+UL&Undefined (0 bytes is read in R\+OM) \\
+\hline
+
+\end{DoxyEnumFields}
+
+
+\subsection{Function Documentation}
+\mbox{\Hypertarget{instruction_8h_a03b707d9b2d4827eacc7dc37f9909081}\label{instruction_8h_a03b707d9b2d4827eacc7dc37f9909081}} 
+\index{instruction.\+h@{instruction.\+h}!\+\_\+\+A\+DC@{\+\_\+\+A\+DC}}
+\index{\+\_\+\+A\+DC@{\+\_\+\+A\+DC}!instruction.\+h@{instruction.\+h}}
+\subsubsection{\texorpdfstring{\+\_\+\+A\+D\+C()}{\_ADC()}}
+{\footnotesize\ttfamily uint8\+\_\+t \+\_\+\+A\+DC (\begin{DoxyParamCaption}\item[{\hyperlink{struct_c_p_u}{C\+PU} $\ast$}]{cpu,  }\item[{\hyperlink{struct_instruction}{Instruction} $\ast$}]{arg }\end{DoxyParamCaption})}
+
+
+
+\hyperlink{struct_instruction}{Instruction} set of 6502. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em cpu} & instance of \hyperlink{struct_c_p_u}{C\+PU} \\
+\hline
+{\em arg} & instance of \hyperlink{struct_instruction}{Instruction}\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+number of \hyperlink{struct_c_p_u}{C\+PU} cycle consumed 
+\end{DoxyReturn}
+\mbox{\Hypertarget{instruction_8h_aaff869c82a3e5ed485aee64f02521ce9}\label{instruction_8h_aaff869c82a3e5ed485aee64f02521ce9}} 
+\index{instruction.\+h@{instruction.\+h}!Instruction\+\_\+\+D\+MA@{Instruction\+\_\+\+D\+MA}}
+\index{Instruction\+\_\+\+D\+MA@{Instruction\+\_\+\+D\+MA}!instruction.\+h@{instruction.\+h}}
+\subsubsection{\texorpdfstring{Instruction\+\_\+\+D\+M\+A()}{Instruction\_DMA()}}
+{\footnotesize\ttfamily uint8\+\_\+t Instruction\+\_\+\+D\+MA (\begin{DoxyParamCaption}\item[{\hyperlink{struct_instruction}{Instruction} $\ast$}]{self,  }\item[{\hyperlink{struct_c_p_u}{C\+PU} $\ast$}]{cpu,  }\item[{uint32\+\_\+t $\ast$}]{clock\+Cycle }\end{DoxyParamCaption})}
+
+
+
+Manage D\+MA request. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em self} & instance of \hyperlink{struct_instruction}{Instruction} \\
+\hline
+{\em cpu} & instance of \hyperlink{struct_c_p_u}{C\+PU}\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+E\+X\+I\+T\+\_\+\+S\+U\+C\+C\+E\+SS if succeed, E\+X\+I\+T\+\_\+\+F\+A\+I\+L\+U\+RE otherwise 
+\end{DoxyReturn}
+\mbox{\Hypertarget{instruction_8h_aa86df24b487c14a8d6c7becb117a42b0}\label{instruction_8h_aa86df24b487c14a8d6c7becb117a42b0}} 
+\index{instruction.\+h@{instruction.\+h}!Instruction\+\_\+\+Fetch@{Instruction\+\_\+\+Fetch}}
+\index{Instruction\+\_\+\+Fetch@{Instruction\+\_\+\+Fetch}!instruction.\+h@{instruction.\+h}}
+\subsubsection{\texorpdfstring{Instruction\+\_\+\+Fetch()}{Instruction\_Fetch()}}
+{\footnotesize\ttfamily uint8\+\_\+t Instruction\+\_\+\+Fetch (\begin{DoxyParamCaption}\item[{\hyperlink{struct_instruction}{Instruction} $\ast$}]{self,  }\item[{\hyperlink{struct_c_p_u}{C\+PU} $\ast$}]{cpu }\end{DoxyParamCaption})}
+
+
+
+Fetch and decode instruction from P\+G\+R-\/\+R\+OM. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em self} & instance of \hyperlink{struct_instruction}{Instruction} \\
+\hline
+{\em cpu} & instance of \hyperlink{struct_c_p_u}{C\+PU}\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+E\+X\+I\+T\+\_\+\+S\+U\+C\+C\+E\+SS if succeed, E\+X\+I\+T\+\_\+\+F\+A\+I\+L\+U\+RE otherwise 
+\end{DoxyReturn}
+\mbox{\Hypertarget{instruction_8h_a328bbc59237bfea408b3384cbf0fb21d}\label{instruction_8h_a328bbc59237bfea408b3384cbf0fb21d}} 
+\index{instruction.\+h@{instruction.\+h}!Instruction\+\_\+\+Print\+Log@{Instruction\+\_\+\+Print\+Log}}
+\index{Instruction\+\_\+\+Print\+Log@{Instruction\+\_\+\+Print\+Log}!instruction.\+h@{instruction.\+h}}
+\subsubsection{\texorpdfstring{Instruction\+\_\+\+Print\+Log()}{Instruction\_PrintLog()}}
+{\footnotesize\ttfamily void Instruction\+\_\+\+Print\+Log (\begin{DoxyParamCaption}\item[{\hyperlink{struct_instruction}{Instruction} $\ast$}]{self,  }\item[{\hyperlink{struct_c_p_u}{C\+PU} $\ast$}]{cpu,  }\item[{uint32\+\_\+t}]{clock\+Cycle }\end{DoxyParamCaption})}
+
+
+
+Print instruction. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em self} & instance of \hyperlink{struct_c_p_u}{C\+PU} \\
+\hline
+{\em inst} & instance of \hyperlink{struct_instruction}{Instruction} \\
+\hline
+{\em clock\+Cycle} & number of clock cycle needed \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{instruction_8h_aecbf0407f0408c73f8d79cf83e9e5059}\label{instruction_8h_aecbf0407f0408c73f8d79cf83e9e5059}} 
+\index{instruction.\+h@{instruction.\+h}!Instruction\+\_\+\+Resolve@{Instruction\+\_\+\+Resolve}}
+\index{Instruction\+\_\+\+Resolve@{Instruction\+\_\+\+Resolve}!instruction.\+h@{instruction.\+h}}
+\subsubsection{\texorpdfstring{Instruction\+\_\+\+Resolve()}{Instruction\_Resolve()}}
+{\footnotesize\ttfamily uint8\+\_\+t Instruction\+\_\+\+Resolve (\begin{DoxyParamCaption}\item[{\hyperlink{struct_instruction}{Instruction} $\ast$}]{self,  }\item[{\hyperlink{struct_c_p_u}{C\+PU} $\ast$}]{cpu }\end{DoxyParamCaption})}
+
+
+
+Get the data to execute the instruction. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em self} & instance of \hyperlink{struct_instruction}{Instruction} \\
+\hline
+{\em cpu} & instance of \hyperlink{struct_c_p_u}{C\+PU}\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+E\+X\+I\+T\+\_\+\+S\+U\+C\+C\+E\+SS if succeed, E\+X\+I\+T\+\_\+\+F\+A\+I\+L\+U\+RE otherwise 
+\end{DoxyReturn}
+\mbox{\Hypertarget{instruction_8h_a4a1ed2a7814e7efe547e78246374fe5e}\label{instruction_8h_a4a1ed2a7814e7efe547e78246374fe5e}} 
+\index{instruction.\+h@{instruction.\+h}!Opcode\+\_\+\+Get@{Opcode\+\_\+\+Get}}
+\index{Opcode\+\_\+\+Get@{Opcode\+\_\+\+Get}!instruction.\+h@{instruction.\+h}}
+\subsubsection{\texorpdfstring{Opcode\+\_\+\+Get()}{Opcode\_Get()}}
+{\footnotesize\ttfamily \hyperlink{struct_opcode}{Opcode} Opcode\+\_\+\+Get (\begin{DoxyParamCaption}\item[{uint8\+\_\+t}]{index }\end{DoxyParamCaption})}
+
+
+
+Function to use opcode L\+UT in unit-\/test. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em index} & index to search from\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+\hyperlink{struct_opcode}{Opcode} struct 
+\end{DoxyReturn}

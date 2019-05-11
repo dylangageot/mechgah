@@ -1,0 +1,63 @@
+\hypertarget{struct_i_o_reg}{}\section{I\+O\+Reg Struct Reference}
+\label{struct_i_o_reg}\index{I\+O\+Reg@{I\+O\+Reg}}
+
+
+Register use to communicate with \hyperlink{struct_p_p_u}{P\+PU}, A\+PU and joystick.  
+
+
+
+
+{\ttfamily \#include $<$ioreg.\+h$>$}
+
+\subsection*{Data Fields}
+\begin{DoxyCompactItemize}
+\item 
+uint8\+\_\+t $\ast$ \hyperlink{struct_i_o_reg_a3a254f17251e937f76932c5081eab405}{bank1} \mbox{[}8\mbox{]}
+\item 
+uint8\+\_\+t $\ast$ \hyperlink{struct_i_o_reg_ae4edb3d07789e7300d9f7ff80927814a}{bank2} \mbox{[}32\mbox{]}
+\item 
+uint8\+\_\+t \hyperlink{struct_i_o_reg_a33f1fe95e68d8c8ce672496d8d2f9db3}{acknowledge} \mbox{[}40\mbox{]}
+\item 
+uint8\+\_\+t \hyperlink{struct_i_o_reg_aff7b59f569ec689a7580bd6911daafd5}{dummy}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Register use to communicate with \hyperlink{struct_p_p_u}{P\+PU}, A\+PU and joystick. 
+
+The structure is composed of two arrays that represent bank in memory map \+:
+\begin{DoxyItemize}
+\item bank1 \+: @0x2000, registers for \hyperlink{struct_p_p_u}{P\+PU}
+\item bank2 \+: @0x4000, registers for A\+PU and joystick Flags array are used to know if data was read or written 
+\end{DoxyItemize}
+
+\subsection{Field Documentation}
+\mbox{\Hypertarget{struct_i_o_reg_a33f1fe95e68d8c8ce672496d8d2f9db3}\label{struct_i_o_reg_a33f1fe95e68d8c8ce672496d8d2f9db3}} 
+\index{I\+O\+Reg@{I\+O\+Reg}!acknowledge@{acknowledge}}
+\index{acknowledge@{acknowledge}!I\+O\+Reg@{I\+O\+Reg}}
+\subsubsection{\texorpdfstring{acknowledge}{acknowledge}}
+{\footnotesize\ttfamily uint8\+\_\+t acknowledge\mbox{[}40\mbox{]}}
+
+Acknowledge array \mbox{\Hypertarget{struct_i_o_reg_a3a254f17251e937f76932c5081eab405}\label{struct_i_o_reg_a3a254f17251e937f76932c5081eab405}} 
+\index{I\+O\+Reg@{I\+O\+Reg}!bank1@{bank1}}
+\index{bank1@{bank1}!I\+O\+Reg@{I\+O\+Reg}}
+\subsubsection{\texorpdfstring{bank1}{bank1}}
+{\footnotesize\ttfamily uint8\+\_\+t$\ast$ bank1\mbox{[}8\mbox{]}}
+
+Pointer bank 1 \mbox{\Hypertarget{struct_i_o_reg_ae4edb3d07789e7300d9f7ff80927814a}\label{struct_i_o_reg_ae4edb3d07789e7300d9f7ff80927814a}} 
+\index{I\+O\+Reg@{I\+O\+Reg}!bank2@{bank2}}
+\index{bank2@{bank2}!I\+O\+Reg@{I\+O\+Reg}}
+\subsubsection{\texorpdfstring{bank2}{bank2}}
+{\footnotesize\ttfamily uint8\+\_\+t$\ast$ bank2\mbox{[}32\mbox{]}}
+
+Pointer bank 2 \mbox{\Hypertarget{struct_i_o_reg_aff7b59f569ec689a7580bd6911daafd5}\label{struct_i_o_reg_aff7b59f569ec689a7580bd6911daafd5}} 
+\index{I\+O\+Reg@{I\+O\+Reg}!dummy@{dummy}}
+\index{dummy@{dummy}!I\+O\+Reg@{I\+O\+Reg}}
+\subsubsection{\texorpdfstring{dummy}{dummy}}
+{\footnotesize\ttfamily uint8\+\_\+t dummy}
+
+Dummy byte which pointer is returned from I\+O\+Reg\+\_\+\+Get for unconnected registers 
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/nes/mapper/\hyperlink{ioreg_8h}{ioreg.\+h}\end{DoxyCompactItemize}

@@ -1,5 +1,5 @@
 #include "UTest.h"
-#include "../nes/cpu/instructions.h"
+#include "../nes/cpu/instruction.h"
 #include "../nes/mapper/nrom.h"
 #include "../nes/mapper/ioreg.h"
 #include <stdlib.h>

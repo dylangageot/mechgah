@@ -1,6 +1,6 @@
 /**
  * \file ioreg.h
- * \brief Header of IOReg module
+ * \brief header file of IOReg module
  * \author Dylan Gageot
  * \version 1.0
  * \date 2019-03-31
@@ -15,7 +15,6 @@
 #include "../controller/controller.h"
 
 /**
- * \struct IOReg
  * \brief Register use to communicate with PPU, APU and joystick
  *
  * The structure is composed of two arrays that represent bank in memory map : 
@@ -24,14 +23,14 @@
  * Flags array are used to know if data was read or written
  */
 typedef struct {
-	uint8_t *bank1[8];
-	uint8_t *bank2[32];
-	uint8_t acknowledge[40];
-	uint8_t dummy;
+	uint8_t *bank1[8];			/*!< Pointer bank 1		*/
+	uint8_t *bank2[32];			/*!< Pointer bank 2		*/
+	uint8_t acknowledge[40];	/*!< Acknowledge array	*/
+	uint8_t dummy;				/*!< Dummy byte which pointer is returned from 
+								     IOReg_Get for unconnected registers */
 } IOReg;
 
 /**
- * \fn IOReg_Create
  * \brief Instanciation of IOReg
  *
  * \return instance of IOReg if succeed
@@ -73,7 +72,6 @@ uint8_t* IOReg_Get(IOReg *self, uint8_t accessType, uint16_t address);
 uint8_t IOReg_Ack(IOReg *self, uint16_t address);
 
 /**
- * \fn IOReg_Destroy
  * \brief Free instance of IOReg
  *
  * \param self instance of IOReg
@@ -91,17 +89,15 @@ void IOReg_Destroy(IOReg *self);
 IOReg* IOReg_Extract(Mapper *mapper);
 
 /**
- * \enum Acknowledge
  * \brief Type of access
  */
 enum Acknowledge {
-	AC_NO = 0,
-	AC_RD = 16,
-	AC_WR = 32
+	AC_NO = 0,		/*!< Transparent access		*/
+	AC_RD = 16,		/*!< Set register as read	*/
+	AC_WR = 32		/*!< Set register as written*/
 };
 
 /**
- * \enum Bank1Register
  * \brief Mnemonic for Bank 1 registers
  */
 enum Bank1Register {
@@ -116,7 +112,6 @@ enum Bank1Register {
 };
 
 /**
- * \enum Bank2Register
  * \brief Mnemonic for Bank 2 registers
  */
 enum Bank2Register {

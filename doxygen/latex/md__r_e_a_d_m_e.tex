@@ -1,0 +1,29 @@
+\subsection*{Make}
+
+
+\begin{DoxyCode}
+make            # build main file and unit test
+make run-test   # build unit test and run it with Valgrind
+                # and code coverage feature
+make clean      # clean every generated file (including coverage dir)
+\end{DoxyCode}
+
+
+\subsection*{User manual}
+
+\#\#\# Synopis 
+\begin{DoxyCode}
+./main [OPTIONS]... [ROM]
+\end{DoxyCode}
+
+
+\subsubsection*{Description}
+
+Launches the nes-\/emulator on the given R\+OM filename and with the given O\+P\+T\+I\+O\+NS. If no R\+OM filename is given, the emulator won\textquotesingle{}t launch. If multiple filenames are given, the emulator will launch with the first one.
+
+\subsubsection*{Options}
+
+\begin{DoxyVerb}-s [scale]
+  Defines the scaling factor. Must be between 1 (genuine resolution) and 15 (4K resolution).
+  If not specified, scaling factor is set to 2.\end{DoxyVerb}
+ 

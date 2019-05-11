@@ -1,6 +1,6 @@
 /**
  * \file controller.h
- * \brief Header for Controller structure
+ * \brief header file of Controller module
  * \author Nicolas Chabanis
  * \version 1.0
  * \date 2019-05-02
@@ -12,7 +12,6 @@
 #include "../mapper/mapper.h"
 
 /**
- * \struct Controller
  * \brief Holds necessary variables for the controller emulation to work.
  * Only support the standard joypads
 */
@@ -27,7 +26,6 @@ typedef struct{
 } Controller;
 
 /**
- * \fn Controller_Create
  * \brief Allocates memory for controller
  * \param pointer to the used mapper
  * \return instance of Controller allocated
@@ -35,7 +33,6 @@ typedef struct{
 Controller* Controller_Create(Mapper *mapper);
 
 /**
- * \fn Controller_Execute
  * \brief Executes the controller system
  * \param The instance of the controller
  * \param The state of the current pressed keys (2*8 keys)
@@ -43,7 +40,6 @@ Controller* Controller_Create(Mapper *mapper);
 void Controller_Execute(Controller *self, uint16_t keys);
 
 /**
- * \fn Controller_Delete
  * \brief Frees the controller instance's memory
  * \param self instance of the Controller
 */

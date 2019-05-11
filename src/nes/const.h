@@ -1,3 +1,10 @@
+/**
+ * \file const.h
+ * \brief header file of constants for NES emulation
+ * \author Dylan Gageot
+ * \version 1.0
+ * \date 2019-05-11
+ */
 #ifndef CONST_H
 #define CONST_H
 

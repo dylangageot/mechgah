@@ -1,0 +1,8 @@
+<map id="src/nes/nes.h" name="src/nes/nes.h">
+<area shape="rect" id="node2" href="$cpu_8h.html" title="header file of CPU module " alt="" coords="25,80,103,107"/>
+<area shape="rect" id="node3" href="$mapper_8h.html" title="header file of Mapper module " alt="" coords="78,155,213,181"/>
+<area shape="rect" id="node5" href="$ppu_8h.html" title="header file of PPU module " alt="" coords="294,80,373,107"/>
+<area shape="rect" id="node7" href="$loader_8h.html" title="header file of ROM loader " alt="" coords="447,80,553,107"/>
+<area shape="rect" id="node11" href="$controller_8h.html" title="header file of Controller module " alt="" coords="127,80,270,107"/>
+<area shape="rect" id="node6" href="$stack_8h.html" title="header file of Stack module " alt="" coords="237,155,379,181"/>
+</map>

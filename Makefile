@@ -15,11 +15,11 @@ SRC  		= $(NESDIR)/mapper/nrom.c \
 			  $(NESDIR)/mapper/mapper.c \
 			  $(NESDIR)/mapper/ioreg.c \
 			  $(NESDIR)/loader/loader.c \
-			  $(NESDIR)/cpu/instructions.c \
+			  $(NESDIR)/cpu/instruction.c \
 			  $(NESDIR)/cpu/cpu.c \
 			  $(NESDIR)/ppu/ppu.c \
 			  $(NESDIR)/nes.c \
-				$(NESDIR)/controller/controller.c \
+			  $(NESDIR)/controller/controller.c \
 			  $(COMMONDIR)/stack.c \
 			  $(SRCDIR)/app.c \
 			  $(UTESTDIR)/UTnrom.c \
