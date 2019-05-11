@@ -1,5 +1,13 @@
 # NES Emulator
 
+## Dependencies
+
+Our NES emulator depends on various library, which are:
+
+- libsdl1.2-dev
+- libsdl-gfx1.2-dev
+- cmocka
+
 ## Make
 
 ```bash
