@@ -1,9 +1,0 @@
-<map id="src/nes/mapper/nrom.h" name="src/nes/mapper/nrom.h">
-<area shape="rect" id="node2" href="$mapper_8h.html" title="header file of Mapper module " alt="" coords="230,229,306,256"/>
-<area shape="rect" id="node4" href="$ioreg_8h.html" title="header file of IOReg module " alt="" coords="185,80,247,107"/>
-<area shape="rect" id="node9" href="$loader_8h.html" title="header file of ROM loader " alt="" coords="515,155,634,181"/>
-<area shape="rect" id="node5" href="$cpu_8h.html" title="header file of CPU module " alt="" coords="171,155,261,181"/>
-<area shape="rect" id="node6" href="$ppu_8h.html" title="header file of PPU module " alt="" coords="5,155,96,181"/>
-<area shape="rect" id="node8" href="$controller_8h.html" title="header file of Controller module " alt="" coords="285,155,440,181"/>
-<area shape="rect" id="node7" href="$stack_8h.html" title="header file of Stack module " alt="" coords="47,229,190,256"/>
-</map>

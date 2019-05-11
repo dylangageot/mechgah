@@ -1,5 +1,0 @@
-<map id="src/nes/loader/loader.h" name="src/nes/loader/loader.h">
-<area shape="rect" id="node2" href="$nes_8h.html" title="header file of NES module " alt="" coords="5,80,107,107"/>
-<area shape="rect" id="node4" href="$nrom_8h.html" title="header file of NROM mapper module " alt="" coords="131,80,287,107"/>
-<area shape="rect" id="node3" href="$app_8h.html" title="header file of App using SDL " alt="" coords="18,155,94,181"/>
-</map>
