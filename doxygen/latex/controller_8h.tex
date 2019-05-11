@@ -1,0 +1,103 @@
+\hypertarget{controller_8h}{}\section{src/nes/controller/controller.h File Reference}
+\label{controller_8h}\index{src/nes/controller/controller.\+h@{src/nes/controller/controller.\+h}}
+
+
+header file of \hyperlink{struct_controller}{Controller} module  
+
+
+{\ttfamily \#include \char`\"{}../mapper/mapper.\+h\char`\"{}}\newline
+Include dependency graph for controller.\+h\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=181pt]{controller_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=291pt]{controller_8h__dep__incl}
+\end{center}
+\end{figure}
+\subsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{struct_controller}{Controller}
+\begin{DoxyCompactList}\small\item\em Holds necessary variables for the controller emulation to work. Only support the standard joypads. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{struct_controller}{Controller} $\ast$ \hyperlink{controller_8h_af49720e09233955377b151c99a43f64b}{Controller\+\_\+\+Create} (\hyperlink{struct_mapper}{Mapper} $\ast$mapper)
+\begin{DoxyCompactList}\small\item\em Allocates memory for controller. \end{DoxyCompactList}\item 
+void \hyperlink{controller_8h_a2394059817ac3c97ec0f9560ce16b803}{Controller\+\_\+\+Execute} (\hyperlink{struct_controller}{Controller} $\ast$self, uint16\+\_\+t keys)
+\begin{DoxyCompactList}\small\item\em Executes the controller system. \end{DoxyCompactList}\item 
+void \hyperlink{controller_8h_a1272b7a3026d1584d085ec1d03e5d2c8}{Controller\+\_\+\+Destroy} (\hyperlink{struct_controller}{Controller} $\ast$self)
+\begin{DoxyCompactList}\small\item\em Frees the controller instance\textquotesingle{}s memory. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+header file of \hyperlink{struct_controller}{Controller} module 
+
+\begin{DoxyAuthor}{Author}
+Nicolas Chabanis 
+\end{DoxyAuthor}
+\begin{DoxyVersion}{Version}
+1.\+0 
+\end{DoxyVersion}
+\begin{DoxyDate}{Date}
+2019-\/05-\/02 
+\end{DoxyDate}
+
+
+\subsection{Function Documentation}
+\mbox{\Hypertarget{controller_8h_af49720e09233955377b151c99a43f64b}\label{controller_8h_af49720e09233955377b151c99a43f64b}} 
+\index{controller.\+h@{controller.\+h}!Controller\+\_\+\+Create@{Controller\+\_\+\+Create}}
+\index{Controller\+\_\+\+Create@{Controller\+\_\+\+Create}!controller.\+h@{controller.\+h}}
+\subsubsection{\texorpdfstring{Controller\+\_\+\+Create()}{Controller\_Create()}}
+{\footnotesize\ttfamily \hyperlink{struct_controller}{Controller}$\ast$ Controller\+\_\+\+Create (\begin{DoxyParamCaption}\item[{\hyperlink{struct_mapper}{Mapper} $\ast$}]{mapper }\end{DoxyParamCaption})}
+
+
+
+Allocates memory for controller. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em pointer} & to the used mapper \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+instance of \hyperlink{struct_controller}{Controller} allocated 
+\end{DoxyReturn}
+\mbox{\Hypertarget{controller_8h_a1272b7a3026d1584d085ec1d03e5d2c8}\label{controller_8h_a1272b7a3026d1584d085ec1d03e5d2c8}} 
+\index{controller.\+h@{controller.\+h}!Controller\+\_\+\+Destroy@{Controller\+\_\+\+Destroy}}
+\index{Controller\+\_\+\+Destroy@{Controller\+\_\+\+Destroy}!controller.\+h@{controller.\+h}}
+\subsubsection{\texorpdfstring{Controller\+\_\+\+Destroy()}{Controller\_Destroy()}}
+{\footnotesize\ttfamily void Controller\+\_\+\+Destroy (\begin{DoxyParamCaption}\item[{\hyperlink{struct_controller}{Controller} $\ast$}]{self }\end{DoxyParamCaption})}
+
+
+
+Frees the controller instance\textquotesingle{}s memory. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em self} & instance of the \hyperlink{struct_controller}{Controller} \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{controller_8h_a2394059817ac3c97ec0f9560ce16b803}\label{controller_8h_a2394059817ac3c97ec0f9560ce16b803}} 
+\index{controller.\+h@{controller.\+h}!Controller\+\_\+\+Execute@{Controller\+\_\+\+Execute}}
+\index{Controller\+\_\+\+Execute@{Controller\+\_\+\+Execute}!controller.\+h@{controller.\+h}}
+\subsubsection{\texorpdfstring{Controller\+\_\+\+Execute()}{Controller\_Execute()}}
+{\footnotesize\ttfamily void Controller\+\_\+\+Execute (\begin{DoxyParamCaption}\item[{\hyperlink{struct_controller}{Controller} $\ast$}]{self,  }\item[{uint16\+\_\+t}]{keys }\end{DoxyParamCaption})}
+
+
+
+Executes the controller system. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em The} & instance of the controller \\
+\hline
+{\em The} & state of the current pressed keys (2$\ast$8 keys) \\
+\hline
+\end{DoxyParams}

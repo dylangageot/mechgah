@@ -1,6 +1,6 @@
 /**
  * \file mapper.h
- * \brief Header including general structure for mapper
+ * \brief header file of Mapper module
  * \author Dylan Gageot
  * \version 1.0
  * \date 2019-02-20
@@ -23,7 +23,7 @@ typedef struct {
 } Mapper;
 
 /**
- * \brief Mapper_Create
+ * \brief Create instance of mapper from callback and data of specific mapper
  *
  * \param get Get callback
  * \param destroyer Destroyer callback
@@ -38,17 +38,17 @@ Mapper* Mapper_Create(void* (*get)(void*, uint8_t, uint16_t),
 					  void *mapperData);
 
 /**
- * \brief Mapper_Destroy
+ * \brief Destroy instance of Mapper
  *
  * \param self free Mapper allocation
  */
 void Mapper_Destroy(Mapper *self);
 
 /**
- * \brief Mapper_Get
+ * \brief Get pointer from memory for a specific address
  *
  * \param self instance of Mapper
- * \param space in which address space to look ?
+ * \param space in which address space to look and with type of access
  * \param address address to get data from
  *
  * \return pointer of pointed data
@@ -56,7 +56,7 @@ void Mapper_Destroy(Mapper *self);
 uint8_t* Mapper_Get(Mapper *self, uint8_t space, uint16_t address);
 
 /**
- * \brief Mapper_Ack
+ * \brief Ask for the last type of access at a register and aknowledge it
  *
  * \param self instance of Mapper
  * \param address address to get access information from
@@ -66,24 +66,22 @@ uint8_t* Mapper_Get(Mapper *self, uint8_t space, uint16_t address);
 uint8_t Mapper_Ack(Mapper *self, uint16_t address);
 
 /**
- * \enum AddressSpace
  * \brief Use to specify to the mapper in which address space we want to 
  * retrieve the data.
  */
 enum AddressSpace {
-	AS_CPU = 0,
-	AS_PPU,
-	AS_LDR
+	AS_CPU = 0,			/*!< CPU address space		*/
+	AS_PPU,				/*!< PPU addrsss space		*/
+	AS_LDR				/*!< Loader special access	*/
 };
 
 /**
- * \enum LoaderData
  * \brief Use to get pointer to PRGROM and CHRROM
  */
 enum LoaderData {
-	LDR_PRG = 0,
-	LDR_CHR,
-	LDR_IOR
+	LDR_PRG = 0,		/*!< Get pointer for PGR-ROM	*/
+	LDR_CHR,			/*!< Get pointer for CHR		*/
+	LDR_IOR				/*!< Get pointer for IOReg		*/
 };
 
 #endif /* MAPPER_H */

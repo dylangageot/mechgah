@@ -1,0 +1,11 @@
+<map id="src/nes/mapper/mapper.h" name="src/nes/mapper/mapper.h">
+<area shape="rect" id="node2" href="$cpu_8h.html" title="header file of CPU module " alt="" coords="610,87,737,114"/>
+<area shape="rect" id="node3" href="$nes_8h.html" title="header file of NES module " alt="" coords="272,169,373,196"/>
+<area shape="rect" id="node5" href="$ioreg_8h.html" title="header file of IOReg module " alt="" coords="397,169,552,196"/>
+<area shape="rect" id="node6" href="$nrom_8h.html" title="header file of NROM mapper module " alt="" coords="30,244,186,271"/>
+<area shape="rect" id="node8" href="$ppu_8h.html" title="header file of PPU module " alt="" coords="261,87,387,114"/>
+<area shape="rect" id="node9" href="$loader_8h.html" title="header file of ROM loader " alt="" coords="31,87,185,114"/>
+<area shape="rect" id="node10" href="$controller_8h.html" title="header file of Controller module " alt="" coords="412,80,535,121"/>
+<area shape="rect" id="node7" href="$instruction_8h.html" title="header file of Instruction module " alt="" coords="591,169,756,196"/>
+<area shape="rect" id="node4" href="$app_8h.html" title="header file of App using SDL " alt="" coords="285,244,361,271"/>
+</map>

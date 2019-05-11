@@ -1,0 +1,140 @@
+\hypertarget{keys_8h}{}\section{src/common/keys.h File Reference}
+\label{keys_8h}\index{src/common/keys.\+h@{src/common/keys.\+h}}
+
+
+header file for \hyperlink{struct_keys}{Keys} module  
+
+
+\subsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{struct_keys}{Keys}
+\begin{DoxyCompactList}\small\item\em Hold string for key name and corresponding S\+D\+LK constant. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+uint16\+\_\+t \hyperlink{keys_8h_a2a0ff58f5d97b2bb4c01118a9d421676}{char\+To\+Sdlk} (char $\ast$key)
+\begin{DoxyCompactList}\small\item\em Translate string into S\+D\+LK. \end{DoxyCompactList}\item 
+char $\ast$ \hyperlink{keys_8h_a0be2fc82ace3d2c63e1abab305c352df}{Sdlk\+To\+Char} (uint16\+\_\+t sdlk)
+\begin{DoxyCompactList}\small\item\em Translate S\+D\+LK into string. \end{DoxyCompactList}\item 
+int \hyperlink{keys_8h_a767207e3f13e15df6bced0ce34a905d2}{write\+File\+Keys} (char $\ast$name\+File, uint16\+\_\+t $\ast$keys\+Select)
+\begin{DoxyCompactList}\small\item\em Write key configuration to a file. \end{DoxyCompactList}\item 
+int \hyperlink{keys_8h_a67cd97211bd245f580b3527b20809638}{read\+File\+Keys} (char $\ast$name\+File, uint16\+\_\+t $\ast$keys\+Select)
+\begin{DoxyCompactList}\small\item\em Reade key configuration from a file. \end{DoxyCompactList}\item 
+int \hyperlink{keys_8h_adb4899500a4f7e4cad9740c5533ca736}{handle\+Keys} (uint16\+\_\+t $\ast$keys\+Select, uint16\+\_\+t $\ast$keys\+Pressed, S\+D\+L\+\_\+\+Event $\ast$event)
+\begin{DoxyCompactList}\small\item\em Handle S\+DL key event. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+header file for \hyperlink{struct_keys}{Keys} module 
+
+\begin{DoxyAuthor}{Author}
+Nicolas Hily 
+\end{DoxyAuthor}
+\begin{DoxyVersion}{Version}
+1.\+0 
+\end{DoxyVersion}
+\begin{DoxyDate}{Date}
+2019-\/05-\/11 
+\end{DoxyDate}
+
+
+\subsection{Function Documentation}
+\mbox{\Hypertarget{keys_8h_a2a0ff58f5d97b2bb4c01118a9d421676}\label{keys_8h_a2a0ff58f5d97b2bb4c01118a9d421676}} 
+\index{keys.\+h@{keys.\+h}!char\+To\+Sdlk@{char\+To\+Sdlk}}
+\index{char\+To\+Sdlk@{char\+To\+Sdlk}!keys.\+h@{keys.\+h}}
+\subsubsection{\texorpdfstring{char\+To\+Sdlk()}{charToSdlk()}}
+{\footnotesize\ttfamily uint16\+\_\+t char\+To\+Sdlk (\begin{DoxyParamCaption}\item[{char $\ast$}]{key }\end{DoxyParamCaption})}
+
+
+
+Translate string into S\+D\+LK. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em key} & name of the key\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+value of the S\+D\+LK constant 
+\end{DoxyReturn}
+\mbox{\Hypertarget{keys_8h_adb4899500a4f7e4cad9740c5533ca736}\label{keys_8h_adb4899500a4f7e4cad9740c5533ca736}} 
+\index{keys.\+h@{keys.\+h}!handle\+Keys@{handle\+Keys}}
+\index{handle\+Keys@{handle\+Keys}!keys.\+h@{keys.\+h}}
+\subsubsection{\texorpdfstring{handle\+Keys()}{handleKeys()}}
+{\footnotesize\ttfamily int handle\+Keys (\begin{DoxyParamCaption}\item[{uint16\+\_\+t $\ast$}]{keys\+Select,  }\item[{uint16\+\_\+t $\ast$}]{keys\+Pressed,  }\item[{S\+D\+L\+\_\+\+Event $\ast$}]{event }\end{DoxyParamCaption})}
+
+
+
+Handle S\+DL key event. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em keys\+Select} & array containg key configuration \\
+\hline
+{\em keys\+Pressed} & keys pressed \\
+\hline
+{\em event} & S\+DL event\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+1 if app has not been closed, 0 otherwise 
+\end{DoxyReturn}
+\mbox{\Hypertarget{keys_8h_a67cd97211bd245f580b3527b20809638}\label{keys_8h_a67cd97211bd245f580b3527b20809638}} 
+\index{keys.\+h@{keys.\+h}!read\+File\+Keys@{read\+File\+Keys}}
+\index{read\+File\+Keys@{read\+File\+Keys}!keys.\+h@{keys.\+h}}
+\subsubsection{\texorpdfstring{read\+File\+Keys()}{readFileKeys()}}
+{\footnotesize\ttfamily int read\+File\+Keys (\begin{DoxyParamCaption}\item[{char $\ast$}]{name\+File,  }\item[{uint16\+\_\+t $\ast$}]{keys\+Select }\end{DoxyParamCaption})}
+
+
+
+Reade key configuration from a file. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em name\+File} & filename \\
+\hline
+{\em keys\+Select} & array containing S\+D\+LK keys\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+E\+X\+I\+T\+\_\+\+S\+U\+C\+C\+ES if succeed, E\+X\+I\+T\+\_\+\+F\+A\+I\+L\+U\+RE otherwise 
+\end{DoxyReturn}
+\mbox{\Hypertarget{keys_8h_a0be2fc82ace3d2c63e1abab305c352df}\label{keys_8h_a0be2fc82ace3d2c63e1abab305c352df}} 
+\index{keys.\+h@{keys.\+h}!Sdlk\+To\+Char@{Sdlk\+To\+Char}}
+\index{Sdlk\+To\+Char@{Sdlk\+To\+Char}!keys.\+h@{keys.\+h}}
+\subsubsection{\texorpdfstring{Sdlk\+To\+Char()}{SdlkToChar()}}
+{\footnotesize\ttfamily char$\ast$ Sdlk\+To\+Char (\begin{DoxyParamCaption}\item[{uint16\+\_\+t}]{sdlk }\end{DoxyParamCaption})}
+
+
+
+Translate S\+D\+LK into string. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em sdlk} & S\+D\+LK code for a key\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+string pointer 
+\end{DoxyReturn}
+\mbox{\Hypertarget{keys_8h_a767207e3f13e15df6bced0ce34a905d2}\label{keys_8h_a767207e3f13e15df6bced0ce34a905d2}} 
+\index{keys.\+h@{keys.\+h}!write\+File\+Keys@{write\+File\+Keys}}
+\index{write\+File\+Keys@{write\+File\+Keys}!keys.\+h@{keys.\+h}}
+\subsubsection{\texorpdfstring{write\+File\+Keys()}{writeFileKeys()}}
+{\footnotesize\ttfamily int write\+File\+Keys (\begin{DoxyParamCaption}\item[{char $\ast$}]{name\+File,  }\item[{uint16\+\_\+t $\ast$}]{keys\+Select }\end{DoxyParamCaption})}
+
+
+
+Write key configuration to a file. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em name\+File} & filename \\
+\hline
+{\em keys\+Select} & array containing S\+D\+LK keys\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+E\+X\+I\+T\+\_\+\+S\+U\+C\+C\+ES if succeed, E\+X\+I\+T\+\_\+\+F\+A\+I\+L\+U\+RE otherwise 
+\end{DoxyReturn}

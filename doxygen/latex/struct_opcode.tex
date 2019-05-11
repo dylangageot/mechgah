@@ -1,0 +1,49 @@
+\hypertarget{struct_opcode}{}\section{Opcode Struct Reference}
+\label{struct_opcode}\index{Opcode@{Opcode}}
+
+
+Hold instruction function and addressing mode associated.  
+
+
+
+
+{\ttfamily \#include $<$instruction.\+h$>$}
+
+\subsection*{Data Fields}
+\begin{DoxyCompactItemize}
+\item 
+uint8\+\_\+t($\ast$ \hyperlink{struct_opcode_aaac3f46611559561cb0430bdb8d0741d}{inst} )(\hyperlink{struct_c_p_u}{C\+PU} $\ast$, \hyperlink{struct_instruction}{Instruction} $\ast$)
+\item 
+uint8\+\_\+t \hyperlink{struct_opcode_af769224d4cd14a6d914fe7f7e3c8804f}{addressing\+Mode}
+\item 
+uint8\+\_\+t \hyperlink{struct_opcode_a43925d437f42c3541f76d1ef391476ca}{cycle}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Hold instruction function and addressing mode associated. 
+
+\subsection{Field Documentation}
+\mbox{\Hypertarget{struct_opcode_af769224d4cd14a6d914fe7f7e3c8804f}\label{struct_opcode_af769224d4cd14a6d914fe7f7e3c8804f}} 
+\index{Opcode@{Opcode}!addressing\+Mode@{addressing\+Mode}}
+\index{addressing\+Mode@{addressing\+Mode}!Opcode@{Opcode}}
+\subsubsection{\texorpdfstring{addressing\+Mode}{addressingMode}}
+{\footnotesize\ttfamily uint8\+\_\+t addressing\+Mode}
+
+Addressing mode used \mbox{\Hypertarget{struct_opcode_a43925d437f42c3541f76d1ef391476ca}\label{struct_opcode_a43925d437f42c3541f76d1ef391476ca}} 
+\index{Opcode@{Opcode}!cycle@{cycle}}
+\index{cycle@{cycle}!Opcode@{Opcode}}
+\subsubsection{\texorpdfstring{cycle}{cycle}}
+{\footnotesize\ttfamily uint8\+\_\+t cycle}
+
+Cycle consumption \mbox{\Hypertarget{struct_opcode_aaac3f46611559561cb0430bdb8d0741d}\label{struct_opcode_aaac3f46611559561cb0430bdb8d0741d}} 
+\index{Opcode@{Opcode}!inst@{inst}}
+\index{inst@{inst}!Opcode@{Opcode}}
+\subsubsection{\texorpdfstring{inst}{inst}}
+{\footnotesize\ttfamily uint8\+\_\+t($\ast$ inst) (\hyperlink{struct_c_p_u}{C\+PU} $\ast$, \hyperlink{struct_instruction}{Instruction} $\ast$)}
+
+\hyperlink{struct_instruction}{Instruction} callback 
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/nes/cpu/\hyperlink{instruction_8h}{instruction.\+h}\end{DoxyCompactItemize}

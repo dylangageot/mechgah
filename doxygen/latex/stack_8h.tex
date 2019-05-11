@@ -1,0 +1,132 @@
+\hypertarget{stack_8h}{}\section{src/common/stack.h File Reference}
+\label{stack_8h}\index{src/common/stack.\+h@{src/common/stack.\+h}}
+
+
+header file of \hyperlink{struct_stack}{Stack} module  
+
+
+{\ttfamily \#include \char`\"{}stdint.\+h\char`\"{}}\newline
+Include dependency graph for stack.\+h\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=186pt]{stack_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=291pt]{stack_8h__dep__incl}
+\end{center}
+\end{figure}
+\subsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{struct_stack}{Stack}
+\begin{DoxyCompactList}\small\item\em Hold stack data and capacity information. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{stack_8h_af24298a5ce56647751e432673282c6e2}\label{stack_8h_af24298a5ce56647751e432673282c6e2}} 
+\#define \hyperlink{stack_8h_af24298a5ce56647751e432673282c6e2}{M\+A\+X\+\_\+\+S\+T\+A\+CK}~20
+\begin{DoxyCompactList}\small\item\em Max capacity of \hyperlink{struct_stack}{Stack} set to 20. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{stack_8h_a5607cb7901451341f13970931c6cc880}{Stack\+\_\+\+Init} (\hyperlink{struct_stack}{Stack} $\ast$s)
+\begin{DoxyCompactList}\small\item\em Initialize given \hyperlink{struct_stack}{Stack}. \end{DoxyCompactList}\item 
+uint8\+\_\+t \hyperlink{stack_8h_af5e65e064f839b2a1836ffb1b1e3b880}{Stack\+\_\+\+Push} (\hyperlink{struct_stack}{Stack} $\ast$s, void $\ast$data)
+\begin{DoxyCompactList}\small\item\em Push data to \hyperlink{struct_stack}{Stack}. \end{DoxyCompactList}\item 
+void $\ast$ \hyperlink{stack_8h_a20fa129c144b068ab165bd97166842f5}{Stack\+\_\+\+Pop} (\hyperlink{struct_stack}{Stack} $\ast$s)
+\begin{DoxyCompactList}\small\item\em Pop data from \hyperlink{struct_stack}{Stack}. \end{DoxyCompactList}\item 
+uint8\+\_\+t \hyperlink{stack_8h_aa703f4712602355315d4976a0c8b6a12}{Stack\+\_\+\+Is\+Empty} (\hyperlink{struct_stack}{Stack} $\ast$s)
+\begin{DoxyCompactList}\small\item\em Is \hyperlink{struct_stack}{Stack} empty? \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+header file of \hyperlink{struct_stack}{Stack} module 
+
+\begin{DoxyAuthor}{Author}
+Dylan Gageot 
+\end{DoxyAuthor}
+\begin{DoxyVersion}{Version}
+
+\end{DoxyVersion}
+\begin{DoxyDate}{Date}
+2019-\/05-\/11
+\end{DoxyDate}
+Implementation of a F\+I\+LO stack 
+
+\subsection{Function Documentation}
+\mbox{\Hypertarget{stack_8h_a5607cb7901451341f13970931c6cc880}\label{stack_8h_a5607cb7901451341f13970931c6cc880}} 
+\index{stack.\+h@{stack.\+h}!Stack\+\_\+\+Init@{Stack\+\_\+\+Init}}
+\index{Stack\+\_\+\+Init@{Stack\+\_\+\+Init}!stack.\+h@{stack.\+h}}
+\subsubsection{\texorpdfstring{Stack\+\_\+\+Init()}{Stack\_Init()}}
+{\footnotesize\ttfamily void Stack\+\_\+\+Init (\begin{DoxyParamCaption}\item[{\hyperlink{struct_stack}{Stack} $\ast$}]{s }\end{DoxyParamCaption})}
+
+
+
+Initialize given \hyperlink{struct_stack}{Stack}. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em s} & instance of \hyperlink{struct_stack}{Stack} \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{stack_8h_aa703f4712602355315d4976a0c8b6a12}\label{stack_8h_aa703f4712602355315d4976a0c8b6a12}} 
+\index{stack.\+h@{stack.\+h}!Stack\+\_\+\+Is\+Empty@{Stack\+\_\+\+Is\+Empty}}
+\index{Stack\+\_\+\+Is\+Empty@{Stack\+\_\+\+Is\+Empty}!stack.\+h@{stack.\+h}}
+\subsubsection{\texorpdfstring{Stack\+\_\+\+Is\+Empty()}{Stack\_IsEmpty()}}
+{\footnotesize\ttfamily uint8\+\_\+t Stack\+\_\+\+Is\+Empty (\begin{DoxyParamCaption}\item[{\hyperlink{struct_stack}{Stack} $\ast$}]{s }\end{DoxyParamCaption})}
+
+
+
+Is \hyperlink{struct_stack}{Stack} empty? 
+
+
+\begin{DoxyParams}{Parameters}
+{\em s} & instance of \hyperlink{struct_stack}{Stack}\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+1 if stack empty, 0 otherwise 
+\end{DoxyReturn}
+\mbox{\Hypertarget{stack_8h_a20fa129c144b068ab165bd97166842f5}\label{stack_8h_a20fa129c144b068ab165bd97166842f5}} 
+\index{stack.\+h@{stack.\+h}!Stack\+\_\+\+Pop@{Stack\+\_\+\+Pop}}
+\index{Stack\+\_\+\+Pop@{Stack\+\_\+\+Pop}!stack.\+h@{stack.\+h}}
+\subsubsection{\texorpdfstring{Stack\+\_\+\+Pop()}{Stack\_Pop()}}
+{\footnotesize\ttfamily void$\ast$ Stack\+\_\+\+Pop (\begin{DoxyParamCaption}\item[{\hyperlink{struct_stack}{Stack} $\ast$}]{s }\end{DoxyParamCaption})}
+
+
+
+Pop data from \hyperlink{struct_stack}{Stack}. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em s} & instance of \hyperlink{struct_stack}{Stack}\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+instance of data popped 
+\end{DoxyReturn}
+\mbox{\Hypertarget{stack_8h_af5e65e064f839b2a1836ffb1b1e3b880}\label{stack_8h_af5e65e064f839b2a1836ffb1b1e3b880}} 
+\index{stack.\+h@{stack.\+h}!Stack\+\_\+\+Push@{Stack\+\_\+\+Push}}
+\index{Stack\+\_\+\+Push@{Stack\+\_\+\+Push}!stack.\+h@{stack.\+h}}
+\subsubsection{\texorpdfstring{Stack\+\_\+\+Push()}{Stack\_Push()}}
+{\footnotesize\ttfamily uint8\+\_\+t Stack\+\_\+\+Push (\begin{DoxyParamCaption}\item[{\hyperlink{struct_stack}{Stack} $\ast$}]{s,  }\item[{void $\ast$}]{data }\end{DoxyParamCaption})}
+
+
+
+Push data to \hyperlink{struct_stack}{Stack}. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em s} & instance of \hyperlink{struct_stack}{Stack} \\
+\hline
+{\em data} & instance of data\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+E\+X\+I\+T\+\_\+\+S\+U\+C\+C\+E\+SS if succeed, E\+X\+I\+T\+\_\+\+F\+A\+I\+L\+U\+RE otherwise 
+\end{DoxyReturn}

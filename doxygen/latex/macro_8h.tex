@@ -1,0 +1,53 @@
+\hypertarget{macro_8h}{}\section{src/common/macro.h File Reference}
+\label{macro_8h}\index{src/common/macro.\+h@{src/common/macro.\+h}}
+
+
+header file of commonly used macro  
+
+
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{macro_8h_ab66bafe0e3773f589f4a239eb3aaecff}{E\+R\+R\+O\+R\+\_\+\+M\+SG}(str)
+\begin{DoxyCompactList}\small\item\em Error printed to stderr. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{macro_8h_a8e259b680b0b059eca52866ac23cdda0}\label{macro_8h_a8e259b680b0b059eca52866ac23cdda0}} 
+\#define \hyperlink{macro_8h_a8e259b680b0b059eca52866ac23cdda0}{V\+A\+L\+U\+E\+\_\+\+IN}(x,  y,  z)~(((x) $>$= (y)) \&\& ((x) $<$= (z)))
+\begin{DoxyCompactList}\small\item\em Test if x is between specified values (y and z) \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{macro_8h_ac1d216605cd1e279569a984670c5bdc5}\label{macro_8h_ac1d216605cd1e279569a984670c5bdc5}} 
+\#define \hyperlink{macro_8h_ac1d216605cd1e279569a984670c5bdc5}{V\+A\+L\+U\+E\+\_\+\+S\+UP}(x,  y)~(((x) $>$= (y)))
+\begin{DoxyCompactList}\small\item\em Test if x is superior to y. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{macro_8h_a852cd83f56e754bd6cd22d24b2c23880}\label{macro_8h_a852cd83f56e754bd6cd22d24b2c23880}} 
+\#define \hyperlink{macro_8h_a852cd83f56e754bd6cd22d24b2c23880}{V\+A\+L\+U\+E\+\_\+\+I\+NF}(x,  y)~(((x) $<$= (y)))
+\begin{DoxyCompactList}\small\item\em Test if x is inferior to y. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+header file of commonly used macro 
+
+\begin{DoxyAuthor}{Author}
+Dylan Gageot 
+\end{DoxyAuthor}
+\begin{DoxyVersion}{Version}
+1.\+0 
+\end{DoxyVersion}
+\begin{DoxyDate}{Date}
+2019-\/05-\/11 
+\end{DoxyDate}
+
+
+\subsection{Macro Definition Documentation}
+\mbox{\Hypertarget{macro_8h_ab66bafe0e3773f589f4a239eb3aaecff}\label{macro_8h_ab66bafe0e3773f589f4a239eb3aaecff}} 
+\index{macro.\+h@{macro.\+h}!E\+R\+R\+O\+R\+\_\+\+M\+SG@{E\+R\+R\+O\+R\+\_\+\+M\+SG}}
+\index{E\+R\+R\+O\+R\+\_\+\+M\+SG@{E\+R\+R\+O\+R\+\_\+\+M\+SG}!macro.\+h@{macro.\+h}}
+\subsubsection{\texorpdfstring{E\+R\+R\+O\+R\+\_\+\+M\+SG}{ERROR\_MSG}}
+{\footnotesize\ttfamily \#define E\+R\+R\+O\+R\+\_\+\+M\+SG(\begin{DoxyParamCaption}\item[{}]{str }\end{DoxyParamCaption})}
+
+{\bfseries Value\+:}
+\begin{DoxyCode}
+fprintf(stderr, \textcolor{stringliteral}{"Error: %s at %s, line %d.\(\backslash\)n"}, str, \(\backslash\)
+                        \_\_FILE\_\_, \_\_LINE\_\_);
+\end{DoxyCode}
+
+
+Error printed to stderr. 
+

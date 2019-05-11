@@ -1,0 +1,5 @@
+<map id="MapNROM" name="MapNROM">
+<area shape="rect" id="node2" href="$struct_map_n_r_o_m___c_p_u.html" title="Memory map of CPU when using NROM mapper. " alt="" coords="5,95,129,121"/>
+<area shape="rect" id="node3" href="$struct_i_o_reg.html" title="Register use to communicate with PPU, APU and joystick. " alt="" coords="37,5,97,32"/>
+<area shape="rect" id="node4" href="$struct_map_n_r_o_m___p_p_u.html" title="Memory map of PPU when using NROM mapper. " alt="" coords="154,95,277,121"/>
+</map>

@@ -1,17 +1,9 @@
-/**
- * \file loader.c
- * \brief ROM loader file
- * \author Nicolas CHABANIS
- * \version 1.0
- * \date 2019-03-2
- */
-
 #include "loader.h"
 #include "../mapper/nrom.h"
 #include "../../common/macro.h"
 
 /* Mapper function LUT */
-Mapper* (*createLUT[MAPPER_TOTAL])(Header*) = {
+static Mapper* (*createLUT[MAPPER_TOTAL])(Header*) = {
 	MapNROM_Create,		/* 0 NROM/no mapper */
 	NULL,				/* 1 MMC1 */
 	NULL,				/* 2 CNROM */

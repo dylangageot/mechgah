@@ -1,11 +1,3 @@
-/**
- * \file app.c
- * \brief Application source file
- * \author Dylan Gageot
- * \version 1.0
- * \date 2019-05-05
- */
-
 #include "app.h"
 #include "common/keys.h"
 #include "common/macro.h"

@@ -1,0 +1,112 @@
+\subsection*{Sujet de la réunion}
+
+
+\begin{DoxyItemize}
+\item Discussion autour des headers et des structures de données
+\item Répartition des instructions à émuler
+\item Nécessité de décrire un standard pour le passage de paramètre entre Addressing\+Mode\+\_\+\+Execute() et une instructions
+\end{DoxyItemize}
+
+\subsection*{Headers}
+
+La structure \hyperlink{struct_n_e_s}{N\+ES} contient les élements/composants nécessaires à son émulation (\hyperlink{struct_c_p_u}{C\+PU}, \hyperlink{struct_p_p_u}{P\+PU}, A\+PU, \hyperlink{struct_mapper}{Mapper}...). Les mappers étant de nature différente en fonction de la cartouche, nous avons choisi d\textquotesingle{}adapter la philosophie orienté objet pour que la structure \hyperlink{struct_n_e_s}{N\+ES} et ses méthodes puissent s\textquotesingle{}abstraire du fonctionnement interne du mapper (principe d\textquotesingle{}encapsulation et classe virtuel utilisé pour décrire les mappers).
+
+La structure \hyperlink{struct_c_p_u}{C\+PU} contient les registres internes de fonctionnement (Accumulator, Index X et Y, Program Counter...) ainsi qu\textquotesingle{}une pointeur pointant sur le mapper instancié dans la structure \hyperlink{struct_n_e_s}{N\+ES}.
+
+La structure \hyperlink{struct_mapper}{Mapper} contient 2 pointeurs de fonctions et un pointeur void pour permettent l\textquotesingle{}abstraction du mapper une fois instancié au chargement de la R\+OM.
+
+\subsection*{ \+Répartition des instructions \+:}
+
+
+\begin{DoxyItemize}
+\item 14 instructions par personne
+\end{DoxyItemize}
+
+Baptiste \+: Instructions relatives à la pile, aux interruptions et aux transferts inter-\/registres.
+
+
+\begin{DoxyCode}
+uint8\_t \_CLI(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_PHA(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_PHP(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_PLA(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_PLP(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_RTI(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_RTS(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_SEI(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_TAX(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_TAY(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_TSX(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_TXA(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_TXS(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_TYA(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+\end{DoxyCode}
+
+\begin{DoxyItemize}
+\item Nicolas Hily \+: Instructions de comparaison, incrémentation/décrémentation et gestion de flag du registre P
+\end{DoxyItemize}
+
+
+\begin{DoxyCode}
+uint8\_t \_CLC(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_CLD(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_CLV(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_CMP(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_CPX(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_CPY(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_DEC(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_DEX(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_DEY(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_EOR(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_INC(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_INX(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_INY(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_AND(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+\end{DoxyCode}
+
+
+
+\begin{DoxyItemize}
+\item Dylan \+: Instructions d\textquotesingle{}addition, de branchement et bit test
+\end{DoxyItemize}
+
+
+\begin{DoxyCode}
+uint8\_t \hyperlink{instruction_8h_a03b707d9b2d4827eacc7dc37f9909081}{\_ADC}(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_ASL(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_BCC(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_BCS(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_BEQ(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_BIT(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_BMI(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_BNE(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_BPL(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_BRK(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_BVC(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_BVS(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_JMP(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_JSR(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+\end{DoxyCode}
+
+\begin{DoxyItemize}
+\item Nicolas Chabanis \+: Instructions de chargement/stockage et arithmétique/logique
+\end{DoxyItemize}
+
+
+\begin{DoxyCode}
+uint8\_t \_LDA(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_LDX(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_LDY(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_LSR(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_NOP(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_ORA(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_ROL(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_ROR(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_SBC(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_SEC(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_SED(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_STA(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_STX(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+uint8\_t \_STY(\hyperlink{struct_c_p_u}{CPU}* cpu, uint8\_t *arg);
+\end{DoxyCode}
+ 

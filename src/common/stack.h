@@ -1,24 +1,39 @@
+/**
+ * \file stack.h
+ * \brief header file of Stack module
+ * \author Dylan Gageot
+ * \version 
+ * \date 2019-05-11
+ *
+ * Implementation of a FILO stack
+ */
+
 #ifndef STACK_H
 #define STACK_H
 
+/**
+ * \brief Max capacity of Stack set to 20
+ */
 #define MAX_STACK 20
 
 #include "stdint.h"
 
+/**
+ * \brief Hold stack data and capacity information
+ */
 typedef struct {
 	void *data[MAX_STACK];
 	int8_t index;
 } Stack;
 
 /**
- * \fn Stack_Init
- *
+ * \brief Initialize given Stack
  * \param s instance of Stack
  */
 void Stack_Init(Stack *s);
 
 /**
- * \fn Stack_Push
+ * \brief Push data to Stack
  *
  * \param s instance of Stack
  * \param data instance of data
@@ -28,7 +43,7 @@ void Stack_Init(Stack *s);
 uint8_t Stack_Push(Stack *s, void *data);
 
 /**
- * \fn Stack_Pop
+ * \brief Pop data from Stack
  *
  * \param s instance of Stack
  *
@@ -37,7 +52,7 @@ uint8_t Stack_Push(Stack *s, void *data);
 void* Stack_Pop(Stack *s);
 
 /**
- * \fn Stack_IsEmpty
+ * \brief Is Stack empty?
  *
  * \param s instance of Stack
  *

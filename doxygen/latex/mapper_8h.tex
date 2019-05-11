@@ -1,0 +1,200 @@
+\hypertarget{mapper_8h}{}\section{src/nes/mapper/mapper.h File Reference}
+\label{mapper_8h}\index{src/nes/mapper/mapper.\+h@{src/nes/mapper/mapper.\+h}}
+
+
+header file of \hyperlink{struct_mapper}{Mapper} module  
+
+
+{\ttfamily \#include \char`\"{}stdint.\+h\char`\"{}}\newline
+Include dependency graph for mapper.\+h\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=208pt]{mapper_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{mapper_8h__dep__incl}
+\end{center}
+\end{figure}
+\subsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{struct_mapper}{Mapper}
+\begin{DoxyCompactList}\small\item\em Generic structure to hold mapper. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+enum \hyperlink{mapper_8h_a9387b3dd9068d2012b3fb9dc44191672}{Address\+Space} \{ \hyperlink{mapper_8h_a9387b3dd9068d2012b3fb9dc44191672af8121c0f8df681863b2381f6ec599041}{A\+S\+\_\+\+C\+PU} = 0, 
+\hyperlink{mapper_8h_a9387b3dd9068d2012b3fb9dc44191672a4758dfa9ec095b60d0f3fa616c798480}{A\+S\+\_\+\+P\+PU}, 
+\hyperlink{mapper_8h_a9387b3dd9068d2012b3fb9dc44191672a9fa8fba91d4a2b04d6a0288882950e45}{A\+S\+\_\+\+L\+DR}
+ \}\begin{DoxyCompactList}\small\item\em Use to specify to the mapper in which address space we want to retrieve the data. \end{DoxyCompactList}
+\item 
+enum \hyperlink{mapper_8h_a01f18757791d134ebfcac29738a70f68}{Loader\+Data} \{ \hyperlink{mapper_8h_a01f18757791d134ebfcac29738a70f68a4de1befec88b1dac8e0a905707cdb56c}{L\+D\+R\+\_\+\+P\+RG} = 0, 
+\hyperlink{mapper_8h_a01f18757791d134ebfcac29738a70f68a6c90ffd14690523970700d61e780dab8}{L\+D\+R\+\_\+\+C\+HR}, 
+\hyperlink{mapper_8h_a01f18757791d134ebfcac29738a70f68aa9a0e3cb5dda5a858d4e24a998b0d85e}{L\+D\+R\+\_\+\+I\+OR}
+ \}\begin{DoxyCompactList}\small\item\em Use to get pointer to P\+R\+G\+R\+OM and C\+H\+R\+R\+OM. \end{DoxyCompactList}
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{struct_mapper}{Mapper} $\ast$ \hyperlink{mapper_8h_ab7efcdf3e7b12eeed777c66551d056c6}{Mapper\+\_\+\+Create} (void $\ast$($\ast$get)(void $\ast$, uint8\+\_\+t, uint16\+\_\+t), void($\ast$destroyer)(void $\ast$), uint8\+\_\+t($\ast$ack)(void $\ast$, uint16\+\_\+t), void $\ast$mapper\+Data)
+\begin{DoxyCompactList}\small\item\em Create instance of mapper from callback and data of specific mapper. \end{DoxyCompactList}\item 
+void \hyperlink{mapper_8h_a808b5d82dd209d051933e060dda17469}{Mapper\+\_\+\+Destroy} (\hyperlink{struct_mapper}{Mapper} $\ast$self)
+\begin{DoxyCompactList}\small\item\em Destroy instance of \hyperlink{struct_mapper}{Mapper}. \end{DoxyCompactList}\item 
+uint8\+\_\+t $\ast$ \hyperlink{mapper_8h_a4eb170906c0a22a554aadd5d9bc2acb9}{Mapper\+\_\+\+Get} (\hyperlink{struct_mapper}{Mapper} $\ast$self, uint8\+\_\+t space, uint16\+\_\+t address)
+\begin{DoxyCompactList}\small\item\em Get pointer from memory for a specific address. \end{DoxyCompactList}\item 
+uint8\+\_\+t \hyperlink{mapper_8h_a57991ddbdc6a0b643ca8101be19ca26f}{Mapper\+\_\+\+Ack} (\hyperlink{struct_mapper}{Mapper} $\ast$self, uint16\+\_\+t address)
+\begin{DoxyCompactList}\small\item\em Ask for the last type of access at a register and aknowledge it. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+header file of \hyperlink{struct_mapper}{Mapper} module 
+
+\begin{DoxyAuthor}{Author}
+Dylan Gageot 
+\end{DoxyAuthor}
+\begin{DoxyVersion}{Version}
+1.\+0 
+\end{DoxyVersion}
+\begin{DoxyDate}{Date}
+2019-\/02-\/20 
+\end{DoxyDate}
+
+
+\subsection{Enumeration Type Documentation}
+\mbox{\Hypertarget{mapper_8h_a9387b3dd9068d2012b3fb9dc44191672}\label{mapper_8h_a9387b3dd9068d2012b3fb9dc44191672}} 
+\index{mapper.\+h@{mapper.\+h}!Address\+Space@{Address\+Space}}
+\index{Address\+Space@{Address\+Space}!mapper.\+h@{mapper.\+h}}
+\subsubsection{\texorpdfstring{Address\+Space}{AddressSpace}}
+{\footnotesize\ttfamily enum \hyperlink{mapper_8h_a9387b3dd9068d2012b3fb9dc44191672}{Address\+Space}}
+
+
+
+Use to specify to the mapper in which address space we want to retrieve the data. 
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{A\+S\+\_\+\+C\+PU@{A\+S\+\_\+\+C\+PU}!mapper.\+h@{mapper.\+h}}\index{mapper.\+h@{mapper.\+h}!A\+S\+\_\+\+C\+PU@{A\+S\+\_\+\+C\+PU}}}\mbox{\Hypertarget{mapper_8h_a9387b3dd9068d2012b3fb9dc44191672af8121c0f8df681863b2381f6ec599041}\label{mapper_8h_a9387b3dd9068d2012b3fb9dc44191672af8121c0f8df681863b2381f6ec599041}} 
+A\+S\+\_\+\+C\+PU&\hyperlink{struct_c_p_u}{C\+PU} address space \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{A\+S\+\_\+\+P\+PU@{A\+S\+\_\+\+P\+PU}!mapper.\+h@{mapper.\+h}}\index{mapper.\+h@{mapper.\+h}!A\+S\+\_\+\+P\+PU@{A\+S\+\_\+\+P\+PU}}}\mbox{\Hypertarget{mapper_8h_a9387b3dd9068d2012b3fb9dc44191672a4758dfa9ec095b60d0f3fa616c798480}\label{mapper_8h_a9387b3dd9068d2012b3fb9dc44191672a4758dfa9ec095b60d0f3fa616c798480}} 
+A\+S\+\_\+\+P\+PU&\hyperlink{struct_p_p_u}{P\+PU} addrsss space \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{A\+S\+\_\+\+L\+DR@{A\+S\+\_\+\+L\+DR}!mapper.\+h@{mapper.\+h}}\index{mapper.\+h@{mapper.\+h}!A\+S\+\_\+\+L\+DR@{A\+S\+\_\+\+L\+DR}}}\mbox{\Hypertarget{mapper_8h_a9387b3dd9068d2012b3fb9dc44191672a9fa8fba91d4a2b04d6a0288882950e45}\label{mapper_8h_a9387b3dd9068d2012b3fb9dc44191672a9fa8fba91d4a2b04d6a0288882950e45}} 
+A\+S\+\_\+\+L\+DR&Loader special access \\
+\hline
+
+\end{DoxyEnumFields}
+\mbox{\Hypertarget{mapper_8h_a01f18757791d134ebfcac29738a70f68}\label{mapper_8h_a01f18757791d134ebfcac29738a70f68}} 
+\index{mapper.\+h@{mapper.\+h}!Loader\+Data@{Loader\+Data}}
+\index{Loader\+Data@{Loader\+Data}!mapper.\+h@{mapper.\+h}}
+\subsubsection{\texorpdfstring{Loader\+Data}{LoaderData}}
+{\footnotesize\ttfamily enum \hyperlink{mapper_8h_a01f18757791d134ebfcac29738a70f68}{Loader\+Data}}
+
+
+
+Use to get pointer to P\+R\+G\+R\+OM and C\+H\+R\+R\+OM. 
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{L\+D\+R\+\_\+\+P\+RG@{L\+D\+R\+\_\+\+P\+RG}!mapper.\+h@{mapper.\+h}}\index{mapper.\+h@{mapper.\+h}!L\+D\+R\+\_\+\+P\+RG@{L\+D\+R\+\_\+\+P\+RG}}}\mbox{\Hypertarget{mapper_8h_a01f18757791d134ebfcac29738a70f68a4de1befec88b1dac8e0a905707cdb56c}\label{mapper_8h_a01f18757791d134ebfcac29738a70f68a4de1befec88b1dac8e0a905707cdb56c}} 
+L\+D\+R\+\_\+\+P\+RG&Get pointer for P\+G\+R-\/\+R\+OM \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{L\+D\+R\+\_\+\+C\+HR@{L\+D\+R\+\_\+\+C\+HR}!mapper.\+h@{mapper.\+h}}\index{mapper.\+h@{mapper.\+h}!L\+D\+R\+\_\+\+C\+HR@{L\+D\+R\+\_\+\+C\+HR}}}\mbox{\Hypertarget{mapper_8h_a01f18757791d134ebfcac29738a70f68a6c90ffd14690523970700d61e780dab8}\label{mapper_8h_a01f18757791d134ebfcac29738a70f68a6c90ffd14690523970700d61e780dab8}} 
+L\+D\+R\+\_\+\+C\+HR&Get pointer for C\+HR \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{L\+D\+R\+\_\+\+I\+OR@{L\+D\+R\+\_\+\+I\+OR}!mapper.\+h@{mapper.\+h}}\index{mapper.\+h@{mapper.\+h}!L\+D\+R\+\_\+\+I\+OR@{L\+D\+R\+\_\+\+I\+OR}}}\mbox{\Hypertarget{mapper_8h_a01f18757791d134ebfcac29738a70f68aa9a0e3cb5dda5a858d4e24a998b0d85e}\label{mapper_8h_a01f18757791d134ebfcac29738a70f68aa9a0e3cb5dda5a858d4e24a998b0d85e}} 
+L\+D\+R\+\_\+\+I\+OR&Get pointer for \hyperlink{struct_i_o_reg}{I\+O\+Reg} \\
+\hline
+
+\end{DoxyEnumFields}
+
+
+\subsection{Function Documentation}
+\mbox{\Hypertarget{mapper_8h_a57991ddbdc6a0b643ca8101be19ca26f}\label{mapper_8h_a57991ddbdc6a0b643ca8101be19ca26f}} 
+\index{mapper.\+h@{mapper.\+h}!Mapper\+\_\+\+Ack@{Mapper\+\_\+\+Ack}}
+\index{Mapper\+\_\+\+Ack@{Mapper\+\_\+\+Ack}!mapper.\+h@{mapper.\+h}}
+\subsubsection{\texorpdfstring{Mapper\+\_\+\+Ack()}{Mapper\_Ack()}}
+{\footnotesize\ttfamily uint8\+\_\+t Mapper\+\_\+\+Ack (\begin{DoxyParamCaption}\item[{\hyperlink{struct_mapper}{Mapper} $\ast$}]{self,  }\item[{uint16\+\_\+t}]{address }\end{DoxyParamCaption})}
+
+
+
+Ask for the last type of access at a register and aknowledge it. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em self} & instance of \hyperlink{struct_mapper}{Mapper} \\
+\hline
+{\em address} & address to get access information from\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+1 if address accesed before, 0 otherwise 
+\end{DoxyReturn}
+\mbox{\Hypertarget{mapper_8h_ab7efcdf3e7b12eeed777c66551d056c6}\label{mapper_8h_ab7efcdf3e7b12eeed777c66551d056c6}} 
+\index{mapper.\+h@{mapper.\+h}!Mapper\+\_\+\+Create@{Mapper\+\_\+\+Create}}
+\index{Mapper\+\_\+\+Create@{Mapper\+\_\+\+Create}!mapper.\+h@{mapper.\+h}}
+\subsubsection{\texorpdfstring{Mapper\+\_\+\+Create()}{Mapper\_Create()}}
+{\footnotesize\ttfamily \hyperlink{struct_mapper}{Mapper}$\ast$ Mapper\+\_\+\+Create (\begin{DoxyParamCaption}\item[{void $\ast$($\ast$)(void $\ast$, uint8\+\_\+t, uint16\+\_\+t)}]{get,  }\item[{void($\ast$)(void $\ast$)}]{destroyer,  }\item[{uint8\+\_\+t($\ast$)(void $\ast$, uint16\+\_\+t)}]{ack,  }\item[{void $\ast$}]{mapper\+Data }\end{DoxyParamCaption})}
+
+
+
+Create instance of mapper from callback and data of specific mapper. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em get} & Get callback \\
+\hline
+{\em destroyer} & Destroyer callback \\
+\hline
+{\em ack} & Acknowledge callback \\
+\hline
+{\em mapper\+Data} & \hyperlink{struct_mapper}{Mapper} data\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+instance of \hyperlink{struct_mapper}{Mapper} 
+\end{DoxyReturn}
+\mbox{\Hypertarget{mapper_8h_a808b5d82dd209d051933e060dda17469}\label{mapper_8h_a808b5d82dd209d051933e060dda17469}} 
+\index{mapper.\+h@{mapper.\+h}!Mapper\+\_\+\+Destroy@{Mapper\+\_\+\+Destroy}}
+\index{Mapper\+\_\+\+Destroy@{Mapper\+\_\+\+Destroy}!mapper.\+h@{mapper.\+h}}
+\subsubsection{\texorpdfstring{Mapper\+\_\+\+Destroy()}{Mapper\_Destroy()}}
+{\footnotesize\ttfamily void Mapper\+\_\+\+Destroy (\begin{DoxyParamCaption}\item[{\hyperlink{struct_mapper}{Mapper} $\ast$}]{self }\end{DoxyParamCaption})}
+
+
+
+Destroy instance of \hyperlink{struct_mapper}{Mapper}. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em self} & free \hyperlink{struct_mapper}{Mapper} allocation \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{mapper_8h_a4eb170906c0a22a554aadd5d9bc2acb9}\label{mapper_8h_a4eb170906c0a22a554aadd5d9bc2acb9}} 
+\index{mapper.\+h@{mapper.\+h}!Mapper\+\_\+\+Get@{Mapper\+\_\+\+Get}}
+\index{Mapper\+\_\+\+Get@{Mapper\+\_\+\+Get}!mapper.\+h@{mapper.\+h}}
+\subsubsection{\texorpdfstring{Mapper\+\_\+\+Get()}{Mapper\_Get()}}
+{\footnotesize\ttfamily uint8\+\_\+t$\ast$ Mapper\+\_\+\+Get (\begin{DoxyParamCaption}\item[{\hyperlink{struct_mapper}{Mapper} $\ast$}]{self,  }\item[{uint8\+\_\+t}]{space,  }\item[{uint16\+\_\+t}]{address }\end{DoxyParamCaption})}
+
+
+
+Get pointer from memory for a specific address. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em self} & instance of \hyperlink{struct_mapper}{Mapper} \\
+\hline
+{\em space} & in which address space to look and with type of access \\
+\hline
+{\em address} & address to get data from\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+pointer of pointed data 
+\end{DoxyReturn}

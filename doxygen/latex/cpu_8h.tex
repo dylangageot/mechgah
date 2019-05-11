@@ -1,0 +1,168 @@
+\hypertarget{cpu_8h}{}\section{src/nes/cpu/cpu.h File Reference}
+\label{cpu_8h}\index{src/nes/cpu/cpu.\+h@{src/nes/cpu/cpu.\+h}}
+
+
+header file of \hyperlink{struct_c_p_u}{C\+PU} module  
+
+
+{\ttfamily \#include \char`\"{}../mapper/mapper.\+h\char`\"{}}\newline
+Include dependency graph for cpu.\+h\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=181pt]{cpu_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{cpu_8h__dep__incl}
+\end{center}
+\end{figure}
+\subsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{struct_c_p_u}{C\+PU}
+\begin{DoxyCompactList}\small\item\em Hold \hyperlink{struct_c_p_u}{C\+PU}\textquotesingle{}s register and memory. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{cpu_8h_a5327866481e96fcab2a4c327a9fab75e}\label{cpu_8h_a5327866481e96fcab2a4c327a9fab75e}} 
+\#define {\bfseries N\+M\+I\+\_\+\+J\+M\+P\+\_\+\+A\+DD}~0x\+F\+F\+FA
+\item 
+\mbox{\Hypertarget{cpu_8h_ac7bd2e5bfd09dfc74f62fbecae987f02}\label{cpu_8h_ac7bd2e5bfd09dfc74f62fbecae987f02}} 
+\#define {\bfseries R\+E\+S\+\_\+\+J\+M\+P\+\_\+\+A\+DD}~0x\+F\+F\+FC
+\item 
+\mbox{\Hypertarget{cpu_8h_a523224c2ef57d3e150946f97a17b797a}\label{cpu_8h_a523224c2ef57d3e150946f97a17b797a}} 
+\#define {\bfseries I\+R\+Q\+\_\+\+J\+M\+P\+\_\+\+A\+DD}~0x\+F\+F\+FE
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{struct_c_p_u}{C\+PU} $\ast$ \hyperlink{cpu_8h_a0da541cd0a5384beda759a1541959db1}{C\+P\+U\+\_\+\+Create} (\hyperlink{struct_mapper}{Mapper} $\ast$mapper)
+\begin{DoxyCompactList}\small\item\em Allocate memory for \hyperlink{struct_c_p_u}{C\+PU} structure. \end{DoxyCompactList}\item 
+uint8\+\_\+t \hyperlink{cpu_8h_ae90182d7306c67b8abfb7312ddf62c3b}{C\+P\+U\+\_\+\+Init} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$self)
+\begin{DoxyCompactList}\small\item\em Initialize all \hyperlink{struct_c_p_u}{C\+PU} registers (A, X, Y, SP, P and PC) \end{DoxyCompactList}\item 
+uint8\+\_\+t \hyperlink{cpu_8h_a9ceedd2706d215552219514eac5dfcae}{C\+P\+U\+\_\+\+Interrupt\+Manager} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$self, uint8\+\_\+t $\ast$context)
+\begin{DoxyCompactList}\small\item\em Handle the N\+MI, I\+RQ and B\+RK interrupts. \end{DoxyCompactList}\item 
+uint8\+\_\+t \hyperlink{cpu_8h_ab501ecf3e3d7f549067265905fa9556a}{C\+P\+U\+\_\+\+Execute} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$self, uint8\+\_\+t $\ast$context, uint32\+\_\+t $\ast$clock\+Cycle)
+\begin{DoxyCompactList}\small\item\em Execute the next instruction. \end{DoxyCompactList}\item 
+void \hyperlink{cpu_8h_af1d3bd78687b4d0a1c5fca018287e44c}{C\+P\+U\+\_\+\+Destroy} (\hyperlink{struct_c_p_u}{C\+PU} $\ast$self)
+\begin{DoxyCompactList}\small\item\em Free \hyperlink{struct_c_p_u}{C\+PU}\textquotesingle{}s instance. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+header file of \hyperlink{struct_c_p_u}{C\+PU} module 
+
+\begin{DoxyAuthor}{Author}
+Dylan Gageot 
+\end{DoxyAuthor}
+\begin{DoxyVersion}{Version}
+1.\+0 
+\end{DoxyVersion}
+\begin{DoxyDate}{Date}
+2019-\/02-\/13 
+\end{DoxyDate}
+
+
+\subsection{Function Documentation}
+\mbox{\Hypertarget{cpu_8h_a0da541cd0a5384beda759a1541959db1}\label{cpu_8h_a0da541cd0a5384beda759a1541959db1}} 
+\index{cpu.\+h@{cpu.\+h}!C\+P\+U\+\_\+\+Create@{C\+P\+U\+\_\+\+Create}}
+\index{C\+P\+U\+\_\+\+Create@{C\+P\+U\+\_\+\+Create}!cpu.\+h@{cpu.\+h}}
+\subsubsection{\texorpdfstring{C\+P\+U\+\_\+\+Create()}{CPU\_Create()}}
+{\footnotesize\ttfamily \hyperlink{struct_c_p_u}{C\+PU}$\ast$ C\+P\+U\+\_\+\+Create (\begin{DoxyParamCaption}\item[{\hyperlink{struct_mapper}{Mapper} $\ast$}]{mapper }\end{DoxyParamCaption})}
+
+
+
+Allocate memory for \hyperlink{struct_c_p_u}{C\+PU} structure. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em mapper} & address of \hyperlink{struct_mapper}{Mapper} pointer from \hyperlink{struct_n_e_s}{N\+ES} struct\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+instance of \hyperlink{struct_c_p_u}{C\+PU} allocated 
+\end{DoxyReturn}
+\mbox{\Hypertarget{cpu_8h_af1d3bd78687b4d0a1c5fca018287e44c}\label{cpu_8h_af1d3bd78687b4d0a1c5fca018287e44c}} 
+\index{cpu.\+h@{cpu.\+h}!C\+P\+U\+\_\+\+Destroy@{C\+P\+U\+\_\+\+Destroy}}
+\index{C\+P\+U\+\_\+\+Destroy@{C\+P\+U\+\_\+\+Destroy}!cpu.\+h@{cpu.\+h}}
+\subsubsection{\texorpdfstring{C\+P\+U\+\_\+\+Destroy()}{CPU\_Destroy()}}
+{\footnotesize\ttfamily void C\+P\+U\+\_\+\+Destroy (\begin{DoxyParamCaption}\item[{\hyperlink{struct_c_p_u}{C\+PU} $\ast$}]{self }\end{DoxyParamCaption})}
+
+
+
+Free \hyperlink{struct_c_p_u}{C\+PU}\textquotesingle{}s instance. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em self} & \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{cpu_8h_ab501ecf3e3d7f549067265905fa9556a}\label{cpu_8h_ab501ecf3e3d7f549067265905fa9556a}} 
+\index{cpu.\+h@{cpu.\+h}!C\+P\+U\+\_\+\+Execute@{C\+P\+U\+\_\+\+Execute}}
+\index{C\+P\+U\+\_\+\+Execute@{C\+P\+U\+\_\+\+Execute}!cpu.\+h@{cpu.\+h}}
+\subsubsection{\texorpdfstring{C\+P\+U\+\_\+\+Execute()}{CPU\_Execute()}}
+{\footnotesize\ttfamily uint8\+\_\+t C\+P\+U\+\_\+\+Execute (\begin{DoxyParamCaption}\item[{\hyperlink{struct_c_p_u}{C\+PU} $\ast$}]{self,  }\item[{uint8\+\_\+t $\ast$}]{context,  }\item[{uint32\+\_\+t $\ast$}]{clock\+Cycle }\end{DoxyParamCaption})}
+
+
+
+Execute the next instruction. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em self} & instance of \hyperlink{struct_c_p_u}{C\+PU} \\
+\hline
+{\em context} & variable containing interrupt flags \\
+\hline
+{\em clock\+Cycle} & pointer to clock cycle variable\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+number of clock cycle used to execute the instruction 
+\end{DoxyReturn}
+\mbox{\Hypertarget{cpu_8h_ae90182d7306c67b8abfb7312ddf62c3b}\label{cpu_8h_ae90182d7306c67b8abfb7312ddf62c3b}} 
+\index{cpu.\+h@{cpu.\+h}!C\+P\+U\+\_\+\+Init@{C\+P\+U\+\_\+\+Init}}
+\index{C\+P\+U\+\_\+\+Init@{C\+P\+U\+\_\+\+Init}!cpu.\+h@{cpu.\+h}}
+\subsubsection{\texorpdfstring{C\+P\+U\+\_\+\+Init()}{CPU\_Init()}}
+{\footnotesize\ttfamily uint8\+\_\+t C\+P\+U\+\_\+\+Init (\begin{DoxyParamCaption}\item[{\hyperlink{struct_c_p_u}{C\+PU} $\ast$}]{self }\end{DoxyParamCaption})}
+
+
+
+Initialize all \hyperlink{struct_c_p_u}{C\+PU} registers (A, X, Y, SP, P and PC) 
+
+
+\begin{DoxyParams}{Parameters}
+{\em self} & instance of \hyperlink{struct_c_p_u}{C\+PU}\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+E\+X\+I\+T\+\_\+\+S\+U\+C\+C\+E\+SS if succeed, E\+X\+I\+T\+\_\+\+F\+A\+I\+L\+U\+RE otherwise 
+\end{DoxyReturn}
+\mbox{\Hypertarget{cpu_8h_a9ceedd2706d215552219514eac5dfcae}\label{cpu_8h_a9ceedd2706d215552219514eac5dfcae}} 
+\index{cpu.\+h@{cpu.\+h}!C\+P\+U\+\_\+\+Interrupt\+Manager@{C\+P\+U\+\_\+\+Interrupt\+Manager}}
+\index{C\+P\+U\+\_\+\+Interrupt\+Manager@{C\+P\+U\+\_\+\+Interrupt\+Manager}!cpu.\+h@{cpu.\+h}}
+\subsubsection{\texorpdfstring{C\+P\+U\+\_\+\+Interrupt\+Manager()}{CPU\_InterruptManager()}}
+{\footnotesize\ttfamily uint8\+\_\+t C\+P\+U\+\_\+\+Interrupt\+Manager (\begin{DoxyParamCaption}\item[{\hyperlink{struct_c_p_u}{C\+PU} $\ast$}]{self,  }\item[{uint8\+\_\+t $\ast$}]{context }\end{DoxyParamCaption})}
+
+
+
+Handle the N\+MI, I\+RQ and B\+RK interrupts. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em self} & instance of \hyperlink{struct_c_p_u}{C\+PU} \\
+\hline
+{\em context} & variable that contains interrupt flags. xxxx x\+I\+NR \+:
+\begin{DoxyItemize}
+\item R \+: R\+E\+S\+ET signal detected
+\item N \+: N\+MI detected at the end of the previous instruction
+\item I \+: I\+RQ detected at the end of the previous instruction
+\item x \+: non used bits 
+\end{DoxyItemize}\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+number of clock cycle used to execute the instruction 
+\end{DoxyReturn}

@@ -1,6 +1,6 @@
 /**
  * \file app.h
- * \brief NES Emulator application based on SDL
+ * \brief header file of App using SDL
  * \author Dylan Gageot
  * \version 1.0
  * \date 2019-05-05
@@ -14,19 +14,21 @@
 
 #define TICK_INTERVAL 16
 
+/**
+ * \brief Hold application data
+ */
 typedef struct {
 	/* Emulator */
-	NES *nes;
+	NES *nes;						/*!< Instance of NES emulator	*/
 	/* SDL */
-	SDL_Surface *screen;
-	uint16_t keysConfig[16];
+	SDL_Surface *screen;			/*!< Main screen surface		*/
+	uint16_t keysConfig[16];		/*!< Key configuration			*/
 	/* Render and timing information */
-	uint8_t scale;
-	uint32_t nextFlip;	
+	uint8_t scale;					/*!< Scale factor for rendering	*/
+	uint32_t nextFlip;				/*!< Timestamp to next frame	*/
 } App;
 
 /**
- * \fn App_Init
  * \brief Retrieve information from given launch option and init emulator
  *
  * \param self instance of App
@@ -39,7 +41,6 @@ uint8_t App_Init(App *self, int argc, char **argv);
 
 
 /**
- * \fn App_TimeLeft
  * \brief Give time left for delaying screen refresh
  *
  * \param self instance of App
@@ -49,7 +50,6 @@ uint8_t App_Init(App *self, int argc, char **argv);
 uint32_t App_TimeLeft(App *self);
 
 /**
- * \fn App_Execute
  * \brief Execute application
  *
  * \param self instance of App

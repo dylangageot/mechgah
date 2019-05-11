@@ -1,10 +1,3 @@
-/**
- * \file main.c
- * \brief Main source of NES Emulator
- * \version 1.0
- * \date 2019-05-05
- */
-
 #include "src/app.h"
 
 int main(int argc, char **argv) {
