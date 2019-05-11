@@ -1,4 +1,4 @@
-# NES Emulator
+# NES Emulator README
 
 ## Dependencies
 
@@ -19,7 +19,7 @@ make clean      # clean every generated file (including coverage dir)
 
 ## User manual
 
-### Synopis
+### Synopsis
 ```bash
 ./main [OPTIONS]... [ROM]
 ```
