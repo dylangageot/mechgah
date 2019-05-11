@@ -5,11 +5,12 @@
  * \version 1.0
  * \date 2019-05-02
  */
-
+ 
 #ifndef CONTROLLER_H
 #define CONTROLLER_H
 
 #include "../mapper/mapper.h"
+#include "joypad.h"
 
 /**
  * \brief Holds necessary variables for the controller emulation to work.
@@ -17,12 +18,12 @@
 */
 typedef struct{
   int lastState;
-  int shiftState;
-  int polling;
-  uint16_t keys;
+  uint16_t keysPressed;
+  uint8_t JOY1; /* connected to $4016 (IOReg)*/
+  uint8_t JOY2; /* connected to $4017 (IOReg)*/
   Mapper *mapper;
-  uint8_t JOY1;
-  uint8_t JOY2;
+  Joypad *joy1;
+  Joypad *joy2;
 } Controller;
 
 /**
@@ -37,7 +38,7 @@ Controller* Controller_Create(Mapper *mapper);
  * \param The instance of the controller
  * \param The state of the current pressed keys (2*8 keys)
 */
-void Controller_Execute(Controller *self, uint16_t keys);
+void Controller_Execute(Controller *self, uint16_t keysPressed);
 
 /**
  * \brief Frees the controller instance's memory
