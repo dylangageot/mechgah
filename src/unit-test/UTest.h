@@ -52,3 +52,11 @@ int run_UTstack(void);
  * \return 0 if passed, number of failed otherwise
  */
 int run_UTppu(void);
+
+/**
+ * \fn run_UTjoypad
+ * \brief Unit test of Joypad module
+ *
+ * \return 0 if passed, number of failed otherwise
+ */
+int run_UTjoypad(void);

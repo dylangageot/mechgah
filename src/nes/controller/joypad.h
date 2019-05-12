@@ -9,6 +9,8 @@
  #ifndef JOYPAD_H
  #define JOYPAD_H
 
+#include <stdint.h>
+
  /**
   * \brief Holds necessary variables for one joypad
  */
