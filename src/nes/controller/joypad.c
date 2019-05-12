@@ -45,6 +45,7 @@ uint8_t Joypad_Shift(Joypad *self){
     self->polling = 0;
     self->shiftState = 1;
     self->stateRegister = 0;
+    return 0x01;
     }
 }
 
