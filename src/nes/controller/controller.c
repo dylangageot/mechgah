@@ -78,5 +78,7 @@ void Controller_Destroy(Controller *self){
   if(self == NULL){
     return;
   }
+  Joypad_Destroy(self->joy1);
+  Joypad_Destroy(self->joy2);
   free(self);
 }

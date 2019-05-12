@@ -47,3 +47,10 @@ uint8_t Joypad_Shift(Joypad *self){
     self->stateRegister = 0;
     }
 }
+
+ void Joypad_Destroy(Joypad *self){
+   if(self == NULL){
+     return;
+   }
+   free(self);
+ }
