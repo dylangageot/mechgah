@@ -30,19 +30,22 @@ Joypad* Joypad_Create(int id);
  * \brief Latches the current pressed keys into the stateRegister
  * and writes the value of A on $401x[0] (x=6 for joy1, 7 for joy2)
  * \param self instance of the Joypad
- * \return value of new lastState
+ * \param values of the pressed keys
+ * \return new value of JOYx[0]
 */
 uint8_t Joypad_Latch(Joypad *self, uint16_t keysPressed);
 
 /**
  * \brief returns the polling variable
  * \param self instance of the Joypad
+ * \return value of polling variable
 */
 int Joypad_getPolling(Joypad *self);
 
 /**
  * \brief Shifts once the stateRegister into $401x[0] (x=6 for joy1, 7 for joy2)
  * \param self instance of the Joypad
+ * \return new value of JOYx[0]
 */
 uint8_t Joypad_Shift(Joypad *self);
 
