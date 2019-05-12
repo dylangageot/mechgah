@@ -26,13 +26,6 @@
     8 = RIGHT
 */
 
-void printBits(uint8_t val) {
-  for (int i = 7; 0 <= i; i--) {
-    printf("%c", (val & (1 << i)) ? '1' : '0');
-  }
-  printf("\n");
-}
-
 Controller* Controller_Create(Mapper *mapper){
   Controller * self = (Controller*)malloc(sizeof(Controller));
   if(self != NULL){
