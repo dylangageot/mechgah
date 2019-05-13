@@ -7,12 +7,13 @@
 
 static Keys keys[30]={{"A",SDLK_a},{"B",SDLK_b},{"C",SDLK_c},{"D",SDLK_d},
                       {"E",SDLK_e},{"F",SDLK_f},{"G",SDLK_g},{"H",SDLK_h},
-                      {"I",SDLK_i},{"J",SDLK_j},{"K",SDLK_k},{"L",SDLK_m},
+                      {"I",SDLK_i},{"J",SDLK_j},{"K",SDLK_k},{"L",SDLK_l},
                       {"M",SDLK_m},{"N",SDLK_n},{"O",SDLK_o},{"P",SDLK_p},
                       {"Q",SDLK_q},{"R",SDLK_r},{"S",SDLK_s},{"T",SDLK_t},
                       {"U",SDLK_u},{"V",SDLK_v},{"W",SDLK_w},{"X",SDLK_x},
                       {"Y",SDLK_y},{"Z",SDLK_z},
-                      {"UP",SDLK_UP},{"DOWN",SDLK_DOWN},{"RIGHT",SDLK_RIGHT},{"LEFT",SDLK_LEFT}};
+                      {"UP",SDLK_UP},{"DOWN",SDLK_DOWN},
+                      {"RIGHT",SDLK_RIGHT},{"LEFT",SDLK_LEFT}};
 
 uint16_t charToSdlk(char * key){
     int i=0;
@@ -33,6 +34,7 @@ char * SdlkToChar(uint16_t sdlk){
 }
 
 int writeFileKeys(char * nameFile, uint16_t * keysSelect){
+    if (keysSelect == NULL) return 0;
     FILE * pFile = NULL;
     pFile = fopen(nameFile,"w");
 	if (pFile == NULL) return 0;
@@ -57,6 +59,7 @@ int writeFileKeys(char * nameFile, uint16_t * keysSelect){
 }
 
 int readFileKeys(char * nameFile, uint16_t * keysSelect){
+    if (keysSelect == NULL) return 0;
     FILE * pFile = NULL;
     char temp[30];
     char key[10];
@@ -65,7 +68,8 @@ int readFileKeys(char * nameFile, uint16_t * keysSelect){
     pFile = fopen(nameFile,"r");
 	if (pFile == NULL) return 0;
     while (fgets(temp,30,pFile)) {
-        sscanf(temp,"%s : %d : %s",buf,&i,key);
+        if(sscanf(temp,"%s : %d : %s",buf,&i,key)!=3)
+            return 0;
         keysSelect[i]=charToSdlk(key);
     }
     fclose(pFile);
@@ -73,7 +77,7 @@ int readFileKeys(char * nameFile, uint16_t * keysSelect){
 }
 
 int handleKeys(uint16_t * keysSelect, uint16_t * keysPressed, SDL_Event * event){
-	while(SDL_PollEvent(event))
+    while(SDL_PollEvent(event))
     {
       if(event->type == SDL_KEYDOWN){
             if(event->key.keysym.sym == keysSelect[0])
