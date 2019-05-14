@@ -30,7 +30,7 @@ char * SdlkToChar(uint16_t sdlk){
         if(keys[i].SDLK == sdlk)
             return keys[i].keyName;
     }
-    return 0;
+    return NULL;
 }
 
 int writeFileKeys(char * nameFile, uint16_t * keysSelect){
@@ -68,9 +68,9 @@ int readFileKeys(char * nameFile, uint16_t * keysSelect){
     pFile = fopen(nameFile,"r");
 	if (pFile == NULL) return 0;
     while (fgets(temp,30,pFile)) {
-        if(sscanf(temp,"%s : %d : %s",buf,&i,key)!=3)
-            return 0;
+        sscanf(temp,"%s : %d : %s",buf,&i,key);
         keysSelect[i]=charToSdlk(key);
+        if(keysSelect[i]==0) return 0;
     }
     fclose(pFile);
     return 1;
