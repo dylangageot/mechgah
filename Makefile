@@ -19,7 +19,7 @@ SRC  		= $(NESDIR)/mapper/nrom.c \
 			  $(NESDIR)/cpu/cpu.c \
 			  $(NESDIR)/ppu/ppu.c \
 			  $(NESDIR)/nes.c \
-				$(NESDIR)/controller/controller.c \
+			  $(NESDIR)/controller/controller.c \
 			  $(COMMONDIR)/stack.c \
 			  $(SRCDIR)/app.c \
 			  $(UTESTDIR)/UTnrom.c \
@@ -28,6 +28,7 @@ SRC  		= $(NESDIR)/mapper/nrom.c \
 			  $(UTESTDIR)/UTcpu.c \
 			  $(UTESTDIR)/UTstack.c \
 			  $(UTESTDIR)/UTppu.c \
+			  $(UTESTDIR)/UTkeys.c \
 			  $(COMMONDIR)/keys.c \
 
 # use gcc
@@ -35,7 +36,7 @@ CC			= gcc
 # compilation options
 CFLAGS  	= -Wall -Wextra -MMD
 # linking options
-LDFLAGS 	= -lcmocka -lSDL -lSDL_gfx
+LDFLAGS 	=  -lcmocka -lSDL -lSDL_gfx
 
 # add debug option to gcc if needed
 DEBUG = no
@@ -56,11 +57,11 @@ $(OUTNAME): $(OUTNAME).o $(OBJS) $(SRC)
 
 # unit test executable compilation
 $(UTEST): $(UTESTDIR)/$(UTEST).o $(OBJS) $(SRC)
-			  $(CC) $< $(OBJS) $(LDFLAGS) -o $@
+			  $(CC) $< $(OBJS)  $(LDFLAGS) -o $@
 
 # run unit test and generate coverage page
 run-test: CFLAGS  += -coverage -DDEBUG_CPU
-run-test: LDFLAGS += -coverage
+run-test: LDFLAGS +=  -Wl,--wrap=SDL_PollEvent -coverage
 run-test: $(UTEST)
 		valgrind --leak-check=full --show-leak-kinds=all ./$(UTEST) ; \
 		lcov --capture --directory . --output-file coverage.info ; \
