@@ -106,32 +106,300 @@ static void test_readFileKeys(){
     assert_int_equal(0,readFileKeys("src/unit-test/TestFile/UTKeysConfigERR1.txt",NULL));
 }
 
+static void test_writeFileKeys(){
+    uint16_t keysSelect[16];
+    readFileKeys("src/unit-test/TestFile/UTKeysConfig.txt",keysSelect);
+    assert_int_equal(1,writeFileKeys("src/unit-test/TestFile/UTKeysConfig.txt",keysSelect));
+    assert_int_equal(0,writeFileKeys("/unit-test/TestFile/UTKeysConfig.txt",keysSelect));
+    assert_int_equal(0,writeFileKeys("/unit-test/TestFile/UTKeys.txt",NULL));
+}
+
 int __wrap_SDL_PollEvent(SDL_Event * event){
-    /*fonction de wrap de SDL_PollEvent */
+    /*Focnction de wrap de SDL_PollEvent */
     event->type = mock_type(int);
     if((event->type == SDL_KEYDOWN)||(event->type == SDL_KEYUP))
         event->key.keysym.sym = mock_type(int);
     return mock_type(int);
 }
 
-static void test_writeFileKeys(){
+static void test_handleKeys(){
     uint16_t keysSelect[16];
+    uint16_t keysPressed=0x0000;
+    SDL_Event event;
     readFileKeys("src/unit-test/TestFile/UTKeysConfig.txt",keysSelect);
-    /*Test d'écriture dans le fichier existant*/
-    assert_int_equal(1,writeFileKeys("src/unit-test/TestFile/UTKeysConfig.txt",keysSelect));
-    /*Test d'écriture dans un fichier inexistant*/
-    assert_int_equal(0,writeFileKeys("/unit-test/TestFile/UTKeysConfig.txt",keysSelect));
-    /* Test pour un tableau non initialisé */
-    assert_int_equal(0,writeFileKeys("/unit-test/TestFile/UTKeys.txt",NULL));
-}
+    /* Test du bon fonctionnement de la fonction handleKeys */
+    /* Création de la séqence de wrap de SDL_PollEvent pour un appui*/
+    will_return(__wrap_SDL_PollEvent, SDL_KEYDOWN);
+    will_return(__wrap_SDL_PollEvent, keysSelect[0]);
+    will_return(__wrap_SDL_PollEvent, 1);
+    /*Sequence pour sortir du while*/
+    will_return(__wrap_SDL_PollEvent, 0);
+    will_return(__wrap_SDL_PollEvent, 0);
+    assert_int_equal(1,handleKeys(keysSelect,&keysPressed,&event));
+    assert_int_equal(0x0001,keysPressed);
+    /*Répétion pour les touches suivantes */
+    will_return(__wrap_SDL_PollEvent, SDL_KEYDOWN);
+    will_return(__wrap_SDL_PollEvent, keysSelect[1]);
+    will_return(__wrap_SDL_PollEvent, 1);
+    will_return(__wrap_SDL_PollEvent, 0);
+    will_return(__wrap_SDL_PollEvent, 0);
+    assert_int_equal(1,handleKeys(keysSelect,&keysPressed,&event));
+    assert_int_equal(0x0003,keysPressed);
 
+    will_return(__wrap_SDL_PollEvent, SDL_KEYDOWN);
+    will_return(__wrap_SDL_PollEvent, keysSelect[2]);
+    will_return(__wrap_SDL_PollEvent, 1);
+    will_return(__wrap_SDL_PollEvent, 0);
+    will_return(__wrap_SDL_PollEvent, 0);
+    assert_int_equal(1,handleKeys(keysSelect,&keysPressed,&event));
+    assert_int_equal(0x0007,keysPressed);
+
+    will_return(__wrap_SDL_PollEvent, SDL_KEYDOWN);
+    will_return(__wrap_SDL_PollEvent, keysSelect[3]);
+    will_return(__wrap_SDL_PollEvent, 1);
+    will_return(__wrap_SDL_PollEvent, 0);
+    will_return(__wrap_SDL_PollEvent, 0);
+    assert_int_equal(1,handleKeys(keysSelect,&keysPressed,&event));
+    assert_int_equal(0x000F,keysPressed);
+
+    will_return(__wrap_SDL_PollEvent, SDL_KEYDOWN);
+    will_return(__wrap_SDL_PollEvent, keysSelect[4]);
+    will_return(__wrap_SDL_PollEvent, 1);
+    will_return(__wrap_SDL_PollEvent, 0);
+    will_return(__wrap_SDL_PollEvent, 0);
+    assert_int_equal(1,handleKeys(keysSelect,&keysPressed,&event));
+    assert_int_equal(0x001F,keysPressed);
+
+    will_return(__wrap_SDL_PollEvent, SDL_KEYDOWN);
+    will_return(__wrap_SDL_PollEvent, keysSelect[5]);
+    will_return(__wrap_SDL_PollEvent, 1);
+    will_return(__wrap_SDL_PollEvent, 0);
+    will_return(__wrap_SDL_PollEvent, 0);
+    assert_int_equal(1,handleKeys(keysSelect,&keysPressed,&event));
+    assert_int_equal(0x003F,keysPressed);
+
+    will_return(__wrap_SDL_PollEvent, SDL_KEYDOWN);
+    will_return(__wrap_SDL_PollEvent, keysSelect[6]);
+    will_return(__wrap_SDL_PollEvent, 1);
+    will_return(__wrap_SDL_PollEvent, 0);
+    will_return(__wrap_SDL_PollEvent, 0);
+    assert_int_equal(1,handleKeys(keysSelect,&keysPressed,&event));
+    assert_int_equal(0x007F,keysPressed);
+
+    will_return(__wrap_SDL_PollEvent, SDL_KEYDOWN);
+    will_return(__wrap_SDL_PollEvent, keysSelect[7]);
+    will_return(__wrap_SDL_PollEvent, 1);
+    will_return(__wrap_SDL_PollEvent, 0);
+    will_return(__wrap_SDL_PollEvent, 0);
+    assert_int_equal(1,handleKeys(keysSelect,&keysPressed,&event));
+    assert_int_equal(0x00FF,keysPressed);
+
+    will_return(__wrap_SDL_PollEvent, SDL_KEYDOWN);
+    will_return(__wrap_SDL_PollEvent, keysSelect[8]);
+    will_return(__wrap_SDL_PollEvent, 1);
+    will_return(__wrap_SDL_PollEvent, 0);
+    will_return(__wrap_SDL_PollEvent, 0);
+    assert_int_equal(1,handleKeys(keysSelect,&keysPressed,&event));
+    assert_int_equal(0x01FF,keysPressed);
+
+    will_return(__wrap_SDL_PollEvent, SDL_KEYDOWN);
+    will_return(__wrap_SDL_PollEvent, keysSelect[9]);
+    will_return(__wrap_SDL_PollEvent, 1);
+    will_return(__wrap_SDL_PollEvent, 0);
+    will_return(__wrap_SDL_PollEvent, 0);
+    assert_int_equal(1,handleKeys(keysSelect,&keysPressed,&event));
+    assert_int_equal(0x03FF,keysPressed);
+
+    will_return(__wrap_SDL_PollEvent, SDL_KEYDOWN);
+    will_return(__wrap_SDL_PollEvent, keysSelect[10]);
+    will_return(__wrap_SDL_PollEvent, 1);
+    will_return(__wrap_SDL_PollEvent, 0);
+    will_return(__wrap_SDL_PollEvent, 0);
+    assert_int_equal(1,handleKeys(keysSelect,&keysPressed,&event));
+    assert_int_equal(0x07FF,keysPressed);
+
+    will_return(__wrap_SDL_PollEvent, SDL_KEYDOWN);
+    will_return(__wrap_SDL_PollEvent, keysSelect[11]);
+    will_return(__wrap_SDL_PollEvent, 1);
+    will_return(__wrap_SDL_PollEvent, 0);
+    will_return(__wrap_SDL_PollEvent, 0);
+    assert_int_equal(1,handleKeys(keysSelect,&keysPressed,&event));
+    assert_int_equal(0x0FFF,keysPressed);
+
+    will_return(__wrap_SDL_PollEvent, SDL_KEYDOWN);
+    will_return(__wrap_SDL_PollEvent, keysSelect[12]);
+    will_return(__wrap_SDL_PollEvent, 1);
+    will_return(__wrap_SDL_PollEvent, 0);
+    will_return(__wrap_SDL_PollEvent, 0);
+    assert_int_equal(1,handleKeys(keysSelect,&keysPressed,&event));
+    assert_int_equal(0x1FFF,keysPressed);
+
+    will_return(__wrap_SDL_PollEvent, SDL_KEYDOWN);
+    will_return(__wrap_SDL_PollEvent, keysSelect[13]);
+    will_return(__wrap_SDL_PollEvent, 1);
+    will_return(__wrap_SDL_PollEvent, 0);
+    will_return(__wrap_SDL_PollEvent, 0);
+    assert_int_equal(1,handleKeys(keysSelect,&keysPressed,&event));
+    assert_int_equal(0x3FFF,keysPressed);
+
+    will_return(__wrap_SDL_PollEvent, SDL_KEYDOWN);
+    will_return(__wrap_SDL_PollEvent, keysSelect[14]);
+    will_return(__wrap_SDL_PollEvent, 1);
+    will_return(__wrap_SDL_PollEvent, 0);
+    will_return(__wrap_SDL_PollEvent, 0);
+    assert_int_equal(1,handleKeys(keysSelect,&keysPressed,&event));
+    assert_int_equal(0x7FFF,keysPressed);
+
+    will_return(__wrap_SDL_PollEvent, SDL_KEYDOWN);
+    will_return(__wrap_SDL_PollEvent, keysSelect[15]);
+    will_return(__wrap_SDL_PollEvent, 1);
+    will_return(__wrap_SDL_PollEvent, 0);
+    will_return(__wrap_SDL_PollEvent, 0);
+    assert_int_equal(1,handleKeys(keysSelect,&keysPressed,&event));
+    assert_int_equal(0xFFFF,keysPressed);
+    /* Création de la séqence de wrap de SDL_PollEvent pour un relachement*/
+    will_return(__wrap_SDL_PollEvent, SDL_KEYUP);
+    will_return(__wrap_SDL_PollEvent, keysSelect[0]);
+    will_return(__wrap_SDL_PollEvent, 1);
+    will_return(__wrap_SDL_PollEvent, 0);
+    will_return(__wrap_SDL_PollEvent, 0);
+    assert_int_equal(1,handleKeys(keysSelect,&keysPressed,&event));
+    assert_int_equal(0xFFFE,keysPressed);
+    /*Répétion pour les touches suivantes */
+
+    will_return(__wrap_SDL_PollEvent, SDL_KEYUP);
+    will_return(__wrap_SDL_PollEvent, keysSelect[1]);
+    will_return(__wrap_SDL_PollEvent, 1);
+    will_return(__wrap_SDL_PollEvent, 0);
+    will_return(__wrap_SDL_PollEvent, 0);
+    assert_int_equal(1,handleKeys(keysSelect,&keysPressed,&event));
+    assert_int_equal(0xFFFC,keysPressed);
+
+    will_return(__wrap_SDL_PollEvent, SDL_KEYUP);
+    will_return(__wrap_SDL_PollEvent, keysSelect[2]);
+    will_return(__wrap_SDL_PollEvent, 1);
+    will_return(__wrap_SDL_PollEvent, 0);
+    will_return(__wrap_SDL_PollEvent, 0);
+    assert_int_equal(1,handleKeys(keysSelect,&keysPressed,&event));
+    assert_int_equal(0xFFF8,keysPressed);
+
+    will_return(__wrap_SDL_PollEvent, SDL_KEYUP);
+    will_return(__wrap_SDL_PollEvent, keysSelect[3]);
+    will_return(__wrap_SDL_PollEvent, 1);
+    will_return(__wrap_SDL_PollEvent, 0);
+    will_return(__wrap_SDL_PollEvent, 0);
+    assert_int_equal(1,handleKeys(keysSelect,&keysPressed,&event));
+    assert_int_equal(0xFFF0,keysPressed);
+
+    will_return(__wrap_SDL_PollEvent, SDL_KEYUP);
+    will_return(__wrap_SDL_PollEvent, keysSelect[4]);
+    will_return(__wrap_SDL_PollEvent, 1);
+    will_return(__wrap_SDL_PollEvent, 0);
+    will_return(__wrap_SDL_PollEvent, 0);
+    assert_int_equal(1,handleKeys(keysSelect,&keysPressed,&event));
+    assert_int_equal(0xFFE0,keysPressed);
+
+    will_return(__wrap_SDL_PollEvent, SDL_KEYUP);
+    will_return(__wrap_SDL_PollEvent, keysSelect[5]);
+    will_return(__wrap_SDL_PollEvent, 1);
+    will_return(__wrap_SDL_PollEvent, 0);
+    will_return(__wrap_SDL_PollEvent, 0);
+    assert_int_equal(1,handleKeys(keysSelect,&keysPressed,&event));
+    assert_int_equal(0xFFC0,keysPressed);
+
+    will_return(__wrap_SDL_PollEvent, SDL_KEYUP);
+    will_return(__wrap_SDL_PollEvent, keysSelect[6]);
+    will_return(__wrap_SDL_PollEvent, 1);
+    will_return(__wrap_SDL_PollEvent, 0);
+    will_return(__wrap_SDL_PollEvent, 0);
+    assert_int_equal(1,handleKeys(keysSelect,&keysPressed,&event));
+    assert_int_equal(0xFF80,keysPressed);
+
+    will_return(__wrap_SDL_PollEvent, SDL_KEYUP);
+    will_return(__wrap_SDL_PollEvent, keysSelect[7]);
+    will_return(__wrap_SDL_PollEvent, 1);
+    will_return(__wrap_SDL_PollEvent, 0);
+    will_return(__wrap_SDL_PollEvent, 0);
+    assert_int_equal(1,handleKeys(keysSelect,&keysPressed,&event));
+    assert_int_equal(0xFF00,keysPressed);
+
+    will_return(__wrap_SDL_PollEvent, SDL_KEYUP);
+    will_return(__wrap_SDL_PollEvent, keysSelect[8]);
+    will_return(__wrap_SDL_PollEvent, 1);
+    will_return(__wrap_SDL_PollEvent, 0);
+    will_return(__wrap_SDL_PollEvent, 0);
+    assert_int_equal(1,handleKeys(keysSelect,&keysPressed,&event));
+    assert_int_equal(0xFE00,keysPressed);
+
+    will_return(__wrap_SDL_PollEvent, SDL_KEYUP);
+    will_return(__wrap_SDL_PollEvent, keysSelect[9]);
+    will_return(__wrap_SDL_PollEvent, 1);
+    will_return(__wrap_SDL_PollEvent, 0);
+    will_return(__wrap_SDL_PollEvent, 0);
+    assert_int_equal(1,handleKeys(keysSelect,&keysPressed,&event));
+    assert_int_equal(0xFC00,keysPressed);
+
+    will_return(__wrap_SDL_PollEvent, SDL_KEYUP);
+    will_return(__wrap_SDL_PollEvent, keysSelect[10]);
+    will_return(__wrap_SDL_PollEvent, 1);
+    will_return(__wrap_SDL_PollEvent, 0);
+    will_return(__wrap_SDL_PollEvent, 0);
+    assert_int_equal(1,handleKeys(keysSelect,&keysPressed,&event));
+    assert_int_equal(0xF800,keysPressed);
+
+    will_return(__wrap_SDL_PollEvent, SDL_KEYUP);
+    will_return(__wrap_SDL_PollEvent, keysSelect[11]);
+    will_return(__wrap_SDL_PollEvent, 1);
+    will_return(__wrap_SDL_PollEvent, 0);
+    will_return(__wrap_SDL_PollEvent, 0);
+    assert_int_equal(1,handleKeys(keysSelect,&keysPressed,&event));
+    assert_int_equal(0xF000,keysPressed);
+
+    will_return(__wrap_SDL_PollEvent, SDL_KEYUP);
+    will_return(__wrap_SDL_PollEvent, keysSelect[12]);
+    will_return(__wrap_SDL_PollEvent, 1);
+    will_return(__wrap_SDL_PollEvent, 0);
+    will_return(__wrap_SDL_PollEvent, 0);
+    assert_int_equal(1,handleKeys(keysSelect,&keysPressed,&event));
+    assert_int_equal(0xE000,keysPressed);
+
+    will_return(__wrap_SDL_PollEvent, SDL_KEYUP);
+    will_return(__wrap_SDL_PollEvent, keysSelect[13]);
+    will_return(__wrap_SDL_PollEvent, 1);
+    will_return(__wrap_SDL_PollEvent, 0);
+    will_return(__wrap_SDL_PollEvent, 0);
+    assert_int_equal(1,handleKeys(keysSelect,&keysPressed,&event));
+    assert_int_equal(0xC000,keysPressed);
+
+    will_return(__wrap_SDL_PollEvent, SDL_KEYUP);
+    will_return(__wrap_SDL_PollEvent, keysSelect[14]);
+    will_return(__wrap_SDL_PollEvent, 1);
+    will_return(__wrap_SDL_PollEvent, 0);
+    will_return(__wrap_SDL_PollEvent, 0);
+    assert_int_equal(1,handleKeys(keysSelect,&keysPressed,&event));
+    assert_int_equal(0x8000,keysPressed);
+
+    will_return(__wrap_SDL_PollEvent, SDL_KEYUP);
+    will_return(__wrap_SDL_PollEvent, keysSelect[15]);
+    will_return(__wrap_SDL_PollEvent, 1);
+    will_return(__wrap_SDL_PollEvent, 0);
+    will_return(__wrap_SDL_PollEvent, 0);
+    assert_int_equal(1,handleKeys(keysSelect,&keysPressed,&event));
+    assert_int_equal(0x0000,keysPressed);
+    /*Test pour quitter la sdl*/
+    will_return(__wrap_SDL_PollEvent, SDL_QUIT);
+    will_return(__wrap_SDL_PollEvent, 1);
+    assert_int_equal(0,handleKeys(keysSelect,&keysPressed,&event));
+    assert_int_equal(0x0000,keysPressed);
+}
 
 int run_UTkeys(void){
   const struct CMUnitTest test_file[] = {
-    cmocka_unit_test(test_charToSdlk),
-    cmocka_unit_test(test_SdlkToChar),
-    cmocka_unit_test(test_readFileKeys),
-    cmocka_unit_test(test_writeFileKeys),
+      cmocka_unit_test(test_charToSdlk),
+      cmocka_unit_test(test_SdlkToChar),
+      cmocka_unit_test(test_readFileKeys),
+      cmocka_unit_test(test_writeFileKeys),
+      cmocka_unit_test(test_handleKeys)
   };
   int out = 0;
   out += cmocka_run_group_tests(test_file, NULL, NULL);
