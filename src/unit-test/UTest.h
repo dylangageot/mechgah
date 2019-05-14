@@ -52,3 +52,11 @@ int run_UTstack(void);
  * \return 0 if passed, number of failed otherwise
  */
 int run_UTppu(void);
+
+/**
+ * \fn run_UTkeys
+ * \brief Unit test of keys module
+ *
+ * \return 0 if passed, number of failed otherwise
+ */
+int run_UTkeys(void);
