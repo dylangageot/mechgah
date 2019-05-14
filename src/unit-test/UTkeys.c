@@ -80,7 +80,7 @@ static void test_SdlkToChar() {
 
 static void test_readFileKeys(){
     uint16_t keysSelect[16];
-    /*Test du fonction de la fonction avec un bonne affection des touches*/
+    /*Test du fonctionnement de la fonction avec un bonne affection des touches*/
     assert_int_equal(1,readFileKeys("src/unit-test/TestFile/UTKeysConfig.txt",keysSelect));
     assert_int_equal(SDLK_z,keysSelect[0]);
     assert_int_equal(SDLK_a,keysSelect[1]);
@@ -106,11 +106,24 @@ static void test_readFileKeys(){
     assert_int_equal(0,readFileKeys("src/unit-test/TestFile/UTKeysConfigERR1.txt",NULL));
 }
 
+static void test_writeFileKeys(){
+    uint16_t keysSelect[16];
+    readFileKeys("src/unit-test/TestFile/UTKeysConfig.txt",keysSelect);
+    /*Test d'écriture dans le fichier existant*/
+    assert_int_equal(1,writeFileKeys("src/unit-test/TestFile/UTKeysConfig.txt",keysSelect));
+    /*Test d'écriture dans un fichier inexistant*/
+    assert_int_equal(0,writeFileKeys("/unit-test/TestFile/UTKeysConfig.txt",keysSelect));
+    /* Test pour un tableau non initialisé */
+    assert_int_equal(0,writeFileKeys("/unit-test/TestFile/UTKeys.txt",NULL));
+}
+
+
 int run_UTkeys(void){
   const struct CMUnitTest test_file[] = {
     cmocka_unit_test(test_charToSdlk),
     cmocka_unit_test(test_SdlkToChar),
     cmocka_unit_test(test_readFileKeys),
+    cmocka_unit_test(test_writeFileKeys),
   };
   int out = 0;
   out += cmocka_run_group_tests(test_file, NULL, NULL);
