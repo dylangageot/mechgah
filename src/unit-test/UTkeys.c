@@ -106,6 +106,14 @@ static void test_readFileKeys(){
     assert_int_equal(0,readFileKeys("src/unit-test/TestFile/UTKeysConfigERR1.txt",NULL));
 }
 
+int __wrap_SDL_PollEvent(SDL_Event * event){
+    /*fonction de wrap de SDL_PollEvent */
+    event->type = mock_type(int);
+    if((event->type == SDL_KEYDOWN)||(event->type == SDL_KEYUP))
+        event->key.keysym.sym = mock_type(int);
+    return mock_type(int);
+}
+
 static void test_writeFileKeys(){
     uint16_t keysSelect[16];
     readFileKeys("src/unit-test/TestFile/UTKeysConfig.txt",keysSelect);
