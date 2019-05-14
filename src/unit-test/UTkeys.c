@@ -41,10 +41,47 @@ static void test_charToSdlk() {
     assert_int_equal(0,charToSdlk("FOO"));
 }
 
+static void test_SdlkToChar() {
+    /*Test de bon fonctionnement de fonction et de la bonne association
+    dans le tableau des touches static*/
+    assert_string_equal("A",SdlkToChar(SDLK_a));
+    assert_string_equal("B",SdlkToChar(SDLK_b));
+    assert_string_equal("C",SdlkToChar(SDLK_c));
+    assert_string_equal("D",SdlkToChar(SDLK_d));
+    assert_string_equal("E",SdlkToChar(SDLK_e));
+    assert_string_equal("F",SdlkToChar(SDLK_f));
+    assert_string_equal("G",SdlkToChar(SDLK_g));
+    assert_string_equal("H",SdlkToChar(SDLK_h));
+    assert_string_equal("I",SdlkToChar(SDLK_i));
+    assert_string_equal("J",SdlkToChar(SDLK_j));
+    assert_string_equal("K",SdlkToChar(SDLK_k));
+    assert_string_equal("L",SdlkToChar(SDLK_l));
+    assert_string_equal("M",SdlkToChar(SDLK_m));
+    assert_string_equal("N",SdlkToChar(SDLK_n));
+    assert_string_equal("O",SdlkToChar(SDLK_o));
+    assert_string_equal("P",SdlkToChar(SDLK_p));
+    assert_string_equal("Q",SdlkToChar(SDLK_q));
+    assert_string_equal("R",SdlkToChar(SDLK_r));
+    assert_string_equal("S",SdlkToChar(SDLK_s));
+    assert_string_equal("T",SdlkToChar(SDLK_t));
+    assert_string_equal("U",SdlkToChar(SDLK_u));
+    assert_string_equal("V",SdlkToChar(SDLK_v));
+    assert_string_equal("W",SdlkToChar(SDLK_w));
+    assert_string_equal("X",SdlkToChar(SDLK_x));
+    assert_string_equal("Y",SdlkToChar(SDLK_y));
+    assert_string_equal("Z",SdlkToChar(SDLK_z));
+    assert_string_equal("UP",SdlkToChar(SDLK_UP));
+    assert_string_equal("DOWN",SdlkToChar(SDLK_DOWN));
+    assert_string_equal("RIGHT",SdlkToChar(SDLK_RIGHT));
+    assert_string_equal("LEFT",SdlkToChar(SDLK_LEFT));
+    /*Test pour une valeur inexistante dans le tableau*/
+    assert_ptr_equal(NULL,SdlkToChar(SDLK_ESCAPE));
+}
 
 int run_UTkeys(void){
   const struct CMUnitTest test_file[] = {
     cmocka_unit_test(test_charToSdlk),
+    cmocka_unit_test(test_SdlkToChar),
   };
   int out = 0;
   out += cmocka_run_group_tests(test_file, NULL, NULL);
