@@ -2,6 +2,7 @@
 #include "../nes/ppu/ppu.h"
 #include "../nes/mapper/nrom.h"
 #include "../common/macro.h"
+#include "../nes/const.h"
 #include <stdlib.h>
 
 static int setup_PPU(void** state) {
@@ -622,7 +623,7 @@ static void test_PPU_SpriteEvaluation_NoOverflow(void **state) {
 	self->scanline = 10;
 	self->PPUSTATUS = 0;
 
-	/* Set value into OAM */ 
+	/* Set value into OAM */
 	for (i = 0; i < 256; i++) {
 		self->OAM[i] = i;
 	}
@@ -634,7 +635,7 @@ static void test_PPU_SpriteEvaluation_NoOverflow(void **state) {
 	for (i = 0; i < 32; i++) {
 		self->SOAM[i] = 0xFF;
 	}
-	/* Set 4 sprites Y-coordonate in range 
+	/* Set 4 sprites Y-coordonate in range
 	 * Make every sprite spaced in memory to hard test the algorithm */
 	self->OAM[1 << 2] = self->scanline;
 	self->OAM[3 << 2] = self->scanline;
@@ -668,7 +669,7 @@ static void test_PPU_SpriteEvaluation_Eight(void **state) {
 	self->scanline = 10;
 	self->PPUSTATUS = 0;
 
-	/* Set value into OAM */ 
+	/* Set value into OAM */
 	for (i = 0; i < 256; i++) {
 		self->OAM[i] = i;
 	}
@@ -680,7 +681,7 @@ static void test_PPU_SpriteEvaluation_Eight(void **state) {
 	for (i = 0; i < 32; i++) {
 		self->SOAM[i] = 0xFF;
 	}
-	/* Set 8 sprites Y-coordonate in range 
+	/* Set 8 sprites Y-coordonate in range
 	 * Make every sprite spaced in memory to hard test the algorithm */
 	for (i = 0; i < 8; i++) {
 		self->OAM[i << 2] = self->scanline;
@@ -705,7 +706,7 @@ static void test_PPU_SpriteEvaluation_Overflow(void **state) {
 	self->scanline = 10;
 	self->PPUSTATUS = 0;
 
-	/* Set value into OAM */ 
+	/* Set value into OAM */
 	for (i = 0; i < 256; i++) {
 		self->OAM[i] = i;
 	}
@@ -717,7 +718,7 @@ static void test_PPU_SpriteEvaluation_Overflow(void **state) {
 	for (i = 0; i < 32; i++) {
 		self->SOAM[i] = 0xFF;
 	}
-	/* Set 9 sprites Y-coordonate in range 
+	/* Set 9 sprites Y-coordonate in range
 	 * Make every sprite spaced in memory to hard test the algorithm */
 	for (i = 0; i < 9; i++) {
 		self->OAM[i << 2] = self->scanline;
@@ -742,7 +743,7 @@ static void test_PPU_SpriteEvaluation_Zero(void **state) {
 	self->scanline = 10;
 	self->PPUSTATUS = 0;
 
-	/* Set value into OAM */ 
+	/* Set value into OAM */
 	for (i = 0; i < 256; i++) {
 		self->OAM[i] = i;
 	}
@@ -1031,7 +1032,169 @@ static void test_PPU_FetchSprite_FlipBoth(void **state) {
 
 }
 
+static void test_Draw_SpriteZero(void **state) {
 
+	/* tests spriteZero flag */
+
+	PPU* self = (PPU*) *state;
+	int i;
+
+	/* setup values for test */
+
+	uint8_t *palette = Mapper_Get(self->mapper, AS_PPU, ADDR_PALETTE_BG);
+
+	uint8_t value1 = 0x8F;
+	uint8_t value2 = 0xFC;
+
+
+	self->PPUMASK = 0x18;
+	self->PPUSTATUS = 0x04;
+
+	self->cycle = 10;
+	self->scanline = 20;
+
+	self->attributeL = 0;
+	self->attributeH = 0;
+
+	self->bitmapL = 0x89C4;
+	self->bitmapH = 0xF25C;
+
+	self->vram.x = 0;
+
+	for (i = 0; i < SPR_SOAM_CNT; i++) {
+		self->sprite[i].x = (i==0)? 0 : 200;
+		self->sprite[i].patternH = value1;
+		self->sprite[i].patternL = value2;
+		self->sprite[i].isSpriteZero = 1;
+		self->sprite[i].attribute = 0x03;
+	}
+
+	/* initialize one value for the test to run properly */
+	uint8_t* color_palette = palette + 0x1C;
+	uint32_t color = ((value1 >> 6) & 0x02) | ((value2 >> 7) & 0x01);
+	color_palette[color] = 2;
+
+	PPU_Draw(self);
+
+	assert_int_equal(self->PPUSTATUS & PPUSTATUS_SPR_ZERO , PPUSTATUS_SPR_ZERO);
+}
+
+static void test_Draw_Shift(void** state) {
+	/* tests the paattern shifting */
+
+	PPU* self = (PPU*)*state;
+	int i;
+
+	/* setup values for the test */
+
+	uint8_t *palette = Mapper_Get(self->mapper, AS_PPU, ADDR_PALETTE_BG);
+
+	uint8_t value1 = 0x8F;
+	uint8_t value2 = 0xFC;
+
+	self->PPUMASK = 0x18;
+	self->PPUSTATUS = 0x04;
+
+	self->cycle = 10;
+	self->scanline = 20;
+
+	self->attributeL = 0;
+	self->attributeH = 0;
+
+	self->bitmapL = 0x89C4;
+	self->bitmapH = 0xF25C;
+
+	self->vram.x = 0;
+
+	for (i = 0; i < SPR_SOAM_CNT; i++) {
+		self->sprite[i].x = (i==0)? 0 : 200;
+		self->sprite[i].patternH = value1;
+		self->sprite[i].patternL = value2;
+		self->sprite[i].isSpriteZero = 1;
+		self->sprite[i].attribute = 0x03;
+	}
+
+	/* initialize one value for the test to run properly */
+
+	uint8_t* color_palette = palette + 0x1C;
+	uint32_t color = ((value1 >> 6) & 0x02) | ((value2 >> 7) & 0x01);
+	color_palette[color] = 2;
+
+	PPU_Draw(self);
+
+	assert_int_equal(self->sprite[0].patternH, value1<<1 & 0xFF);
+	assert_int_equal(self->sprite[0].patternL, value2<<1 & 0xFF);
+
+}
+
+static void test_Draw_Color(void** state) {
+	/* tests the color stored in image */
+
+	PPU* self = (PPU*)*state;
+	int i;
+
+	/* setup values for the test */
+
+	uint32_t colorPalette[64] = {
+		0x007C7C7C, 0x000000FC, 0x000000BC, 0x004428BC,
+		0x00940084, 0x00A80020, 0x00A81000, 0x00881400,
+		0x00503000, 0x00007800, 0x00006800, 0x00005800,
+		0x00004058, 0x00000000, 0x00000000, 0x00000000,
+		0x00BCBCBC, 0x000078F8, 0x000058F8, 0x006844FC,
+		0x00D800CC, 0x00E40058, 0x00F83800, 0x00E45C10,
+		0x00AC7C00, 0x0000B800, 0x0000A800, 0x0000A844,
+		0x00008888, 0x00000000, 0x00000000, 0x00000000,
+		0x00F8F8F8, 0x003CBCFC, 0x006888FC, 0x009878F8,
+		0x00F878F8, 0x00F85898, 0x00F87858, 0x00FCA044,
+		0x00F8B800, 0x00B8F818, 0x0058D854, 0x0058F898,
+		0x0000E8D8, 0x00787878, 0x00000000, 0x00000000,
+		0x00FCFCFC, 0x00A4E4FC, 0x00B8B8F8, 0x00D8B8F8,
+		0x00F8B8F8, 0x00F8A4C0, 0x00F0D0B0, 0x00FCE0A8,
+		0x00F8D878, 0x00D8F878, 0x00B8F8B8, 0x00B8F8D8,
+		0x0000FCFC, 0x00F8D8F8, 0x00000000, 0x00000000
+	};
+
+	uint8_t *palette = Mapper_Get(self->mapper, AS_PPU, ADDR_PALETTE_BG);
+
+	uint8_t value1 = 0x8F;
+	uint8_t value2 = 0xFC;
+	uint8_t value3 = 0x9E;
+	uint8_t value4 = 0x68;
+	uint8_t value5 = 0x14;
+	uint8_t value6 = 0xA;
+
+	self->PPUMASK = 0x18;
+	self->PPUSTATUS = 0x04;
+
+	self->cycle = value6;
+	self->scanline = value5;
+
+	self->attributeL = value3;
+	self->attributeH = value4;
+
+	self->bitmapL = 0x89C4;
+	self->bitmapH = 0xF25C;
+
+	self->vram.x = 0;
+
+	for (i = 0; i < SPR_SOAM_CNT; i++) {
+		self->sprite[i].x = (i==0)? 0 : 200;
+		self->sprite[i].patternH = value1;
+		self->sprite[i].patternL = value2;
+		self->sprite[i].isSpriteZero = 1;
+		self->sprite[i].attribute = 0x03;
+	}
+
+	/* initialize one value for the test to run properly */
+
+	uint8_t* color_palette = palette + 0x1C;
+	uint32_t color = ((value1 >> 6) & 0x02) | ((value2 >> 7) & 0x01);
+	color_palette[color] = 2;
+
+	PPU_Draw(self);
+
+	assert_int_equal(self->image[(value5<<8)+(value6-1)], colorPalette[2]);
+}
 
 static int teardown_PPU(void **state) {
 	if (*state != NULL) {
@@ -1085,6 +1248,11 @@ int run_UTppu(void) {
 		cmocka_unit_test(test_PPU_FetchSprite_FlipVertical),
 		cmocka_unit_test(test_PPU_FetchSprite_FlipBoth),
 	};
+	const struct CMUnitTest test_PPU_Draw[] = {
+		cmocka_unit_test(test_Draw_SpriteZero),
+		cmocka_unit_test(test_Draw_Shift),
+		cmocka_unit_test(test_Draw_Color)
+	};
 	int out = 0;
 	out += cmocka_run_group_tests(test_PPU_CheckRegister, setup_PPU, teardown_PPU);
 	out += cmocka_run_group_tests(test_PPU_RefreshRegister, setup_PPU, teardown_PPU);
@@ -1092,6 +1260,6 @@ int run_UTppu(void) {
 	out += cmocka_run_group_tests(test_PPU_ManageVRAMAddr, setup_PPU, teardown_PPU);
 	out += cmocka_run_group_tests(test_PPU_FetchTile, setup_PPU, teardown_PPU);
 	out += cmocka_run_group_tests(test_PPU_Sprite, setup_PPU, teardown_PPU);
-
+	out += cmocka_run_group_tests(test_PPU_Draw, setup_PPU, teardown_PPU);
 	return out;
 }
