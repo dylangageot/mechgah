@@ -683,14 +683,14 @@ uint8_t PPU_Draw(PPU *self) {
 	uint8_t bitmap = (self->bitmapL & (0x8000 >> self->vram.x)) >> (15 - self->vram.x)
 					| (self->bitmapH & (0x8000 >> self->vram.x)) >> (14 - self->vram.x);
 
-	uint8_t color;
-	uint8_t* color_palette = palette + (attribute << 2); /* color palette address */
+	uint8_t color = 0;
+	uint8_t* color_palette; /* color palette address */
 
 	/* variables used for sprites*/
 
 	uint8_t sprite_mux_is_empty = 1;
-	uint8_t sprite_pixel_color;
-	Sprite sprite_mux;
+	uint8_t sprite_pixel_color = 0;
+	Sprite sprite_mux = self->sprite[0];
 
 	uint8_t i;
 
@@ -732,11 +732,10 @@ uint8_t PPU_Draw(PPU *self) {
 			&& !sprite_mux_is_empty) {
 		/* display the sprite */
 		color_palette = palette + ((sprite_mux.attribute & 0x03) << 2) + 0x10;
-
 		color = ((sprite_mux.patternH >> 6) & 0x02)
 				| ((sprite_mux.patternL >> 7) & 0x01);
 	} else {
-		/* color_palette = palette + (attribute << 2); */
+		color_palette = palette + (attribute << 2);
 		color = bitmap;
 	}
 
@@ -748,7 +747,6 @@ uint8_t PPU_Draw(PPU *self) {
 
 	return EXIT_SUCCESS;
 }
-
 
 uint8_t PPU_UpdateCycle(PPU *self) {
 	/* Increment cycle and scanline if it has overflow */
