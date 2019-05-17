@@ -1,6 +1,22 @@
-\documentclass[11pt]{book}
+\documentclass[a4paper,11pt]{article}
 
 \usepackage{packageINSA}
+
+\usepackage{float}
+\usepackage{wrapfig}
+\usepackage{graphicx} %%For loading graphic files
+\usepackage{subfig} %%Subfigures inside a figure
+\usepackage{pdfpages}
+\usepackage{eurosym}
+\usepackage{listings}
+\usepackage[numbered,framed]{matlab-prettifier}
+\usepackage{url}
+\usepackage{glossaries}[toc]
+
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+\usepackage{siunitx}
 
 \begin{document}
 \pagestyle{plain}
@@ -14,28 +30,30 @@
 % Si le prénom et le nom tiennent sur la ligne, laisser valeur = 1.4
 \specialite{EII}  % Nom de la spécialité
 \anneeuniversitaire{2018 - 2019}  % Année universitaire
-\titre{Emulateur de la Nintendo Entertainment System (NES)}  % sujet du PFE
+\titre{Emulateur de la console NES}  % sujet du PFE
 \correspondantINSA{Alexandre}{TISSIER}  % Prénom et nom du correspondant INSA
 \datesout{27/05/2019}  % Date de la soutenance du PFE
-
-% RESUMES EN FRANÇAIS ET EN ANGLAIS
-\resumefrancais{\textsf{Remplacer ce texte par le résumé en français}}
-\resumeanglais{\textsf{Change this text by the abstract in english}}
-% Les résumés en français et en anglais sont positionnés cote à cote
-% Une hauteur de cadre a été définie pour que les zones réservées aux résumés tiennent sur une seule page : ne pas la modifier
 
 \makeTitlePage % Page de titre / première page
 
 \clearpage
 
-\chapter{}
+\tableofcontents
 
-Coucou
+\clearpage
 
-\section{Introduction}
+\section{Présentation du projet}
+\input{contenu/presentation}
 
-Introduction
+\section{Organisation du travail}
+\input{contenu/organisation}
 
-\makeAbstractPage % la page avec les résumés (français et anglais)
+\section{Architecture logicielle et moyens de test}
+\input{contenu/architecture_logicielle}
+
+\section{Conclusion}
+\input{contenu/conclusion}
+
+\makeAbstractPage
 
 \end{document}

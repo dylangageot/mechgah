@@ -1,0 +1,5 @@
+\babel@toc {french}{}
+\contentsline {section}{\numberline {1}Pr\IeC {\'e}sentation du projet}{3}
+\contentsline {section}{\numberline {2}Organisation du travail}{3}
+\contentsline {section}{\numberline {3}Architecture logicielle et moyens de test}{3}
+\contentsline {section}{\numberline {4}Conclusion}{3}
