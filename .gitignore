@@ -10,3 +10,6 @@
 *.log
 UTest
 main
+*.aux
+*.synctex.gz
+*.pdf
