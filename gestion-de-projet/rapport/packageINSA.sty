@@ -1,0 +1,239 @@
+% Package pour la page de garde et le résumé d'un PFE (PL en mai 2013, mars 2015 pour la nouvelle charte graphique)
+% Adapté du package these.sty proposé par l'ADOC de l'IRISA
+% Corrigé/passé en UTF8 par un étudiant qui aime les choses bien faites
+%
+
+% ==================================================================================================
+%                                   Les packages nécessaires
+% ==================================================================================================
+% Les packages utiles pour la mise en forme
+\RequirePackage{epsfig}
+\RequirePackage{vmargin}
+\RequirePackage{textpos}
+\RequirePackage{color}
+\RequirePackage{graphicx}
+
+% Les bonnes polices pour le français
+\RequirePackage[T1]{fontenc}
+\RequirePackage[utf8]{inputenc} %les accents en UTF8 ça fait pas de mal
+\RequirePackage[english, frenchb]{babel}
+% Les symboles €
+\RequirePackage{eurosym}
+
+% ==================================================================================================
+%                                   Les nouvelles commandes
+% ==================================================================================================
+\newcommand{\NOORDRE}{XXX} %
+\newcommand{\AUTEURprenom}{Prénom} % prénom de l'auteur
+\newcommand{\AUTEURnom}{\textsc{NOM}} % nom de l'auteur
+\newcommand{\TITRE}{{\large\textsl{INTITULE DU PFE : le sujet qui peut s'écrire sur plusieurs lignes}}} % titre du PFE
+\newcommand{\SPECIALITE}{Spécialité} % département de spécialité EII, GCU, GM, GMA, INFO, MNT, SRC
+\newcommand{\ANNEEUNIVERSITAIRE}{} % année du PFE
+\newcommand{\ENTREPRISEnom}{Nom de l'entreprise} % nom de l'entreprise ayant accueilli le stagiaire
+\newcommand{\TUTEURnom}{Nom du tuteur en entreprise} % nom du tuteur en entreprise
+\newcommand{\TUTEURprenom}{Prénom } % prénom du tuteur en entreprise
+\newcommand{\CORRESPONDANTINSAnom}{Nom du correspondant pédagogique INSA} % nom du correspondant INSA
+\newcommand{\CORRESPONDANTINSAprenom}{Prénom} % prénom du correspondant INSA
+\newcommand{\DATE}{jj/mm/20aa} % date de la soutenance du PFE
+\newcommand{\TEXTElogo}{\textit{(Emplacement du logo de l'entreprise)}}
+\newcommand{\NOMFICHIERlogo}{terre}
+\newcommand{\HAUTEURlogo}{1}
+\newcommand{\ENTREPRISElogo}{\TEXTElogo \\ \epsfig{figure=\NOMFICHIERlogo,height=\HAUTEURlogo cm}}
+\newcommand{\SAUTVERTICALnegatif}{1.4} %
+\newcommand{\ABSTRACTfrancais}{ % pour créer un résumé en français avec la classe "book"
+\textsf{Taper le résumé en français}} %
+\newcommand{\ABSTRACTanglais}{ % pour créer un résumé en anglais avec la classe "book"
+\textsf{Write the abstract in english}} %
+
+% ==================================================================================================
+%                       Surcharge des commandes précédentes pour utiliser
+%                        les valeurs du fichier d'où elles sont appelées
+% ==================================================================================================
+
+% Numéro d'ordre fourni par le service de la recherche
+\newcommand{\ordre}[1]{%
+    \renewcommand{\NOORDRE}{#1}%
+}%
+% Prénom et nom de l'auteur
+\newcommand{\auteur}[2]{%
+    \renewcommand{\AUTEURprenom}{#1}%
+    \renewcommand{\AUTEURnom}{#2}%
+}
+%
+% Spécialité : EII, GCU, GM, GMA, INFO, SGM, SRC
+\newcommand{\specialite}[1]{%
+    \renewcommand{\SPECIALITE}{#1}%
+}
+%
+% Année universitaire
+\newcommand{\anneeuniversitaire}[1]{%
+    \renewcommand{\ANNEEUNIVERSITAIRE}{#1}%
+}
+%
+% Titre du PFE
+\newcommand{\titre}[1]{%
+    \renewcommand{\TITRE}{{\Huge\textbf{#1}}}%
+}
+%
+% Nom de l'entreprise
+\newcommand{\entreprisenom}[1]{%
+    \renewcommand{\ENTREPRISEnom}{#1}%
+}
+%
+% Prénom et nom du tuteur en entreprise
+\newcommand{\tuteur}[2]{%
+    \renewcommand{\TUTEURprenom}{#1}%
+    \renewcommand{\TUTEURnom}{#2}%
+}
+%
+% Prénom et nom du correspondant pédagogique INSA
+\newcommand{\correspondantINSA}[2]{%
+    \renewcommand{\CORRESPONDANTINSAprenom}{#1}%
+    \renewcommand{\CORRESPONDANTINSAnom}{#2}%
+}
+%
+% Date de soutenance du PFE
+\newcommand{\datesout}[1]{%
+    \renewcommand{\DATE}{#1}%
+}
+%
+% Logo de l'entreprise
+\newcommand{\entrepriselogo}[3]{%
+    \renewcommand{\TEXTElogo}{#1}% est-ce vraiment utile de mettre un texte ici ?
+    \renewcommand{\NOMFICHIERlogo}{#2}%
+    \renewcommand{\HAUTEURlogo}{#3}%
+}
+%
+% Valeur du saut vertical vers le haut (négatif) pour ajuster la position du nom de l'auteur
+\newcommand{\sautverticalnegatif}[1]{%
+    \renewcommand{\SAUTVERTICALnegatif}{#1}%
+}
+%
+% Résumé en français
+\newcommand{\resumefrancais}[1]{%
+    \renewcommand{\ABSTRACTfrancais}{#1}%
+}
+%
+% Résumé en anglais
+\newcommand{\resumeanglais}[1]{%
+    \renewcommand{\ABSTRACTanglais}{#1}%
+}
+
+% ==================================================================================================
+%                                   Redéfinition des longueurs
+% ==================================================================================================
+\setlength{\hoffset}{0cm}
+\setlength{\voffset}{0cm}
+\setlength{\paperheight}{29.7cm}
+\setlength{\paperwidth}{21cm}
+\setlength{\textwidth}{14.5cm}
+\newlength{\backgroundwidth}
+\setlength{\backgroundwidth}{\paperwidth}
+\addtolength{\backgroundwidth}{1mm} % pour être sûr de remplir toute la page
+\setlength{\marginparwidth}{0cm}
+\setlength{\headheight}{2\baselineskip}
+\setlength{\textheight}{21cm}
+\setlength{\evensidemargin}{0cm}
+\setlength{\oddsidemargin}{1.5cm}
+
+% ==================================================================================================
+%                                     1ere de couverture
+% ==================================================================================================
+\newcommand{\makeTitlePage}{
+    \thispagestyle{empty} % pas de style uniquement sur cette page
+    \fontfamily{cmss}
+    \hspace{-4.8cm}
+    \begin{minipage}{\paperwidth}
+        \vspace{-7cm}
+        \noindent \epsfig{figure=frontpage.png,width=\backgroundwidth}
+
+        \vspace{-27.6cm}
+        \hspace{12cm}
+        \begin{minipage}{8cm}
+            \begin{flushright}
+                {\color{white}{\Large\bfseries Projet de Langage C}}
+
+                \vspace{1mm}
+                {\color{white}présenté par}
+
+                \vspace{1mm}
+                {\color{white}\Large \bfseries Nicolas~CHABANIS}
+
+                \vspace{1mm}
+                {\color{white}\Large \bfseries Dylan~GAGEOT}
+
+                \vspace{1mm}
+                {\color{white}\Large \bfseries Baptiste~MEHAT}
+
+                \vspace{1mm}
+                {\color{white}\Large \bfseries Nicolas~HILY}
+
+                \vspace{1mm}
+                {\color{white}Élèves ingénieur de l'INSA Rennes}
+
+                \vspace{1mm}
+                {\color{white}Spécialité \SPECIALITE}
+
+                \vspace{1mm}
+                {\color{white}Année universitaire \ANNEEUNIVERSITAIRE}
+            \end{flushright}
+        \end{minipage}
+    \end{minipage}
+
+    \vspace{12.7cm}
+    \hspace{1.5cm}
+    \begin{minipage}{12cm}
+        \noindent \TITRE
+        \baselineskip=20pt
+
+        \textbf{Correspondant pédagogique INSA Rennes}
+
+        \vspace{-0.2cm} \CORRESPONDANTINSAprenom~\CORRESPONDANTINSAnom
+
+        \textbf{PFE soutenu le \DATE}
+    \end{minipage}
+}
+
+% ==================================================================================================
+%                                    4eme de couverture
+% ==================================================================================================
+\newcommand{\makeAbstractPage}{
+    \fontfamily{cmss}
+    % la dernière page est toujours sur une page de gauche
+    % (logique pour une 4eme de couverture)
+    \clearpage
+    \ifodd
+        \c@page
+        \hbox{}
+        \vspace*{\fill}
+        \thispagestyle{empty}
+        \newpage
+    \fi
+
+    \thispagestyle{empty} % pas de style pour cette page uniquement
+    \hspace{-3.3cm}
+    \begin{minipage}{\paperwidth}
+        \vspace{-11.1cm}
+        \noindent \epsfig{figure=backpage.png,width=\backgroundwidth}
+
+        \vspace{-27cm}
+        \begin{textblock}{18}(-1.88,0)
+            \mbox{ } \hspace{3.1cm}
+            \begin{tabular}{cc}
+                \begin{minipage}[s][24cm]{9cm}
+                    \begin{center}
+                        {\bfseries Résumé}
+                    \end{center}
+                    \ABSTRACTfrancais\vfill\null
+                \end{minipage}
+                &
+                \begin{minipage}[s][24cm]{9cm}
+                    \begin{center}
+                        {\bfseries Abstract}
+                    \end{center}
+                    \ABSTRACTanglais\vfill\null
+                \end{minipage}
+            \end{tabular}
+        \end{textblock}
+    \end{minipage}
+}

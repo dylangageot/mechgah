@@ -1,0 +1,41 @@
+\documentclass[11pt]{book}
+
+\usepackage{packageINSA}
+
+\begin{document}
+\pagestyle{plain}
+\fontfamily{cmss}
+\selectfont
+
+% LES DIFFERENTS CHAMPS DE LA COUVERTURE
+\sautverticalnegatif{1.4}
+% Valeur en cm du saut vertical négatif (ie. vers le haut)
+% Modifier cette valeur si le prénom et le nom de l'auteur ne sont pas positionnés au bon endroit par rapport à la ligne "Projet de Fin d'Etudes"
+% Si le prénom et le nom tiennent sur la ligne, laisser valeur = 1.4
+\specialite{EII}  % Nom de la spécialité
+\anneeuniversitaire{2018 - 2019}  % Année universitaire
+\titre{Emulateur de la Nintendo Entertainment System (NES)}  % sujet du PFE
+\correspondantINSA{Alexandre}{TISSIER}  % Prénom et nom du correspondant INSA
+\datesout{27/05/2019}  % Date de la soutenance du PFE
+
+% RESUMES EN FRANÇAIS ET EN ANGLAIS
+\resumefrancais{\textsf{Remplacer ce texte par le résumé en français}}
+\resumeanglais{\textsf{Change this text by the abstract in english}}
+% Les résumés en français et en anglais sont positionnés cote à cote
+% Une hauteur de cadre a été définie pour que les zones réservées aux résumés tiennent sur une seule page : ne pas la modifier
+
+\makeTitlePage % Page de titre / première page
+
+\clearpage
+
+\chapter{}
+
+Coucou
+
+\section{Introduction}
+
+Introduction
+
+\makeAbstractPage % la page avec les résumés (français et anglais)
+
+\end{document}
