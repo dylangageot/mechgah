@@ -1,3 +1,9 @@
+/*
+ * Mechgah, a precise NES emulator.
+ * Developped by Nicolas Chabanis, Nicolas Hily, Baptiste Mehat and
+ * Dylan Gageot, student at INSA Rennes.
+ */
+
 #include "src/app.h"
 
 int main(int argc, char **argv) {
