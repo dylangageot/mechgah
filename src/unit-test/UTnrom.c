@@ -27,6 +27,7 @@ static void test_MapNROM_Get(void **state) {
 	uint8_t *ptr = NULL;
 	uint16_t i = 0;
 
+	assert_ptr_equal(MapNROM_Get(NULL, 0, 0), NULL);
 	/* Test CPU RAM memory space */
 	for (i = 0; i < 0x2000; i++) {
 		ptr = MapNROM_Get(self, AS_CPU, i);
@@ -45,6 +46,12 @@ static void test_MapNROM_Get(void **state) {
 		ptr = MapNROM_Get(self, AC_WR | AC_RD | AS_CPU, i);
 		assert_ptr_equal((void*) ptr, 
 				(void*) (self->cpu.ioReg->bank2[i & 0x00FF]));
+	}
+
+	/* Test void space */
+	for (i = 0x4020; i < 0x6000; i++) {
+		ptr = MapNROM_Get(self, AC_WR | AC_RD | AS_CPU, i);
+		assert_ptr_equal((void*) ptr, (void*) &self->dummy);
 	}
 
 	/* Test CPU SRAM memory space */
@@ -121,16 +128,27 @@ static void test_MapNROM_Get(void **state) {
 	/* Test LDR CHR access */
 	ptr = MapNROM_Get(self, AS_LDR, LDR_CHR);
 	assert_ptr_equal((void*) ptr, (void*) self->ppu.chr);
+
+	/* Test NULL access */
+	ptr = MapNROM_Get(self, 0xFF, 0xFF);
+	assert_ptr_equal((void*) ptr, (void*) NULL);
+
 }
 
 static void test_MapNROM_Ack_NoRead(void **state) {
 	uint16_t i;
+	/* NULL access test */
+	assert_int_equal(MapNROM_Ack(NULL, 0), 0);
+	/* Full check test */
 	for (i = 0x2000; i < 0x4020; i++)
 		assert_int_equal(0, Mapper_Ack((Mapper*) *state, i)); 
 }
 
 static void test_MapNROM_Ack_IsRead(void **state) {
 	uint16_t i;
+	/* NULL access test */
+	assert_int_equal(MapNROM_Ack(NULL, 0), 0);
+	/* Full check test */
 	for (i = 0x3FF8; i < 0x4020; i++)
 		assert_int_equal(AC_RD | AC_WR, Mapper_Ack((Mapper*) *state, i)); 
 }
