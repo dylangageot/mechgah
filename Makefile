@@ -20,6 +20,7 @@ SRC  		= $(NESDIR)/mapper/nrom.c \
 			  $(NESDIR)/ppu/ppu.c \
 			  $(NESDIR)/nes.c \
 			  $(NESDIR)/controller/controller.c \
+			  $(NESDIR)/controller/joypad.c \
 			  $(SRCDIR)/app.c \
 			  $(UTESTDIR)/UTnrom.c \
 			  $(UTESTDIR)/UTinstruction.c \
@@ -28,6 +29,8 @@ SRC  		= $(NESDIR)/mapper/nrom.c \
 			  $(UTESTDIR)/UTstack.c \
 			  $(UTESTDIR)/UTppu.c \
 			  $(UTESTDIR)/UTioreg.c \
+			  $(UTESTDIR)/UTjoypad.c \
+			  $(UTESTDIR)/UTcontroller.c \
 			  $(COMMONDIR)/keys.c \
 			  $(COMMONDIR)/stack.c \
 

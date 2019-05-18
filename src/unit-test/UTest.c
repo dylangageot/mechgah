@@ -9,5 +9,7 @@ int main(void) {
 	out += run_UTcpu();
 	out += run_UTstack();
 	out += run_UTppu();
+	out += run_UTjoypad();
+	out += run_UTcontroller();
 	return out;
 }

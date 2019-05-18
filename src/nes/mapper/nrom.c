@@ -119,7 +119,7 @@ void* MapNROM_Get(void* mapperData, uint8_t space, uint16_t address) {
 		/* 0x0000 -> 0x1FFF : RAM */
 		if (VALUE_INF(address, 0x1FFF)) {
 			return cpu->ram + (address & 0x07FF);
-		/* 0x2000 -> 0x4017 : IO bank 1 */
+		/* 0x2000 -> 0x401F : IO bank 1 and 2 */
 		} else if (VALUE_IN(address, 0x2000, 0x401F)) {
 			return IOReg_Get(cpu->ioReg, accessType, address);
 		/* 0x4020 -> 0x5FFF : Dummy region*/
