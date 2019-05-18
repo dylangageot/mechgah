@@ -19,7 +19,8 @@ sudo apt install libsdl1.2-dev libsdl-gfx1.2-dev
 make            # build mechgah executable (you can precise mechgah)
 make run-test   # build unit test and run it with Valgrind
                 # and code coverage feature
-make clean      # clean every generated file (including coverage dir)
+make doc        # build Doxygen documentation from doxyfile
+make clean      # clean every generated file (including coverage and doc dir)
 ```
 
 ## CMake
