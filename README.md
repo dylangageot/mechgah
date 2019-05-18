@@ -1,4 +1,4 @@
-# NES Emulator README
+# Mechgah README
 
 ## Dependencies
 
@@ -6,27 +6,43 @@ Our NES emulator depends on various library, which are:
 
 - libsdl1.2-dev
 - libsdl-gfx1.2-dev
-- cmocka
+- [cmocka](https://cmocka.org/)
 
-## Make
+You can install libsdl1.2-dev and libsdl-gfx1.2-dev from this command on Ubuntu :
+```bash
+sudo apt install libsdl1.2-dev libsdl-gfx1.2-dev
+```
+
+## Makefile
 
 ```bash
-make            # build main file and unit test
+make            # build mechgah executable (you can precise mechgah)
 make run-test   # build unit test and run it with Valgrind
                 # and code coverage feature
 make clean      # clean every generated file (including coverage dir)
 ```
 
+## CMake
+
+Run the following command to compile this project through CMake:
+```bash
+cmake . -Bbuild
+cd build
+make mechgah    # build mechgah executable
+make utest      # build unit test
+```
+If you want to test, run ./build/utest from the root of the repository (that is because our unit tests use relative path for file opening).
+
 ## User manual
 
 ### Synopsis
 ```bash
-./main [OPTIONS]... [ROM]
+./main [OPTION]... [ROM]
 ```
 
 ### Description
 
-Launches the nes-emulator on the given ROM filename and with the given OPTIONS. If no ROM filename is given, the emulator won't launch. If multiple filenames are given, the emulator will launch with the first one.
+Launches the NES emulator on the given ROM filename and with the given OPTION. If no ROM filename is given, the emulator won't launch. If multiple filenames are given, the emulator will launch with the first one.
 
 ### Options
 

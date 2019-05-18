@@ -3,8 +3,8 @@
 # -----------------------------------------------------------------------------
 
 # target definition
-OUTNAME		= main
-UTEST		= UTest
+OUTNAME		= mechgah
+UTEST		= utest
 
 # directories and sources definition
 SRCDIR		= src
@@ -41,7 +41,7 @@ CC			= gcc
 # compilation options
 CFLAGS  	= -Wall -Wextra -MMD
 # linking options
-LDFLAGS 	=  -lcmocka -lSDL -lSDL_gfx
+LDFLAGS 	= -lcmocka -lSDL -lSDL_gfx
 
 # add debug option to gcc if needed
 DEBUG = no
@@ -57,11 +57,11 @@ OBJS    	= $(SRC:.c=.o)
 all: $(OUTNAME)
 
 # executable compilation
-$(OUTNAME): $(OUTNAME).o $(OBJS) $(SRC)
+$(OUTNAME): main.o $(OBJS) $(SRC)
 			  $(CC) $< $(OBJS) $(LDFLAGS) -o $@
 
 # unit test executable compilation
-$(UTEST): $(UTESTDIR)/$(UTEST).o $(OBJS) $(SRC)
+$(UTEST): $(UTESTDIR)/UTest.o $(OBJS) $(SRC)
 			  $(CC) $< $(OBJS)  $(LDFLAGS) -o $@
 
 # run unit test and generate coverage page
