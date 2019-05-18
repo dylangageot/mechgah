@@ -12,7 +12,8 @@ static Keys keys[30]={{"A",SDLK_a},{"B",SDLK_b},{"C",SDLK_c},{"D",SDLK_d},
                       {"Q",SDLK_q},{"R",SDLK_r},{"S",SDLK_s},{"T",SDLK_t},
                       {"U",SDLK_u},{"V",SDLK_v},{"W",SDLK_w},{"X",SDLK_x},
                       {"Y",SDLK_y},{"Z",SDLK_z},
-                      {"UP",SDLK_UP},{"DOWN",SDLK_DOWN},{"RIGHT",SDLK_RIGHT},{"LEFT",SDLK_LEFT}};
+                      {"UP",SDLK_UP},{"DOWN",SDLK_DOWN},
+                      {"RIGHT",SDLK_RIGHT},{"LEFT",SDLK_LEFT}};
 
 uint16_t charToSdlk(char * key){
     int i=0;
@@ -29,10 +30,11 @@ char * SdlkToChar(uint16_t sdlk){
         if(keys[i].SDLK == sdlk)
             return keys[i].keyName;
     }
-    return 0;
+    return NULL;
 }
 
 int writeFileKeys(char * nameFile, uint16_t * keysSelect){
+    if (keysSelect == NULL) return 0;
     FILE * pFile = NULL;
     pFile = fopen(nameFile,"w");
 	if (pFile == NULL) return 0;
@@ -57,6 +59,7 @@ int writeFileKeys(char * nameFile, uint16_t * keysSelect){
 }
 
 int readFileKeys(char * nameFile, uint16_t * keysSelect){
+    if (keysSelect == NULL) return 0;
     FILE * pFile = NULL;
     char temp[30];
     char key[10];
@@ -67,13 +70,14 @@ int readFileKeys(char * nameFile, uint16_t * keysSelect){
     while (fgets(temp,30,pFile)) {
         sscanf(temp,"%s : %d : %s",buf,&i,key);
         keysSelect[i]=charToSdlk(key);
+        if(keysSelect[i]==0) return 0;
     }
     fclose(pFile);
     return 1;
 }
 
 int handleKeys(uint16_t * keysSelect, uint16_t * keysPressed, SDL_Event * event){
-	while(SDL_PollEvent(event))
+    while(SDL_PollEvent(event))
     {
       if(event->type == SDL_KEYDOWN){
             if(event->key.keysym.sym == keysSelect[0])

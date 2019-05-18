@@ -11,7 +11,6 @@
  */
 int run_UTnrom(void);
 
-
 /**
  * \brief Unit test of instructions
  *
@@ -48,6 +47,7 @@ int run_UTstack(void);
 int run_UTppu(void);
 
 /**
+<<<<<<< HEAD
  * \brief Unit test of IOReg module
  *
  * \return 0 if passed, number of failed otherwise
@@ -67,3 +67,17 @@ int run_UTjoypad(void);
  * \return 0 if passed, number of failed otherwise
  */
 int run_UTcontroller(void);
+ 
+/**
+ * \brief Unit test of keys module
+ *
+ * \return 0 if passed, number of failed otherwise
+ */
+int run_UTkeys(void);
+
+/**
+ * \brief Unit test of NES module
+ *
+ * \return 0 if passed, number of failed otherwise
+ */
+int run_UTnes(void);

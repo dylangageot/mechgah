@@ -11,5 +11,7 @@ int main(void) {
 	out += run_UTppu();
 	out += run_UTjoypad();
 	out += run_UTcontroller();
+	out += run_UTkeys();
+	out += run_UTnes();
 	return out;
 }
