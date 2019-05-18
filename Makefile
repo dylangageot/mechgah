@@ -29,6 +29,7 @@ SRC  		= $(NESDIR)/mapper/nrom.c \
 			  $(UTESTDIR)/UTstack.c \
 			  $(UTESTDIR)/UTppu.c \
 				$(UTESTDIR)/UTjoypad.c \
+				$(UTESTDIR)/UTcontroller.c \
 			  $(COMMONDIR)/keys.c \
 			  $(COMMONDIR)/stack.c \
 
