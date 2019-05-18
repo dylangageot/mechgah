@@ -502,9 +502,16 @@ static void test_PPU_ManageV(void **state) {
 		assert_int_equal(PPU_ManageV(self), EXIT_SUCCESS);
 		assert_int_equal(self->vram.v, 0x0000);
 	}
+	/* Increment Corse X when in 328->336 interval */
+	self->vram.v = 0;
+	for (i = 328; i <= 336; i += 8) {
+		self->cycle = i;
+		assert_int_equal(PPU_ManageV(self), EXIT_SUCCESS);
+		assert_int_equal(self->vram.v, (i-320) >> 3);
+	}
+
 
 }
-
 
 static void test_PPU_FetchTile_Shift(void **state) {
 	PPU* self = (PPU*) *state;
@@ -699,6 +706,48 @@ static void test_PPU_SpriteEvaluation_Eight(void **state) {
 	assert_int_equal(self->PPUSTATUS, 0);
 }
 
+static void test_PPU_SpriteEvaluation_Eight_Spaced(void **state) {
+	PPU *self = (PPU*) *state;
+
+	int i;
+	self->scanline = 10;
+	self->PPUSTATUS = 0;
+
+	/* Set value into OAM */
+	for (i = 0; i < 256; i++) {
+		self->OAM[i] = i;
+	}
+	/* Set to 0xFF every Y-coordonate */
+	for (i = 0; i < 64; i++) {
+		self->OAM[i << 2] = 0xAA;
+	}
+	/* Clear SOAM */
+	for (i = 0; i < 32; i++) {
+		self->SOAM[i] = 0xFF;
+	}
+	/* Set 8 sprites Y-coordonate in range
+	 * Make every sprite spaced in memory to hard test the algorithm */
+	for (i = 0; i < 7; i++) {
+		self->OAM[i << 2] = self->scanline;
+	}
+	self->OAM[63 << 2] = self->scanline;
+	/* Evaluate */
+	for (self->cycle = 65; self->cycle < 257; self->cycle++) {
+		PPU_SpriteEvaluation(self);
+	}
+	/* Verify if 8 sprite has been copied */
+	for (i = 0; i < 28; i++) {
+		assert_int_equal(self->OAM[i], self->SOAM[i]);
+	}
+	for (i = 0; i < 4; i++) {
+		assert_int_equal(self->OAM[(63 << 2) + i], self->SOAM[i+28]);
+	}
+	/* Verify that no overflow has been detected */
+	assert_int_equal(self->PPUSTATUS, 0);
+}
+
+
+
 static void test_PPU_SpriteEvaluation_Overflow(void **state) {
 	PPU *self = (PPU*) *state;
 
@@ -747,7 +796,7 @@ static void test_PPU_SpriteEvaluation_Zero(void **state) {
 	for (i = 0; i < 256; i++) {
 		self->OAM[i] = i;
 	}
-	/* Set to 0xFF every Y-coordonate */
+	/* Set to 0xAA every Y-coordonate */
 	for (i = 0; i < 64; i++) {
 		self->OAM[i << 2] = 0xAA;
 	}
@@ -833,6 +882,84 @@ static void test_PPU_FetchSprite_NoFlip(void **state) {
 	}
 
 }
+
+static void test_PPU_FetchSprite_NoFlip_16(void **state) {
+	PPU *self = (PPU*) *state;
+
+	uint8_t* pattern = Mapper_Get(self->mapper, AS_LDR, LDR_CHR);
+	uint8_t* tile_pattern = NULL;
+	uint16_t patternIndex = 0;
+
+	int i;
+	self->scanline = 10;
+	self->PPUSTATUS = 0;
+	/* Test with 8*16 sprite size */
+	self->PPUCTRL = PPUCTRL_SPR_SIZE;
+
+	/* Clear SOAM */
+	for (i = 0; i < 32; i++) {
+		self->SOAM[i] = 0xFF;
+	}
+
+	self->spriteZero = 0;
+
+	/* Test only for two sprites */
+	/* Set first sprite found in OAM */
+	self->SOAM[0] = self->scanline - 1;
+	self->SOAM[1] = 5; /* Set pattern n°6 as sprite */
+	self->SOAM[2] = 0x03;
+	self->SOAM[3] = 0xCC;
+	self->SOAM[4] = self->scanline - 8;
+	self->SOAM[5] = 25; /* Set pattern n°26 as sprite */
+	self->SOAM[6] = 0x01;
+	self->SOAM[7] = 0xDD;
+	/* Initialize pattern table */
+	/* Pattern n°6 */
+	patternIndex = 5;
+	patternIndex = ((patternIndex & 1) << 8) | (patternIndex & 0xFE);
+	tile_pattern = pattern + (patternIndex << 4);
+	for (i = 0; i < 32; i++) {
+		tile_pattern[i] = 0xFF;
+	}
+	tile_pattern[1] = 0xAA;
+	tile_pattern[1 | 0x8] = 0x55;
+	/* Pattern n°26 */
+	patternIndex = 25;
+	patternIndex = ((patternIndex & 1) << 8) | (patternIndex & 0xFE);
+	tile_pattern = pattern + (patternIndex << 4);
+	for (i = 0; i < 32; i++) {
+		tile_pattern[i] = 0xFF;
+	}
+	tile_pattern[0 | 0x10] = 0x55;
+	tile_pattern[0 | 0x18] = 0xAA;
+
+	/* Execute Fetch sprite */
+	for (self->cycle = 257; self->cycle <= 320; self->cycle += 8) {
+		PPU_FetchSprite(self);
+	}
+
+	/* Test first sprite */
+	assert_int_equal(self->sprite[0].patternL, 0xAA);
+	assert_int_equal(self->sprite[0].patternH, 0x55);
+	assert_int_equal(self->sprite[0].attribute, self->SOAM[2]);
+	assert_int_equal(self->sprite[0].x, self->SOAM[3]);
+	/* Test seconde sprite */
+	assert_int_equal(self->sprite[1].patternL, 0x55);
+	assert_int_equal(self->sprite[1].patternH, 0xAA);
+	assert_int_equal(self->sprite[1].attribute, self->SOAM[6]);
+	assert_int_equal(self->sprite[1].x, self->SOAM[7]);
+	/* Test emptyness of following sprite */
+	for (i = 2; i < 8; i++) {
+		assert_int_equal(self->sprite[i].patternL, 0x00);
+		assert_int_equal(self->sprite[i].patternH, 0x00);
+		assert_int_equal(self->sprite[i].attribute, 0);
+		assert_int_equal(self->sprite[i].x, 0xFF);
+	}
+
+	self->PPUCTRL = 0;
+}
+
+
 
 static void test_PPU_FetchSprite_FlipHorizontal(void **state) {
 	PPU *self = (PPU*) *state;
@@ -1242,16 +1369,16 @@ static void test_PPU_UpdateCycle(void **state) {
 static void test_PPU_Execute_Cnt(void **state) {
 	PPU* self = (PPU*)*state;
 	uint8_t context = 0;
+
 	/* No action to do on this scanline, we just test the cycle counter here */
-	self->scanline = 250;
+	self->scanline = 241;
 	self->cycle = 0;
+	self->PPUMASK |= PPUMASK_SHOW_BG | PPUMASK_SHOW_SPR;
 
 	PPU_Execute(self, &context, 10);
-	assert_int_equal(self->scanline, 250); 
+	assert_int_equal(self->scanline, 241); 
 	assert_int_equal(self->cycle, 10); 
 }
-
-
 
 static int teardown_PPU(void **state) {
 	if (*state != NULL) {
@@ -1300,8 +1427,10 @@ int run_UTppu(void) {
 		cmocka_unit_test(test_PPU_SpriteEvaluation_NoOverflow),
 		cmocka_unit_test(test_PPU_SpriteEvaluation_Overflow),
 		cmocka_unit_test(test_PPU_SpriteEvaluation_Eight),
+		cmocka_unit_test(test_PPU_SpriteEvaluation_Eight_Spaced),
 		cmocka_unit_test(test_PPU_SpriteEvaluation_Zero),
 		cmocka_unit_test(test_PPU_FetchSprite_NoFlip),
+		cmocka_unit_test(test_PPU_FetchSprite_NoFlip_16),
 		cmocka_unit_test(test_PPU_FetchSprite_FlipHorizontal),
 		cmocka_unit_test(test_PPU_FetchSprite_FlipVertical),
 		cmocka_unit_test(test_PPU_FetchSprite_FlipBoth),
