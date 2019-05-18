@@ -6,7 +6,7 @@
 
 Joypad* Joypad_Create(int id){
   Joypad * self = (Joypad*)malloc(sizeof(Joypad));
-  if(self != NULL){
+  if(self != NULL || id > 2 || id < 1){
     self->id = id;
     self->polling = 0;
     self->shiftState = 1;
