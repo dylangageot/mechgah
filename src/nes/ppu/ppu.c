@@ -553,8 +553,6 @@ uint8_t PPU_SpriteEvaluation(PPU *self) {
 			case STATE_WAIT:
 				self->OAMADDR += 0x04;
 				break;
-			default:
-				self->spriteState = STATE_COPY_Y;
 		}
 	}
 
