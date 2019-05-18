@@ -28,13 +28,14 @@
 
 Controller* Controller_Create(Mapper *mapper){
   Controller * self = (Controller*)malloc(sizeof(Controller));
-  if(self != NULL){
+  if(self != NULL && self != NULL){
     self->mapper = mapper;
     self->joy1 = Joypad_Create(1);
     self->joy2 = Joypad_Create(2);
     /* Reset variables */
     self->lastState = -1;
     self->keysPressed = 0;
+    self->JOY1 = self->JOY2 = 1; /* Returns 1 by default */
   }else{
     ERROR_MSG("can't allocate Controller structure");
   }
