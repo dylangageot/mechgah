@@ -77,13 +77,6 @@ typedef struct {
 } PPU;
 
 /**
- * \brief Render 64 pixel with color palette of NES
- *
- * \return allocate array (don't forger to free)
- */
-char* RenderColorPalette(void);
-
-/**
  * \brief Create instance of PPU
  * \param mapper instance of Mapper
  *
