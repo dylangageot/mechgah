@@ -113,98 +113,98 @@ uint8_t PPU_Init(PPU *self) {
 	return EXIT_SUCCESS;
 }
 
-char* RenderColorPalette(void) {
-	/* Copy Color Palette to a new array */
-	uint32_t *tab = (uint32_t*) malloc(SIZE_COLOR_PALETTE * sizeof(uint32_t));
-	memcpy(tab, colorPalette, SIZE_COLOR_PALETTE * sizeof(uint32_t));
-	return (char*) tab;
-}
+//char* RenderColorPalette(void) {
+//	/* Copy Color Palette to a new array */
+//	uint32_t *tab = (uint32_t*) malloc(SIZE_COLOR_PALETTE * sizeof(uint32_t));
+//	memcpy(tab, colorPalette, SIZE_COLOR_PALETTE * sizeof(uint32_t));
+//	return (char*) tab;
+//}
 
-void PPU_RenderNametable(PPU *self, uint32_t *image, uint8_t index) {
-	uint8_t *nametable = Mapper_Get(self->mapper, AS_PPU,
-			ADDR_NAMETABLE_1 | (index << 10));
-	uint8_t *attribute = nametable + SIZE_NAMETABLE;
-	uint8_t *palette = Mapper_Get(self->mapper, AS_PPU, ADDR_PALETTE_BG);
-	uint8_t *pattern = Mapper_Get(self->mapper, AS_LDR, LDR_CHR) +
-		((self->PPUCTRL & PPUCTRL_BG_PT) ? SIZE_PATTERN : 0);
-	uint8_t *tile = NULL, *color = NULL;
-	uint8_t temp = 0, shift = 0;
-	uint32_t index_image = 0;
-	int x, y, i, j;
-
-	for (y = 0; y < TILE_Y_CNT; y++) {
-		for (x = 0; x < TILE_Y_CNT; x++) {
-			/* Tile to get pixels data from */
-			tile = pattern + (nametable[x + (y << 5)] << 4);
-		/* Retrieve attribute and decode */
-			temp = attribute[(x >> 2) + ((y & 0xFC) << 1)];
-			shift = (x & 0x02) | ((y & 0x02) << 1);
-			temp = (temp >> shift) & 0x03;
-			/* Retrive palette color */
-			color = palette + (temp << 2);
-			/* Draw on screen */
-			for (j = 0; j < SIZE_TILE_PIXEL; j++) {
-				for (i = 0; i < SIZE_TILE_PIXEL; i++) {
-					temp = (reverse_byte(tile[j]) >> i) & 0x01;
-					temp |= ((reverse_byte(tile[j | 0x08 ]) >> i) & 0x01) << 1;
-					index_image = (x << 3) + (y << 11) + (j << 8) + i;
-					image[index_image] = colorPalette[color[temp]];
-				}
-			}
-		}
-	}
-}
-
-void PPU_RenderSprites(PPU *self, uint32_t *image) {
-
-	if ((self->PPUMASK & PPUMASK_SHOW_SPR) == 0)
-		return;
-
-	uint8_t *palette = Mapper_Get(self->mapper, AS_PPU, ADDR_PALETTE_BG);
-	uint8_t *pattern = Mapper_Get(self->mapper, AS_LDR, LDR_CHR) +
-		((self->PPUCTRL & PPUCTRL_SPR_PT) ? SIZE_PATTERN : 0);
-	uint8_t *tile = NULL, *color = NULL;
-	uint8_t temp = 0;
-	int oamaddr, x, y, x_start, y_start, attribute;
-	uint32_t index_image = 0;
-
-	/* Evaluate sprite per sprite */
-	for (oamaddr = 0; oamaddr < SIZE_OAM; oamaddr += 0x4) {
-		/* Tile to get pixels data from */
-		tile = pattern + (self->OAM[oamaddr + 1] << 4);
-		x_start = self->OAM[oamaddr + 3];
-		y_start = self->OAM[oamaddr] + 1;
-		attribute = self->OAM[oamaddr + 2];
-		color = palette + ((attribute & OAM_ATTRIBUTE_PALETTE) << 2) + SIZE_PALETTE;
-		for (y = 0; y < 8; y++) {
-			for (x = 0; x < 8; x++) {
-				/* Flip both orientation */
-				if ((attribute & OAM_ATTRIBUTE_FLIP) == 
-						(OAM_ATTRIBUTE_FLIP_H | OAM_ATTRIBUTE_FLIP_V)) {
-					temp = (tile[7-y] >> x) & 0x01;
-					temp |= ((tile[(7-y) | SIZE_TILE_LAYER] >> x) & 0x01) << 1;
-				/* Flip vertical */
-				} else if ((attribute & OAM_ATTRIBUTE_FLIP) == 
-						OAM_ATTRIBUTE_FLIP_V) {
-					temp = (reverse_byte(tile[7-y]) >> x) & 0x01;
-					temp |= ((reverse_byte(tile[(7-y) | SIZE_TILE_LAYER]) >> x) & 0x01) << 1;
-				/* Flip horizontal */
-				} else if ((attribute & OAM_ATTRIBUTE_FLIP) == 
-						OAM_ATTRIBUTE_FLIP_H) {
-					temp = (tile[y] >> x) & 0x01;
-					temp |= ((tile[y | SIZE_TILE_LAYER] >> x) & 0x01) << 1;
-				/* Don't flip */
-				} else {
-					temp = (reverse_byte(tile[y]) >> x) & 0x01;
-					temp |= ((reverse_byte(tile[y | SIZE_TILE_LAYER]) >> x) & 0x01) << 1;
-				}
-				index_image = x_start + (y_start << 8) + (y << 8) + x;
-				if ((temp & 0x3) != 0)
-					image[index_image] = colorPalette[color[temp]];
-			}
-		}
-	}
-}
+//void PPU_RenderNametable(PPU *self, uint32_t *image, uint8_t index) {
+//	uint8_t *nametable = Mapper_Get(self->mapper, AS_PPU,
+//			ADDR_NAMETABLE_1 | (index << 10));
+//	uint8_t *attribute = nametable + SIZE_NAMETABLE;
+//	uint8_t *palette = Mapper_Get(self->mapper, AS_PPU, ADDR_PALETTE_BG);
+//	uint8_t *pattern = Mapper_Get(self->mapper, AS_LDR, LDR_CHR) +
+//		((self->PPUCTRL & PPUCTRL_BG_PT) ? SIZE_PATTERN : 0);
+//	uint8_t *tile = NULL, *color = NULL;
+//	uint8_t temp = 0, shift = 0;
+//	uint32_t index_image = 0;
+//	int x, y, i, j;
+//
+//	for (y = 0; y < TILE_Y_CNT; y++) {
+//		for (x = 0; x < TILE_Y_CNT; x++) {
+//			/* Tile to get pixels data from */
+//			tile = pattern + (nametable[x + (y << 5)] << 4);
+//		/* Retrieve attribute and decode */
+//			temp = attribute[(x >> 2) + ((y & 0xFC) << 1)];
+//			shift = (x & 0x02) | ((y & 0x02) << 1);
+//			temp = (temp >> shift) & 0x03;
+//			/* Retrive palette color */
+//			color = palette + (temp << 2);
+//			/* Draw on screen */
+//			for (j = 0; j < SIZE_TILE_PIXEL; j++) {
+//				for (i = 0; i < SIZE_TILE_PIXEL; i++) {
+//					temp = (reverse_byte(tile[j]) >> i) & 0x01;
+//					temp |= ((reverse_byte(tile[j | 0x08 ]) >> i) & 0x01) << 1;
+//					index_image = (x << 3) + (y << 11) + (j << 8) + i;
+//					image[index_image] = colorPalette[color[temp]];
+//				}
+//			}
+//		}
+//	}
+//}
+//
+//void PPU_RenderSprites(PPU *self, uint32_t *image) {
+//
+//	if ((self->PPUMASK & PPUMASK_SHOW_SPR) == 0)
+//		return;
+//
+//	uint8_t *palette = Mapper_Get(self->mapper, AS_PPU, ADDR_PALETTE_BG);
+//	uint8_t *pattern = Mapper_Get(self->mapper, AS_LDR, LDR_CHR) +
+//		((self->PPUCTRL & PPUCTRL_SPR_PT) ? SIZE_PATTERN : 0);
+//	uint8_t *tile = NULL, *color = NULL;
+//	uint8_t temp = 0;
+//	int oamaddr, x, y, x_start, y_start, attribute;
+//	uint32_t index_image = 0;
+//
+//	/* Evaluate sprite per sprite */
+//	for (oamaddr = 0; oamaddr < SIZE_OAM; oamaddr += 0x4) {
+//		/* Tile to get pixels data from */
+//		tile = pattern + (self->OAM[oamaddr + 1] << 4);
+//		x_start = self->OAM[oamaddr + 3];
+//		y_start = self->OAM[oamaddr] + 1;
+//		attribute = self->OAM[oamaddr + 2];
+//		color = palette + ((attribute & OAM_ATTRIBUTE_PALETTE) << 2) + SIZE_PALETTE;
+//		for (y = 0; y < 8; y++) {
+//			for (x = 0; x < 8; x++) {
+//				/* Flip both orientation */
+//				if ((attribute & OAM_ATTRIBUTE_FLIP) == 
+//						(OAM_ATTRIBUTE_FLIP_H | OAM_ATTRIBUTE_FLIP_V)) {
+//					temp = (tile[7-y] >> x) & 0x01;
+//					temp |= ((tile[(7-y) | SIZE_TILE_LAYER] >> x) & 0x01) << 1;
+//				/* Flip vertical */
+//				} else if ((attribute & OAM_ATTRIBUTE_FLIP) == 
+//						OAM_ATTRIBUTE_FLIP_V) {
+//					temp = (reverse_byte(tile[7-y]) >> x) & 0x01;
+//					temp |= ((reverse_byte(tile[(7-y) | SIZE_TILE_LAYER]) >> x) & 0x01) << 1;
+//				/* Flip horizontal */
+//				} else if ((attribute & OAM_ATTRIBUTE_FLIP) == 
+//						OAM_ATTRIBUTE_FLIP_H) {
+//					temp = (tile[y] >> x) & 0x01;
+//					temp |= ((tile[y | SIZE_TILE_LAYER] >> x) & 0x01) << 1;
+//				/* Don't flip */
+//				} else {
+//					temp = (reverse_byte(tile[y]) >> x) & 0x01;
+//					temp |= ((reverse_byte(tile[y | SIZE_TILE_LAYER]) >> x) & 0x01) << 1;
+//				}
+//				index_image = x_start + (y_start << 8) + (y << 8) + x;
+//				if ((temp & 0x3) != 0)
+//					image[index_image] = colorPalette[color[temp]];
+//			}
+//		}
+//	}
+//}
 
 uint8_t PPU_CheckRegister(PPU *self) {
 	uint8_t ack = 0;

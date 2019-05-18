@@ -1032,7 +1032,7 @@ static void test_PPU_FetchSprite_FlipBoth(void **state) {
 
 }
 
-static void test_Draw_SpriteZero(void **state) {
+static void test_PPU_Draw_SpriteZero(void **state) {
 
 	/* tests spriteZero flag */
 
@@ -1079,7 +1079,7 @@ static void test_Draw_SpriteZero(void **state) {
 	assert_int_equal(self->PPUSTATUS & PPUSTATUS_SPR_ZERO , PPUSTATUS_SPR_ZERO);
 }
 
-static void test_Draw_Shift(void** state) {
+static void test_PPU_Draw_Shift(void** state) {
 	/* tests the paattern shifting */
 
 	PPU* self = (PPU*)*state;
@@ -1127,7 +1127,7 @@ static void test_Draw_Shift(void** state) {
 
 }
 
-static void test_Draw_Color(void** state) {
+static void test_PPU_Draw_Color(void** state) {
 	/* tests the color stored in image */
 
 	PPU* self = (PPU*)*state;
@@ -1196,6 +1196,63 @@ static void test_Draw_Color(void** state) {
 	assert_int_equal(self->image[(value5<<8)+(value6-1)], colorPalette[2]);
 }
 
+static void test_PPU_ClearFlag(void **state) {
+	PPU* self = (PPU*)*state;
+	self->nmiSent = 1;
+	self->PPUSTATUS = 0xFF;
+	PPU_ClearFlag(self);
+	assert_int_equal(self->PPUSTATUS, 0x1F); 
+	assert_int_equal(self->nmiSent, 0); 
+}
+
+static void test_PPU_SetFlag(void **state) {
+	PPU* self = (PPU*)*state;
+	self->pictureDrawn = 0;
+	self->PPUSTATUS = 0x1F;
+	PPU_SetFlag(self);
+	assert_int_equal(self->PPUSTATUS, 0x9F); 
+	assert_int_equal(self->pictureDrawn, 1); 
+}
+
+static void test_PPU_PictureDrawn(void **state) {
+	PPU* self = (PPU*)*state;
+	self->pictureDrawn = 0;
+	assert_int_equal(PPU_PictureDrawn(self), 0); 
+	self->pictureDrawn = 1;
+	assert_int_equal(PPU_PictureDrawn(self), 1); 
+	assert_int_equal(self->pictureDrawn, 0); 
+}
+
+static void test_PPU_UpdateCycle(void **state) {
+	PPU* self = (PPU*)*state;
+	self->scanline = 260;
+	self->cycle = 339;
+	PPU_UpdateCycle(self);
+	assert_int_equal(self->scanline, 260); 
+	assert_int_equal(self->cycle, 340); 
+	PPU_UpdateCycle(self);
+	assert_int_equal(self->scanline, 261); 
+	assert_int_equal(self->cycle, 0); 
+	self->cycle = 340;
+	PPU_UpdateCycle(self);
+	assert_int_equal(self->scanline, PRERENDER_SCANLINE); 
+	assert_int_equal(self->cycle, 0); 
+}
+
+static void test_PPU_Execute_Cnt(void **state) {
+	PPU* self = (PPU*)*state;
+	uint8_t context = 0;
+	/* No action to do on this scanline, we just test the cycle counter here */
+	self->scanline = 250;
+	self->cycle = 0;
+
+	PPU_Execute(self, &context, 10);
+	assert_int_equal(self->scanline, 250); 
+	assert_int_equal(self->cycle, 10); 
+}
+
+
+
 static int teardown_PPU(void **state) {
 	if (*state != NULL) {
 		PPU *self = (PPU*) *state;
@@ -1231,6 +1288,7 @@ int run_UTppu(void) {
 		cmocka_unit_test(test_PPU_IncrementCorseX),
 		cmocka_unit_test(test_PPU_IncrementY),
 		cmocka_unit_test(test_PPU_ManageV),
+		cmocka_unit_test(test_PPU_UpdateCycle),
 	};
 
 	const struct CMUnitTest test_PPU_FetchTile[] = {
@@ -1249,10 +1307,19 @@ int run_UTppu(void) {
 		cmocka_unit_test(test_PPU_FetchSprite_FlipBoth),
 	};
 	const struct CMUnitTest test_PPU_Draw[] = {
-		cmocka_unit_test(test_Draw_SpriteZero),
-		cmocka_unit_test(test_Draw_Shift),
-		cmocka_unit_test(test_Draw_Color)
+		cmocka_unit_test(test_PPU_Draw_SpriteZero),
+		cmocka_unit_test(test_PPU_Draw_Shift),
+		cmocka_unit_test(test_PPU_Draw_Color)
 	};
+	const struct CMUnitTest test_PPU_Flag[] = {
+		cmocka_unit_test(test_PPU_ClearFlag),
+		cmocka_unit_test(test_PPU_SetFlag),
+		cmocka_unit_test(test_PPU_PictureDrawn),
+	};
+	const struct CMUnitTest test_PPU_Execute[] = {
+		cmocka_unit_test(test_PPU_Execute_Cnt),
+	};
+
 	int out = 0;
 	out += cmocka_run_group_tests(test_PPU_CheckRegister, setup_PPU, teardown_PPU);
 	out += cmocka_run_group_tests(test_PPU_RefreshRegister, setup_PPU, teardown_PPU);
@@ -1261,5 +1328,7 @@ int run_UTppu(void) {
 	out += cmocka_run_group_tests(test_PPU_FetchTile, setup_PPU, teardown_PPU);
 	out += cmocka_run_group_tests(test_PPU_Sprite, setup_PPU, teardown_PPU);
 	out += cmocka_run_group_tests(test_PPU_Draw, setup_PPU, teardown_PPU);
+	out += cmocka_run_group_tests(test_PPU_Flag, setup_PPU, teardown_PPU);
+	out += cmocka_run_group_tests(test_PPU_Execute, setup_PPU, teardown_PPU);
 	return out;
 }
