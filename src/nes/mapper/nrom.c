@@ -4,6 +4,9 @@
 #include "../../common/macro.h"
 
 Mapper* MapNROM_Create(Header * header) {
+	if (header == NULL)
+		return NULL;
+	
 	MapNROM *mapperData = (MapNROM*) malloc(sizeof(MapNROM));
 	/*	If allocation failed, return NULL */
 	if (mapperData == NULL) {
@@ -136,8 +139,6 @@ void* MapNROM_Get(void* mapperData, uint8_t space, uint16_t address) {
 					return cpu->rom + (address & 0x3FFF);
 				case NROM_32KIB:
 					return cpu->rom + (address & 0x7FFF);
-				default:
-					break;
 			}
 		}
 
@@ -163,8 +164,6 @@ void* MapNROM_Get(void* mapperData, uint8_t space, uint16_t address) {
 						return ppu->nametable + 0x400 + (address & 0x03FF);
 					else
 						return ppu->nametable + (address & 0x03FF);
-				default:
-					break;
 			}
 		/* 0x3F00 -> 0x3FFF : Palette */
 		} else if (VALUE_IN(address, 0x3F00, 0x3FFF)) {
@@ -183,8 +182,6 @@ void* MapNROM_Get(void* mapperData, uint8_t space, uint16_t address) {
 				return map->ppu.chr;
 			case LDR_IOR:
 				return map->cpu.ioReg;
-			default:
-				break;
 		}
 
 	}
