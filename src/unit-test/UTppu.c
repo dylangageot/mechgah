@@ -1254,6 +1254,52 @@ static void test_PPU_Draw_Shift(void** state) {
 
 }
 
+static void test_PPU_Draw_No_Color(void** state) {
+	/* tests the paattern shifting */
+
+	PPU* self = (PPU*)*state;
+	int i;
+
+	/* setup values for the test */
+
+	uint8_t *palette = Mapper_Get(self->mapper, AS_PPU, ADDR_PALETTE_BG);
+
+	self->PPUMASK = 0x18;
+	self->PPUSTATUS = 0x04;
+
+	self->cycle = 10;
+	self->scanline = 20;
+
+	self->attributeL = 0;
+	self->attributeH = 0;
+
+	self->bitmapL = 0x0000;
+	self->bitmapH = 0x0000;
+
+	self->vram.x = 0;
+
+	/* No sprites on the scanline */
+	for (i = 0; i < SPR_SOAM_CNT; i++) {
+		self->sprite[i].x = 0xFF;
+		self->sprite[i].patternH = 0;
+		self->sprite[i].patternL = 0;
+		self->sprite[i].isSpriteZero = 0;
+		self->sprite[i].attribute = 0x00;
+	}
+
+	/* initialize one value for the test to run properly */
+
+	uint8_t* color_palette = palette;
+	uint32_t color = 0;
+	color_palette[color] = 63;
+
+	PPU_Draw(self);
+
+	assert_int_equal(self->image[(self->scanline << 8) + self->cycle-1], 0);
+
+}
+
+
 static void test_PPU_Draw_Color(void** state) {
 	/* tests the color stored in image */
 
@@ -1438,6 +1484,7 @@ int run_UTppu(void) {
 	const struct CMUnitTest test_PPU_Draw[] = {
 		cmocka_unit_test(test_PPU_Draw_SpriteZero),
 		cmocka_unit_test(test_PPU_Draw_Shift),
+		cmocka_unit_test(test_PPU_Draw_No_Color),
 		cmocka_unit_test(test_PPU_Draw_Color)
 	};
 	const struct CMUnitTest test_PPU_Flag[] = {
