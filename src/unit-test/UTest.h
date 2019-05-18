@@ -60,3 +60,11 @@ int run_UTppu(void);
  * \return 0 if passed, number of failed otherwise
  */
 int run_UTjoypad(void);
+
+/**
+ * \fn run_UTcontroller
+ * \brief Unit test of Controller module
+ *
+ * \return 0 if passed, number of failed otherwise
+ */
+int run_UTcontroller(void);
