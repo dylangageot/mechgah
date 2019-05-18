@@ -32,9 +32,6 @@ Mapper* MapNROM_Create(Header * header) {
 			break;
 		case NROM_32KIB:
 			mapperData->cpu.rom = (uint8_t*) malloc(32768);
-			break;
-		default:
-			break;
 	}
 
 	/*	Allocation of SRAM space */
