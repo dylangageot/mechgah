@@ -38,7 +38,7 @@ If you want to test, run ./build/utest from the root of the repository (that is 
 
 ### Synopsis
 ```bash
-./main [OPTION]... [ROM]
+./meshgah [OPTION]... [ROM]
 ```
 
 ### Description
