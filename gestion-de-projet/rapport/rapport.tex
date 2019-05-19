@@ -22,7 +22,7 @@
 \usepackage{amsthm}
 \usepackage{amsfonts}
 \usepackage{siunitx}
-\usepackage[showframe, left=1in, right=1in, top=0.5in, bottom=0.5in]{geometry}
+\usepackage[left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm]{geometry}
 
 
 \widowpenalty=10000
@@ -31,8 +31,8 @@
 \setlength{\tabcolsep}{0.5em} % for the horizontal padding
 {\renewcommand{\arraystretch}{1.3}% for the vertical padding
 
-\titlespacing*{\section} {0pt}{1pt}{1pt}
-\titlespacing*{\subsection} {10pt}{1pt}{5pt}
+\titlespacing*{\section} {0pt}{10pt}{10pt}
+\titlespacing*{\subsection} {10pt}{5pt}{5pt}
 
 \begin{document}
 \pagestyle{plain}
@@ -44,16 +44,16 @@
 % Si le prénom et le nom tiennent sur la ligne, laisser valeur = 1.4
 \specialite{EII}  % Nom de la spécialité
 \anneeuniversitaire{2018 - 2019}  % Année universitaire
-\titre{Emulateur de la console NES}  % sujet du PFE
+\titre{Emulateur NES}  % sujet du PFE
 \correspondantINSA{Alexandre}{TISSIER}  % Prénom et nom du correspondant INSA
 \datesout{27/05/2019}  % Date de la soutenance du PFE
+
+\fontfamily{lmss}\selectfont
 
 \makeTitlePage % Page de titre / première page
 
 \clearpage
-
-\fontfamily{lmodern}
-\selectfont
+\fontfamily{lmr}\selectfont
 
 \begin{Large}
 \tableofcontents
