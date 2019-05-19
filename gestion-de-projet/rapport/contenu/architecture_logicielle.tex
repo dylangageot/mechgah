@@ -24,6 +24,6 @@ Nous avons donc développé notre émulateur sur un modèle orienté objet : cha
 \paragraph{}
 La fonction NES\_NextFrame() est la fonction de plus haut niveau qui permet d'émuler l'ensemble de la NES jusqu’à ce qu'une image soit produite. Nous sommes en capacité de forcer l'émulation a la vitesse adéquat en forçant 60 images par secondes dans l'applicatif. L'application est assuré par le module App, permettant de lié le modèle (module NES) avec la vue et le contrôleur (assurés par la SDL).
 
-\subsection{Moyens de test}
+\subsection{Moyens de tests}
 
 En plus des tests unitaires, nous avions à disposition des ROMs permettant de tester la conformité de notre émulation. Ces ROMs se trouvent sur \url{nesdev.com}, tout comme les informations sur le fonctionnement de la console sur lequel nous nous sommes basées. Pour tester le bon fonctionnement du processeur 6502, nous exécutons puis comparons les logs que nous avons produits avec celui fourni par un programme spécifique. Pour le test de la PPU, les jeux \emph{Donkey Kong} et \emph{Super Mario Bros} nous ont permis de tester les différentes spécificités et cas à difficultés.
