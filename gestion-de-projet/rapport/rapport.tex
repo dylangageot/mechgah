@@ -14,6 +14,9 @@
 \usepackage{glossaries}[toc]
 \usepackage{lmodern} %Type1-font for non-english texts and characters
 \usepackage{lipsum}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage[compact]{titlesec}
 
 \usepackage{amsmath}
 \usepackage{amsthm}
@@ -21,12 +24,14 @@
 \usepackage{siunitx}
 \usepackage[a4paper, total={6in, 8in}]{geometry}
 
-
 \widowpenalty=10000
 \clubpenalty=10000
 
 \setlength{\tabcolsep}{0.5em} % for the horizontal padding
 {\renewcommand{\arraystretch}{1.3}% for the vertical padding
+
+\titlespacing*{\section} {0pt}{1pt}{1pt}
+\titlespacing*{\subsection} {10pt}{1pt}{1pt}
 
 \begin{document}
 \pagestyle{plain}
