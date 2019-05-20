@@ -1,0 +1,29 @@
+\subsection{Description du concept}
+
+\paragraph{}
+La problématique principale du projet fut de concevoir une architecture logicielle qui reflète la fonctionnement de console mais qui puisse aussi être modulaire. En effet, les composants de la NES communiquent les un avec les autres à travers l'espace d'adressage du processeur 6502, la cartouche de jeu y compris. Avec le format cartouche, il est tout à fait possible de moduler le circuit électronique de la cartouche pour augmenter la capacité de stockage du programme ou sauvegarder des parties. Nous constatons alors que l'espace d'adressage varie d'un type de cartouche (ou \emph{mapper} dans le langage technique de la console) à un autre.
+
+\paragraph{}
+Nous avons donc développé notre émulateur sur un modèle orienté objet : chaque structure est accompagnée de fonctions constructrice, destructrice et fonctionnelles. Ce modèle nous permet de gagner en modularité : lors d'un chargement de ROM, venir charger l'espace mémoire correspondant au mapper du jeu et ce de manière transparente pour le reste du système. Vous retrouvez sur la figure \ref{fig:struct_app} l'architecture de l'émulateur du point de vue des structures. La structure \emph{NES} contient le modèle de l'émulateur, incluant la structure \emph{CPU}, \emph{PPU} et \emph{Controller}. Toutes ces structures partage un même pointeur sur la structure \emph{Mapper}, une structure que l'on pourrait décrire comme une classe abstraite en POO puisqu'elle permet au reste du logiciel de s'abstraire du type de mapper utilisé. Comme toutes classes abstraites, il faut définir le comportement de chaque mapper sur la base des fonctions définies. Dans le délai imparti par le projet, nous n'avons pu décrire que la mapper \emph{NROM}, mais il est tout a fait possible d'agrémenter l'émulateur en mapper avec cette architecture logicielle.
+
+\begin{figure}[H]
+	\centering
+  \subfloat[Structure \emph{App}]{
+    \includegraphics[width=0.45\linewidth]{images/struct_app}
+    \label{fig:struct_app}
+  }
+  \hspace{2cm}
+  \subfloat[Structure \emph{MapNROM}]{
+    \includegraphics[width=0.25\linewidth]{images/struct_map_nrom}
+    \label{fig:struct_map_nrom}
+  }
+  \caption{Structures de l'émulateur}
+  \label{fig:structure}
+\end{figure}
+
+\paragraph{}
+La fonction NES\_NextFrame() est la fonction de plus haut niveau qui permet d'émuler l'ensemble de la NES jusqu’à ce qu'une image soit produite. Nous sommes en capacité de forcer l'émulation a la vitesse adéquat en forçant 60 images par secondes dans l'applicatif. L'application est assuré par le module App, permettant de lié le modèle (module NES) avec la vue et le contrôleur (assurés par la SDL).
+
+\subsection{Moyens de tests}
+
+En plus des tests unitaires, nous avions à disposition des ROMs permettant de tester la conformité de notre émulation. Ces ROMs se trouvent sur \url{nesdev.com}, tout comme les informations sur le fonctionnement de la console sur lequel nous nous sommes basées. Pour tester le bon fonctionnement du processeur 6502, nous exécutons puis comparons les logs que nous avons produits avec celui fourni par un programme spécifique. Pour le test de la PPU, les jeux \emph{Donkey Kong} et \emph{Super Mario Bros} nous ont permis de tester les différentes spécificités et cas à difficultés.

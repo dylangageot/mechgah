@@ -16,7 +16,7 @@
 % Les bonnes polices pour le français
 \RequirePackage[T1]{fontenc}
 \RequirePackage[utf8]{inputenc} %les accents en UTF8 ça fait pas de mal
-\RequirePackage[english, frenchb]{babel}
+\RequirePackage[english, french]{babel}
 % Les symboles €
 \RequirePackage{eurosym}
 
@@ -142,9 +142,9 @@
 \newcommand{\makeTitlePage}{
     \thispagestyle{empty} % pas de style uniquement sur cette page
     %\fontfamily{cmss}
-    \hspace{-3.6cm}
+    \hspace{-3.2cm}
     \begin{minipage}{\paperwidth}
-        \vspace{-4cm}
+        \vspace{-2.8cm}
         \noindent \epsfig{figure=frontpage.png,width=\backgroundwidth}
 
         \vspace{-27.6cm}
@@ -180,7 +180,7 @@
         \end{minipage}
     \end{minipage}
 
-    \vspace{12.7cm}
+    \vspace{14.7cm}
     \hspace{1.5cm}
     \begin{minipage}{12cm}
         \noindent \TITRE
@@ -211,9 +211,9 @@
     \fi
 
     \thispagestyle{empty} % pas de style pour cette page uniquement
-    \hspace{-3.6cm}
+    \hspace{-3.2cm}
     \begin{minipage}{\paperwidth}
-        \vspace{-3.9cm}
+        \vspace{-2.6cm}
         \noindent \epsfig{figure=backpage.png,width=\backgroundwidth}
     \end{minipage}
 }
