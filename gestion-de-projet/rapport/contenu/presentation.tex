@@ -1,21 +1,21 @@
 \subsection{Introduction}
 
-Ce projet porte du l'émulation en langage C du système de la console de jeux vidéo NES (Nintendo Entertainment System), sortie en France en 1987 et développée par la société japonaise Nintendo. Plus spécifiquement, ce projet cherche à \emph{reproduire le comportement} de la console de manière \emph{logicielle} dans le but de jouer sur un ordinateur personnel aux jeux existants. Pour cela, on se fixe plusieurs objectifs :
+Ce projet porte sur l'émulation en langage C du système de la console de jeux vidéo NES (Nintendo Entertainment System), sortie en France en 1987 et développée par la société japonaise Nintendo. Plus spécifiquement, ce projet cherche à \emph{reproduire le comportement} de la console de manière \emph{logicielle} dans le but de jouer sur un ordinateur personnel aux jeux existants. Pour cela, on se fixe plusieurs objectifs :
 \begin{itemize}
-  \item Emuler le fonctionnement de la NES et se rapprocher au plus près du fonctionnement hardware (émulation précise, voir section \ref{subsec:precision_sur_lemulation})
+  \item Émuler le fonctionnement de la NES et se rapprocher au plus près du fonctionnement hardware (émulation précise, voir section \ref{subsec:precision_sur_lemulation})
   \item Connecter le clavier à l'émulateur en tant que périphérique d'entrée et rendre les touches configurables (support de deux joypads)
   \item Pouvoir jouer aux jeux développés sur des cartouches avec un mapper NROM
-  \item Etre en capacité de redimensionner la fenêtre de jeux.
+  \item Être en capacité de redimensionner la fenêtre de jeux.
   \item Avoir des performances fluides (NTSC - 60 FPS)
-  \item Developper pour fonctionner sous Linux
+  \item Développer pour fonctionner sous Linux
 \end{itemize}
 
 \subsection{Fonctionnement interne de la NES}
 \label{subsec:fonctionnement_interne_nes}
 
-On distingue trois composants principaux composants la NES :
+On distingue trois composants principaux constituant la NES :
 \begin{itemize}
-\item la \emph{CPU} qui est un processeur 6502 8 bit, muni de 56 instructions et de 12 modes d'adressages ainsi que d'un Program Counter (PC) de 16 bit et 5 registres 8 bit (Stack Register, Processor Status, Accumulator, X Register, Y Register). Il addresse donc un domaine de 64 kB détailé ci-dessous :
+\item la \emph{CPU} qui est un processeur 6502 8-bit, muni de 56 instructions et de 12 modes d'adressages ainsi que d'un Program Counter (PC) de 16 bits et 5 registres 8-bit (Stack Register, Processor Status, Accumulator, X Register, Y Register). Il adresse donc un domaine de 64 kB détaillé ci-dessous :
 
 \begin{center}
 \begin{tabular}{|c|c|c|}
@@ -24,11 +24,11 @@ On distingue trois composants principaux composants la NES :
   \hline
   \$0000-\$07FF & \$0800 & 2KB RAM interne\\
   \hline
-  \$0800-\$1FFF & \$1800 & Mirroirs de \$0000-\$07FF \\
+  \$0800-\$1FFF & \$1800 & Miroirs de \$0000-\$07FF \\
   \hline
   \$2000-\$2007 & \$0008 & Registres de la PPU \\
   \hline
-  \$2008-\$3FFF & \$1FF8 & Mirroirs de \$2000-2007 \\
+  \$2008-\$3FFF & \$1FF8 & Miroirs de \$2000-2007 \\
   \hline
   \$4000-\$4017 & \$0018 & Registres I/O et APU \\
   \hline
@@ -39,13 +39,13 @@ On distingue trois composants principaux composants la NES :
 \end{tabular}
 \end{center}
 \hspace{1pt}
-\item la \emph{PPU} (Picture Processing Unit), la carte vidéo qui génère un signal video composite de 240 lignes de 256 pixels. Son fonctionnement est parallèle et indépendant de la CPU et elle possède son propre espace d'adressage de 8 kB de ROM afin de stocker les éléments graphiques du jeux et 2 kB de RAM. Elle est également reliée à la CPU par 8 registres dans la plage \$2000-\$2007.
-\item l'\emph{APU} (Audio Processing Unit), la carte audio de la NES, qui ne sera pas émulée du fait de la longeur de son implémentation.
+\item la \emph{PPU} (Picture Processing Unit), la carte vidéo qui génère un signal vidéo composite de 240 lignes de 256 pixels. Son fonctionnement est parallèle et indépendant de la CPU et elle possède son propre espace d'adressage de 8 kB de ROM afin de stocker les éléments graphiques du jeux et 2 kB de RAM. Elle est également reliée à la CPU par 8 registres dans la plage \$2000-\$2007.
+\item l'\emph{APU} (Audio Processing Unit), la carte audio de la NES, qui ne sera pas émulée du fait de la longueur de son implémentation.
 \end{itemize}
 
 L'APU ainsi que les périphériques externes sont reliés dans la mémoire de la CPU dans la plage \$4000-\$4017.
 
 \subsection{Précisions sur l'émulation}
 \label{subsec:precision_sur_lemulation}
-Au vu des performances des processeurs actuels, nous choisissons d'émuler la NES de façon \emph{précise (accurate)}, c'est à dire exécuter les composants à chaque instant de l'émulation, ce qui rapproche du fonctionnement machine.
+Au vu des performances des processeurs actuels, nous choisissons d'émuler la NES de façon \emph{précise (accurate)}, c'est-à-dire exécuter les composants à chaque instant de l'émulation, ce qui rapproche du fonctionnement machine.
 Nous utiliserons la bibliothèque SDL1.2 afin de créer un environnement graphique où afficher le résultat de notre émulation.
