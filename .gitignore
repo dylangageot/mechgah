@@ -1,4 +1,6 @@
 **/out
+**/doxygen
+**/build
 *.o
 *.d
 *.gcno
@@ -8,8 +10,8 @@
 ~*
 *~
 *.log
-UTest
-main
+utest
+mechgah
 *.aux
 *.synctex.gz
 *.pdf

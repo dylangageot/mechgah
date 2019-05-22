@@ -71,7 +71,7 @@ uint8_t App_Init(App *self, int argc, char **argv) {
 
 	self->screen = SDL_SetVideoMode(256 * self->scale, 240 * self->scale,
 									32, SDL_HWSURFACE | SDL_DOUBLEBUF);
-	SDL_WM_SetCaption("NES Emulator", NULL);
+	SDL_WM_SetCaption("Mechgah", NULL);
 
 	return EXIT_SUCCESS;
 }
