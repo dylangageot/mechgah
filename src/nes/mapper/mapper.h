@@ -16,10 +16,10 @@
  * \brief Generic structure to hold mapper
  */
 typedef struct {
-	void* (*get)(void*, uint8_t, uint16_t);			/*! Get callback	     */
-	void (*destroyer)(void*);						/*! Destroyer callback	 */
-	uint8_t (*ack)(void*, uint16_t);				/*! Acknowledge callback */
-	void *mapperData;								/*! Mapper data			 */
+	void* (*get)(void*, uint8_t, uint16_t);		/*!< Get callback			*/
+	void (*destroyer)(void*);					/*!< Destroyer callback		*/
+	uint8_t (*ack)(void*, uint16_t);			/*!< Acknowledge callback	*/
+	void *mapperData;							/*!< Mapper data			*/
 } Mapper;
 
 /**
