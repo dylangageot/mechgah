@@ -1,0 +1,21 @@
+\babel@toc {french}{}
+\contentsline {section}{\numberline {1}Pr\IeC {\'e}sentation du projet}{3}
+\contentsline {subsection}{\numberline {1.1}Introduction}{3}
+\contentsline {subsection}{\numberline {1.2}Fonctionnement interne de la NES}{3}
+\contentsline {subsection}{\numberline {1.3}Pr\IeC {\'e}cisions sur l'\IeC {\'e}mulation}{4}
+\contentsline {section}{\numberline {2}Organisation du travail}{4}
+\contentsline {paragraph}{}{4}
+\contentsline {paragraph}{}{4}
+\contentsline {paragraph}{}{4}
+\contentsline {paragraph}{}{4}
+\contentsline {paragraph}{}{4}
+\contentsline {section}{\numberline {3}Architecture logicielle et moyens de tests}{4}
+\contentsline {subsection}{\numberline {3.1}Description du concept}{4}
+\contentsline {paragraph}{}{4}
+\contentsline {paragraph}{}{4}
+\contentsline {paragraph}{}{5}
+\contentsline {subsection}{\numberline {3.2}Mod\IeC {\`e}le-vue-contr\IeC {\^o}leur}{5}
+\contentsline {subsection}{\numberline {3.3}Moyens de tests}{5}
+\contentsline {section}{\numberline {4}Pr\IeC {\'e}visions et r\IeC {\'e}alit\IeC {\'e}}{5}
+\contentsline {section}{\numberline {5}Conclusion}{6}
+\contentsline {section}{\numberline {A}Annexes}{7}
