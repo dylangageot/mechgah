@@ -8,7 +8,7 @@ Our NES emulator depends on various library, which are:
 - libsdl-gfx1.2-dev
 - [cmocka](https://cmocka.org/)
 
-You can install libsdl1.2-dev and libsdl-gfx1.2-dev from this command on Ubuntu :
+You can install libsdl1.2-dev and libsdl-gfx1.2-dev with this command on Ubuntu :
 ```bash
 sudo apt install libsdl1.2-dev libsdl-gfx1.2-dev
 ```
@@ -32,13 +32,13 @@ cd build
 make mechgah    # build mechgah executable
 make utest      # build unit test
 ```
-If you want to test, run ./build/utest from the root of the repository (that is because our unit tests use relative path for file opening).
+If you want to launch unit tests, run ./build/utest from the root of the repository (that is because our unit tests use relative path for file opening). If you are using CLion, precise executables working directory to root path.
 
 ## User manual
 
 ### Synopsis
 ```bash
-./meshgah [OPTION]... [ROM]
+./mechgah [OPTION]... [ROM]
 ```
 
 ### Description
