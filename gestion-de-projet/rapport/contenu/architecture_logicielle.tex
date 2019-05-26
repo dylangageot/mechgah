@@ -25,11 +25,7 @@ Nous avons donc développé notre émulateur sur un modèle orienté objet : cha
 
 \subsection{Modèle-vue-contrôleur}
 
-<<<<<<< HEAD
-L’émulateur et son environnement graphique est géré par le module App, regroupant le modèle (module NES) avec la vue et le contrôleur (assurés par la SDL). En effet, lors de la modélisation des structures, nous avons pris soin de développer un module NES indépendant de toute technologies d'affichages graphiques et de contrôles, dans le but de pouvoir réutiliser celui-ci dans un contexte différent sans devoir à tout redévelopper. La fonction NES\_NextFrame() est la fonction de plus haut niveau qui permet d'émuler la NES jusqu’à ce qu'une image soit produite. Elle prend en paramètre les touches pressées par l'utilisateur sous forme d'un champ de bits. On récupère par la suite un tableau de pixels correspondant à l'image produite à travers la fonction NES\_Render(). Ce tableau sera exploité par la SDL pour afficher l'image à l'écran. Nous sommes en capacité de forcer l'émulation à la vitesse adéquate en forcant 60 images par secondes, comme le veut le standard NTSC.
-=======
 L’émulateur et son environnement graphique sont gérés par le module App, regroupant le modèle (module NES) avec la vue et le contrôleur (assurés par la SDL). En effet, lors de la modélisation des structures, nous avons pris soin de développer un module NES indépendant de toutes technologies d'affichages graphiques et de contrôles, dans le but de pouvoir réutiliser celui-ci dans un contexte différent sans devoir à tout redévelopper. La fonction NES\_NextFrame() est la fonction de plus haut niveau qui permet d'émuler la NES jusqu’à ce qu'une image soit produite. Elle prend en paramètre les touches pressées par l'utilisateur sous forme d'un champ de bits. On récupère par la suite un tableau de pixels correspondant à l'image produite à travers la fonction NES\_Render(). Ce tableau sera exploité par la SDL pour afficher l'image à l'écran. Nous sommes en capacité de forcer l'émulation à la vitesse adéquate en forçant 60 images par seconde, comme le veut le standard NTSC.
->>>>>>> a3f6670ec1d427446fb4cd93532384701540a090
 
 \subsection{Moyens de tests}
 
