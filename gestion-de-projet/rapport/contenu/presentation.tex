@@ -14,7 +14,7 @@ Ce projet porte sur l'émulation en langage C du système de la console de jeux 
 
 \begin{itemize}
   \item Développement de mappers supplémentaires (MMC1, MMC3, UROM)
-  \item Ajout d'une IHM qui permet de lancer les ROMs, configurer les touches clavier, sauvegarder le contexte du jeux, etc...
+  \item Ajout d'une IHM qui permet de lancer les ROMs, configurer les touches clavier, sauvegarder le contexte du jeu, etc...
 \end{itemize}
 
 \subsection{Fonctionnement interne de la NES}
@@ -22,7 +22,7 @@ Ce projet porte sur l'émulation en langage C du système de la console de jeux 
 
 On distingue trois composants principaux constituant la NES :
 \begin{itemize}
-\item la \emph{CPU} qui est un processeur 6502 8-bit, muni de 56 instructions et de 12 modes d'adressages ainsi que d'un Program Counter (PC) de 16 bits et 5 registres 8-bit (Stack Register, Processor Status, Accumulator, X Register, Y Register). Il adresse donc un domaine de 64 kB détaillé ci-dessous :
+\item la \emph{CPU} qui est un processeur 6502 8-bit, munie de 56 instructions et de 12 modes d'adressages ainsi que d'un Program Counter (PC) de 16 bits et 5 registres 8-bit (Stack Register, Processor Status, Accumulator, X Register, Y Register). Elle adresse donc un domaine de 64 kB détaillé ci-dessous :
 
 \begin{center}
 \begin{tabular}{|c|c|c|}
