@@ -1,7 +1,5 @@
 # Mechgah README
 
-![Screenshot of SMB on Mechgah](https://github.com/dylangageot/mechgah/blob/master/gestion-de-projet/rapport/images/smb_nes.png | width=100)
-
 ## Why develop a new NES emulator?
 
 This project is born in our engineering school ([INSA Rennes](https://www.insa-rennes.fr/), France) as part of a C language programming course. For one semester, in a team of four, we had to demonstrate our knowledge on a practical case. We had the choice of the subject, so we chose to develop a NES emulator because we thought (and it was) that it could train us on some aspect of computer architecture with the 6502 that NES use and, by the way, learn how gaming was in the past. This work was possible with the tons of documentation that is available on [NESdev](https://nesdev.com/).
@@ -69,3 +67,7 @@ Launches the NES emulator on the given ROM filename and with the given OPTION. I
 - Add mappers
 - Enhance PPU behavior (optimization with prediction algorithm)
 - Troubleshoot Controller (aren't working after a Game Over on *Super Mario Bros.*)
+
+### Screenshot
+
+![Screenshot of SMB on Mechgah](https://github.com/dylangageot/mechgah/blob/master/gestion-de-projet/rapport/images/smb_nes.png)
