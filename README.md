@@ -61,13 +61,13 @@ Launches the NES emulator on the given ROM filename and with the given OPTION. I
       Defines the scaling factor. Must be between 1 (genuine resolution) and 15 (4K resolution).
       If not specified, scaling factor is set to 2.
 
-### Todo
+## Screenshot
+
+![Screenshot of SMB on Mechgah](https://github.com/dylangageot/mechgah/blob/master/gestion-de-projet/rapport/images/smb_nes.png)
+
+## Todo
 
 - Add APU
 - Add mappers
 - Enhance PPU behavior (optimization with prediction algorithm)
 - Troubleshoot Controller (aren't working after a Game Over on *Super Mario Bros.*)
-
-### Screenshot
-
-![Screenshot of SMB on Mechgah](https://github.com/dylangageot/mechgah/blob/master/gestion-de-projet/rapport/images/smb_nes.png)
