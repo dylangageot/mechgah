@@ -15,3 +15,5 @@ mechgah
 *.aux
 *.synctex.gz
 *.pdf
+.idea/
+cmake-build-debug/
